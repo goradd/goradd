@@ -55,7 +55,7 @@
 {{define setInnerDivAttributes 2}}
 {{g
 if ctrl.Page().HasControl("$1") {
-    ctrl.Page().GetControl("$1").(FormGroupI).InnerDivAttributes().MergeString(`$2`)
+    ctrl.Page().GetControl("$1").(control2.FormGroupI).InnerDivAttributes().MergeString(`$2`)
 }
 }}
 {{end setInnerDivAttributes}}
@@ -63,7 +63,7 @@ if ctrl.Page().HasControl("$1") {
 {{define setChildInnerDivAttributes 2}}
 {{g
 if ctrl.Page().HasControl(ctrl.ID() + "$1") {
-    ctrl.Page().GetControl(ctrl.ID() + "$1").(FormGroupI).InnerDivAttributes().MergeString(`$2`)
+    ctrl.Page().GetControl(ctrl.ID() + "$1").(control2.FormGroupI).InnerDivAttributes().MergeString(`$2`)
 }
 }}
 {{end setChildInnerDivAttributes}}

@@ -7,6 +7,7 @@ func (p *{{= panelName }}) ColumnCreators(_ context.Context) []table.ColumnCreat
 	creators := []table.ColumnCreator {
 {{for _,col := range t.Columns }}
         column.NodeColumnCreator{
+            ID: "{{= strings2.SnakeToKebab(col.DbName) }}",
 {{if col.IsReference() || col.IsType() }}
             Node: node.{{= t.GoName }}().{{= col.ReferenceFunction() }}(),
 {{else}}
@@ -21,11 +22,13 @@ func (p *{{= panelName }}) ColumnCreators(_ context.Context) []table.ColumnCreat
         },
 {{for}}
     }
-    // Comment out these lines to remove the edit column
-    creators = append(creators, column.ButtonColumnCreator {
-        Title: p.GT("Edit"),
-    })
-    p.On(column.ButtonColumnClick(), action.Ajax(p.ID(), {{= lcPanelName }}ButtonClick))
+    if {{= t.LcGoName }}ListShowEditColumn {
+        creators = append(creators, column.ButtonColumnCreator{
+            Title: p.GT("Edit"),
+        })
+        p.On(column.ButtonColumnClick(), action.Ajax(p.ID(), {{= lcPanelName }}ButtonClick))
+    }
+
 
     return creators
 }

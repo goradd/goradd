@@ -23,7 +23,7 @@ type EditFormTplTemplate struct {
 }
 
 func (n *EditFormTplTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "EditForm.tpl.got"
+	return n.TargetDir + "/" + key + "/form/" + t.DbName + "_edit_form.tpl.got"
 }
 
 func (n *EditFormTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Model, t generator.TableType,  _w io.Writer) (err error) {

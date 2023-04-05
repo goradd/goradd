@@ -85,7 +85,9 @@ type PagedTableCreator struct {
 	Sortable bool
 	// SortHistoryLimit will set how many columns deep we will remember the sorting for multi-level sorts
 	SortHistoryLimit int
-	OnCellClick      action.CallbackActionI
+	// SortColumnIDs is the list of column ids that will be the initial sort order.
+	SortColumnIDs []string
+	OnCellClick   action.CallbackActionI
 	page.ControlOptions
 	// PageSize is the number of rows to include in a page
 	PageSize int
@@ -124,6 +126,7 @@ func (c PagedTableCreator) Init(ctx context.Context, ctrl PagedTableI) {
 		SortHistoryLimit:  c.SortHistoryLimit,
 		OnCellClick:       c.OnCellClick,
 		ControlOptions:    c.ControlOptions,
+		SortColumnIDs:     c.SortColumnIDs,
 	}
 	sub.Init(ctx, ctrl)
 	if c.PageSize != 0 {

@@ -37,7 +37,7 @@ type EditPanelBaseTemplate struct {
 }
 
 func (n *EditPanelBaseTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/panelbase/" + t.GoName + "EditPanel.base.go"
+	return n.TargetDir + "/" + key + "/panelbase/" + t.DbName + "_edit_panel.base.go"
 }
 
 func (n *EditPanelBaseTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Model, t generator.TableType,  _w io.Writer) (err error) {

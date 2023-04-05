@@ -1,10 +1,10 @@
 // editFormConst.tmpl
 
 {{
-// {{= title }}EditPath specifies the URL that will access this form.
-const {{= title }}EditPath = "{{= formPath }}"
-// {{= title }}EditID is the html id to use in the html form object.
-const {{= title }}EditID = "{{= formName }}"
+// {{= title }}EditFormPath specifies the URL that will access this form.
+const {{= title }}EditFormPath = "/{{= dd.DbKey }}/{{= tableKebab }}-edit"
+// {{= title }}EditFormID is the html id to use in the html form object.
+const {{= title }}EditFormID = "{{= tableKebab }}-edit-form"
 const {{= title }}Singular = "{{= t.LiteralName }}"
 const {{= title }}Plural = "{{= t.LiteralPlural }}"
 

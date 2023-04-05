@@ -28,7 +28,7 @@ type loginBase struct {
 	personIDIsNull  bool
 	personIDIsValid bool
 	personIDIsDirty bool
-	oPersonID       *Person
+	oPerson         *Person
 
 	username        string
 	usernameIsValid bool
@@ -154,7 +154,7 @@ func (o *loginBase) PersonID_I() interface{} {
 
 // Person returns the current value of the loaded Person, and nil if its not loaded.
 func (o *loginBase) Person() *Person {
-	return o.oPersonID
+	return o.oPerson
 }
 
 // LoadPerson returns the related Person. If it is not already loaded,
@@ -164,11 +164,11 @@ func (o *loginBase) LoadPerson(ctx context.Context) *Person {
 		return nil
 	}
 
-	if o.oPersonID == nil {
+	if o.oPerson == nil {
 		// Load and cache
-		o.oPersonID = LoadPerson(ctx, o.PersonID())
+		o.oPerson = LoadPerson(ctx, o.PersonID())
 	}
-	return o.oPersonID
+	return o.oPerson
 }
 
 func (o *loginBase) SetPersonID(i interface{}) {
@@ -178,7 +178,7 @@ func (o *loginBase) SetPersonID(i interface{}) {
 			o.personIDIsNull = true
 			o.personIDIsDirty = true
 			o.personID = ""
-			o.oPersonID = nil
+			o.oPerson = nil
 		}
 	} else {
 		v := i.(string)
@@ -189,7 +189,7 @@ func (o *loginBase) SetPersonID(i interface{}) {
 			o.personIDIsNull = false
 			o.personID = v
 			o.personIDIsDirty = true
-			o.oPersonID = nil
+			o.oPerson = nil
 		}
 	}
 }
@@ -201,10 +201,10 @@ func (o *loginBase) SetPerson(v *Person) {
 			o.personIDIsNull = true
 			o.personIDIsDirty = true
 			o.personID = ""
-			o.oPersonID = nil
+			o.oPerson = nil
 		}
 	} else {
-		o.oPersonID = v
+		o.oPerson = v
 		if o.personIDIsNull || !o._restored || o.personID != v.PrimaryKey() {
 			o.personIDIsNull = false
 			o.personID = v.PrimaryKey()
@@ -324,11 +324,18 @@ func (o *loginBase) IsNew() bool {
 	return !o._restored
 }
 
-// Load returns a Login from the database.
+// LoadLogin returns a Login from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Login {
 	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// HasLogin returns true if a Login with the give key exists database.
+func HasLogin(ctx context.Context, primaryKey string) bool {
+	q := queryLogins(ctx)
+	q = q.Where(Equal(node.Login().ID(), primaryKey))
+	return q.Count(false) == 1
 }
 
 // LoadLoginByPersonID queries for a single Login object by the given unique index values.
@@ -637,16 +644,16 @@ func (o *loginBase) load(m map[string]interface{}, objThis *Login, objParent int
 		o.personID = ""
 	}
 	if v, ok := m["Person"]; ok {
-		if oPersonID, ok2 := v.(map[string]interface{}); ok2 {
-			o.oPersonID = new(Person)
-			o.oPersonID.load(oPersonID, o.oPersonID, objThis, "Logins")
+		if oPerson, ok2 := v.(map[string]interface{}); ok2 {
+			o.oPerson = new(Person)
+			o.oPerson.load(oPerson, o.oPerson, objThis, "Logins")
 			o.personIDIsValid = true
 			o.personIDIsDirty = false
 		} else {
-			panic("Wrong type found for oPersonID object.")
+			panic("Wrong type found for oPerson object.")
 		}
 	} else {
-		o.oPersonID = nil
+		o.oPerson = nil
 	}
 
 	if v, ok := m["username"]; ok && v != nil {
@@ -713,9 +720,9 @@ func (o *loginBase) update(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		if o.oPersonID != nil {
-			o.oPersonID.Save(ctx)
-			id := o.oPersonID.PrimaryKey()
+		if o.oPerson != nil {
+			o.oPerson.Save(ctx)
+			id := o.oPerson.PrimaryKey()
 			o.SetPersonID(id)
 		}
 
@@ -739,9 +746,9 @@ func (o *loginBase) update(ctx context.Context) {
 func (o *loginBase) insert(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
-		if o.oPersonID != nil {
-			o.oPersonID.Save(ctx)
-			o.SetPerson(o.oPersonID)
+		if o.oPerson != nil {
+			o.oPerson.Save(ctx)
+			o.SetPerson(o.oPerson)
 		}
 
 		if !o.usernameIsValid {
@@ -860,7 +867,7 @@ func (o *loginBase) resetDirtyStatus() {
 func (o *loginBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.personIDIsDirty ||
-		(o.oPersonID != nil && o.oPersonID.IsDirty()) ||
+		(o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.usernameIsDirty ||
 		o.passwordIsDirty ||
 		o.isEnabledIsDirty
@@ -941,7 +948,7 @@ func (o *loginBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if o.oPersonID == nil {
+	if o.oPerson == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -949,7 +956,7 @@ func (o *loginBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oPersonID); err != nil {
+		if err := encoder.Encode(o.oPerson); err != nil {
 			return nil, err
 		}
 	}
@@ -1044,7 +1051,7 @@ func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oPersonID); err != nil {
+		if err = dec.Decode(&o.oPerson); err != nil {
 			return
 		}
 	}

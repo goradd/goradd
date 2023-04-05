@@ -27,7 +27,7 @@ type milestoneBase struct {
 	projectID        string
 	projectIDIsValid bool
 	projectIDIsDirty bool
-	oProjectID       *Project
+	oProject         *Project
 
 	name        string
 	nameIsValid bool
@@ -112,7 +112,7 @@ func (o *milestoneBase) ProjectIDIsValid() bool {
 
 // Project returns the current value of the loaded Project, and nil if its not loaded.
 func (o *milestoneBase) Project() *Project {
-	return o.oProjectID
+	return o.oProject
 }
 
 // LoadProject returns the related Project. If it is not already loaded,
@@ -122,11 +122,11 @@ func (o *milestoneBase) LoadProject(ctx context.Context) *Project {
 		return nil
 	}
 
-	if o.oProjectID == nil {
+	if o.oProject == nil {
 		// Load and cache
-		o.oProjectID = LoadProject(ctx, o.ProjectID())
+		o.oProject = LoadProject(ctx, o.ProjectID())
 	}
-	return o.oProjectID
+	return o.oProject
 }
 
 // SetProjectID sets the value of ProjectID in the object, to be saved later using the Save() function.
@@ -135,7 +135,7 @@ func (o *milestoneBase) SetProjectID(v string) {
 	if o.projectID != v || !o._restored {
 		o.projectID = v
 		o.projectIDIsDirty = true
-		o.oProjectID = nil
+		o.oProject = nil
 	}
 
 }
@@ -145,7 +145,7 @@ func (o *milestoneBase) SetProject(v *Project) {
 	if v == nil {
 		panic("Cannot set Project to a null value.")
 	} else {
-		o.oProjectID = v
+		o.oProject = v
 		o.projectIDIsValid = true
 		if o.projectID != v.PrimaryKey() {
 			o.projectID = v.PrimaryKey()
@@ -192,11 +192,18 @@ func (o *milestoneBase) IsNew() bool {
 	return !o._restored
 }
 
-// Load returns a Milestone from the database.
+// LoadMilestone returns a Milestone from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
 // be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
 func LoadMilestone(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Milestone {
 	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
+}
+
+// HasMilestone returns true if a Milestone with the give key exists database.
+func HasMilestone(ctx context.Context, primaryKey string) bool {
+	q := queryMilestones(ctx)
+	q = q.Where(Equal(node.Milestone().ID(), primaryKey))
+	return q.Count(false) == 1
 }
 
 // The MilestonesBuilder uses the QueryBuilderI interface from the database to build a query.
@@ -443,16 +450,16 @@ func (o *milestoneBase) load(m map[string]interface{}, objThis *Milestone, objPa
 	}
 
 	if v, ok := m["Project"]; ok {
-		if oProjectID, ok2 := v.(map[string]interface{}); ok2 {
-			o.oProjectID = new(Project)
-			o.oProjectID.load(oProjectID, o.oProjectID, objThis, "Milestones")
+		if oProject, ok2 := v.(map[string]interface{}); ok2 {
+			o.oProject = new(Project)
+			o.oProject.load(oProject, o.oProject, objThis, "Milestones")
 			o.projectIDIsValid = true
 			o.projectIDIsDirty = false
 		} else {
-			panic("Wrong type found for oProjectID object.")
+			panic("Wrong type found for oProject object.")
 		}
 	} else {
-		o.oProjectID = nil
+		o.oProject = nil
 	}
 
 	if v, ok := m["name"]; ok && v != nil {
@@ -489,9 +496,9 @@ func (o *milestoneBase) update(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
 
-		if o.oProjectID != nil {
-			o.oProjectID.Save(ctx)
-			id := o.oProjectID.PrimaryKey()
+		if o.oProject != nil {
+			o.oProject.Save(ctx)
+			id := o.oProject.PrimaryKey()
 			o.SetProjectID(id)
 		}
 
@@ -515,9 +522,9 @@ func (o *milestoneBase) update(ctx context.Context) {
 func (o *milestoneBase) insert(ctx context.Context) {
 	d := Database()
 	db.ExecuteTransaction(ctx, d, func() {
-		if o.oProjectID != nil {
-			o.oProjectID.Save(ctx)
-			o.SetProject(o.oProjectID)
+		if o.oProject != nil {
+			o.oProject.Save(ctx)
+			o.SetProject(o.oProject)
 		}
 
 		if !o.projectIDIsValid {
@@ -602,7 +609,7 @@ func (o *milestoneBase) resetDirtyStatus() {
 func (o *milestoneBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.projectIDIsDirty ||
-		(o.oProjectID != nil && o.oProjectID.IsDirty()) ||
+		(o.oProject != nil && o.oProject.IsDirty()) ||
 		o.nameIsDirty
 
 }
@@ -666,7 +673,7 @@ func (o *milestoneBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if o.oProjectID == nil {
+	if o.oProject == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -674,7 +681,7 @@ func (o *milestoneBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oProjectID); err != nil {
+		if err := encoder.Encode(o.oProject); err != nil {
 			return nil, err
 		}
 	}
@@ -743,7 +750,7 @@ func (o *milestoneBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oProjectID); err != nil {
+		if err = dec.Decode(&o.oProject); err != nil {
 			return
 		}
 	}

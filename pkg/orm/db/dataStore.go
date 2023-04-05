@@ -62,7 +62,7 @@ type DatabaseI interface {
 // AddDatabase adds a database to the global database store. Only call this during app startup.
 func AddDatabase(d DatabaseI, key string) {
 	if !strings.HasOnlyLetters(key) {
-		panic("data keys can only have letters in them. They are used in titles of variables. Please change " + key)
+		panic("database keys can only have letters in them. They are used in titles of variables. Please change " + key)
 	}
 	if datastore.databases == nil {
 		datastore.databases = new(DatabaseMap)

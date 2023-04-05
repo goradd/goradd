@@ -4,33 +4,42 @@
 
 // CreateControls creates the controls in the panel.
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
+	if {{= t.LcGoName }}ListShowFilterBar {
+        p.AddControls(ctx,
+            {{= ctrlPkg }}.PanelCreator{
+                ID: p.ID() + "-filterPanel",
+                Children: {{= ctrlPkg }}.Children(
+                    textbox.TextboxCreator{
+                        ID:          p.ID() + "-filterText",
+                        Placeholder: p.GT("Search..."),
+                        Type:        textbox.SearchType,
+                        ControlOptions: page.ControlOptions{
+                            On: page.EventList{
+                                {event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
+                                {event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
+                            },
+                        },
+                    },
+                ),
+            },
+        )
+    }
+    var caption interface{}
+    if {{= t.LcGoName }}ListShowDataPager {
+        caption = {{= codegen.ObjectType(generator.DefaultDataPagerCreator) }} {
+                                  ID:            p.ID() + "-pager",
+                                  PagedControl:  p.ID() + "-list",
+                              }
+    }
+
 	p.AddControls(ctx,
-		{{= ctrlPkg }}.PanelCreator{
-			ID: p.ID() + "-filterPanel",
-			Children: {{= ctrlPkg }}.Children(
-				textbox.TextboxCreator{
-					ID:          p.ID() + "-filterText",
-					Placeholder: p.GT("Search..."),
-					Type:        textbox.SearchType,
-					ControlOptions: page.ControlOptions{
-						On: page.EventList{
-							{event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
-							{event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
-						},
-					},
-				},
-			),
-		},
         table.PagedTableCreator{
             ID:  p.ID() + "-list",
             HeaderRowCount: 0,
             DataProviderID: p.ID(),
             RowStylerID: p.ID(),
             PageSize: {{= ctrlPkg }}.DefaultPagerPageSize,
-            Caption: {{= codegen.ObjectType(generator.DefaultDataPagerCreator) }} {
-                ID:            p.ID() + "-pager",
-                PagedControl:  p.ID() + "-list",
-            },
+            Caption: caption,
             OnCellClick: action.Ajax(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
             ControlOptions: page.ControlOptions{
                 Class:          "gr-clickable-rows",

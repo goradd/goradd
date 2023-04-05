@@ -23,7 +23,7 @@ type ListFormTplTemplate struct {
 }
 
 func (n *ListFormTplTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/form/" + strings.Title(key) + t.GoName + "ListForm.tpl.got"
+	return n.TargetDir + "/" + key + "/form/" + t.DbName + "_list_form.tpl.got"
 }
 
 func (n *ListFormTplTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Model, t generator.TableType,  _w io.Writer) (err error) {

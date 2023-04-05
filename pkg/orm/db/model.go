@@ -472,8 +472,12 @@ func (m *Model) importColumn(desc ColumnDescription) *Column {
 func (m *Model) importForeignKeys(desc TableDescription) {
 	t := m.Table(desc.Name)
 	if t != nil {
-		for _, col := range desc.Columns {
-			m.importForeignKey(t, col)
+		if t.PrimaryKeyColumn() == nil {
+			log.Printf("*** Error: table %s must have a primary key if it has a foreign key.", desc.Name)
+		} else {
+			for _, col := range desc.Columns {
+				m.importForeignKey(t, col)
+			}
 		}
 	}
 }
@@ -628,7 +632,7 @@ func LowerCaseIdentifier(s string) (i string) {
 	}
 	i = strings.TrimSpace(i)
 	if isReservedIdentifier(i) {
-		panic("Cannot use " + i + " as an identifier.")
+		panic("Cannot use '" + i + "' as an identifier.")
 	}
 	if i == "" {
 		panic("Cannot use blank as an identifier.")

@@ -5,4 +5,12 @@ var panelName = t.GoName + "ListPanel"
 var lcPanelName = t.LcGoName + objectType + "Panel"
 var editFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Edit")
 var detailFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Detail")
+var forwardJoins []*db.Column
+
+// columns for default forward joins
+for _,col := range t.Columns {
+    if col.ForeignKey != nil && !col.ForeignKey.IsType {
+        forwardJoins = append(forwardJoins, col)
+    }
+}
 

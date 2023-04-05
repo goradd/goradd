@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/control/button"
+	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/html5tag"
 	"io"
 )
@@ -90,6 +92,8 @@ type CheckboxCreator struct {
 	LabelAttributes html5tag.Attributes
 	// SaveState will save the value of the checkbox and restore it when the page is reentered.
 	SaveState bool
+	// OnChange is an action to take when the user checks or unchecks the control.
+	OnChange action.ActionI
 	// Set inline when drawing this checkbox inline or wrapped by an inline FormGroup
 	Inline bool
 	page.ControlOptions
@@ -115,6 +119,9 @@ func (c CheckboxCreator) Create(ctx context.Context, parent page.ControlI) page.
 	}
 	if c.Inline {
 		ctrl.SetInline(c.Inline)
+	}
+	if c.OnChange != nil {
+		ctrl.On(event.Change(), c.OnChange)
 	}
 	return ctrl
 }
