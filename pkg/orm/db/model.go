@@ -377,12 +377,16 @@ func (m *Model) makeManyManyRef(
 		}
 	}
 	var objName string
+	var objPlural string
+
 	if isType {
 		destTable := m.TypeTable(destTableName)
 		objName = destTable.GoName
+		objPlural = destTable.GoPlural
 	} else {
 		destTable := m.Table(destTableName)
 		objName = destTable.GoName
+		objPlural = destTable.GoPlural
 	}
 
 	goName := g2
@@ -405,15 +409,16 @@ func (m *Model) makeManyManyRef(
 	}
 
 	ref := ManyManyReference{
-		AssnTableName:        t,
-		AssnColumnName:       c1,
-		AssociatedTableName:  t2,
-		AssociatedColumnName: c2,
-		AssociatedObjectName: objName,
-		GoName:               goName,
-		GoPlural:             goPlural,
-		IsTypeAssociation:    isType,
-		SupportsForeignKeys:  supportsForeignKeys,
+		AssnTableName:         t,
+		AssnColumnName:        c1,
+		AssociatedTableName:   t2,
+		AssociatedColumnName:  c2,
+		AssociatedObjectType:  objName,
+		AssociatedObjectTypes: objPlural,
+		GoName:                goName,
+		GoPlural:              goPlural,
+		IsTypeAssociation:     isType,
+		SupportsForeignKeys:   supportsForeignKeys,
 	}
 	sourceTable.ManyManyReferences = append(sourceTable.ManyManyReferences, &ref)
 	return &ref

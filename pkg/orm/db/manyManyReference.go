@@ -13,8 +13,10 @@ type ManyManyReference struct {
 	AssociatedTableName string
 	// AssociatedColumnName is the database column being linked. NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
 	AssociatedColumnName string
-	// AssociatedObjectName is the go name of the object created by this reference
-	AssociatedObjectName string
+	// AssociatedObjectType is the name of the object type pointed to by this reference
+	AssociatedObjectType string
+	// AssociatedObjectTypes is the plural of the object type created by this reference
+	AssociatedObjectTypes string
 
 	// GoName is the name used to refer to an object on the other end of the reference.
 	GoName string

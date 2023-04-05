@@ -294,12 +294,12 @@ case query.ColTypeTime:
             if vals,ok := v.([]interface{}); !ok {
                 return fmt.Errorf("json field %s must be an array", k)
             } else {
-                var vals2 []{{= ref.AssociatedObjectName}}
+                var vals2 []{{= ref.AssociatedObjectType}}
                 for _,i := range vals {
                     if s,ok := i.(int); ok {
-                        vals2 = append(vals2, {{= ref.AssociatedObjectName}}(s))
+                        vals2 = append(vals2, {{= ref.AssociatedObjectType}}(s))
                     } else if s,ok := i.(float64); ok {
-                        vals2 = append(vals2, {{= ref.AssociatedObjectName}}(s))
+                        vals2 = append(vals2, {{= ref.AssociatedObjectType}}(s))
                     } else {
                         return fmt.Errorf("json field %s must be an integer array", k)
                     }

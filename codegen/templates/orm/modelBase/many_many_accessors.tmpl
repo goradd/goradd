@@ -5,17 +5,17 @@ for _,ref := range t.ManyManyReferences {
 
 {{
 
-// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectName}} values if loaded.
-func (o *{{privateName}}Base) {{= ref.GoPlural }}() []{{ref.AssociatedObjectName}} {
+// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectType}} values if loaded.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []{{ref.AssociatedObjectType}} {
 	if o.{{oName}} == nil {
 		return nil
 	}
 	return o.{{oName}}
 }
 
-// Set{{= ref.GoPlural }} sets the associated values to the given slice of {{ref.AssociatedObjectName}} values.
+// Set{{= ref.GoPlural }} sets the associated values to the given slice of {{ref.AssociatedObjectType}} values.
 // It will also disassociate from all previously associated values.
-func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []{{ref.AssociatedObjectName}}) {
+func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []{{ref.AssociatedObjectType}}) {
 	o.{{oName}} = objs
 	o.{{oName}}IsDirty = true
 }
@@ -28,25 +28,37 @@ func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []{{ref.AssociatedObje
 
 
 {{
-// {{ref.GoName}} returns a single {{ref.AssociatedObjectName}} object by primary key, if one was loaded
+// {{ref.GoName}} returns a single {{ref.AssociatedObjectType}} object by primary key, if one was loaded
 // otherwise, it will return nil.
-func (o *{{privateName}}Base) {{= ref.GoName }}(pk string) *{{ref.AssociatedObjectName}} {
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk string) *{{ref.AssociatedObjectType}} {
 	if o.m{{= ref.GoPlural }} == nil {
 		return nil
 	}
 	return o.m{{= ref.GoPlural }}[pk]
 }
 
-// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectName}} objects if loaded. If not loaded, will return nil.
-func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.AssociatedObjectName}} {
+// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectType}} objects if loaded. If not loaded, will return nil.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.AssociatedObjectType}} {
 	return o.{{oName}}
 }
 
-// Set{{= ref.GoPlural }} sets the associated objects to the given slice of {{ref.AssociatedObjectName}} objects.
+// Set{{= ref.GoPlural }} sets the associated objects to the given slice of {{ref.AssociatedObjectType}} objects.
 // It will disassociate from all previously associated objects after saving.
-func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{ref.AssociatedObjectName}}) {
+func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{ref.AssociatedObjectType}}) {
 	o.{{oName}} = objs
 	o.{{oName}}IsDirty = true
+}
+
+// Load{{= ref.GoPlural }} loads the associated {{= ref.GoName }} objects.
+func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context) {
+	o.{{oName}} = Query{{= ref.AssociatedObjectTypes}}(ctx).
+		Where(op.Equal(node.{{= ref.AssociatedObjectType}}().{{= ref.MM.GoPlural}}(), o.PrimaryKey())).
+		Load()
+
+	o.m{{= ref.GoPlural }} = map[string]*{{= ref.AssociatedObjectType}}{}
+	for _,i := range o.{{oName}} {
+	    o.m{{= ref.GoPlural }}[i.PrimaryKey()] = i
+	}
 }
 
 
