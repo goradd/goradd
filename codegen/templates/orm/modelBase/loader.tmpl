@@ -105,7 +105,7 @@ for _,ref := range t.ManyManyReferences {
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {
 		if {{oName}}, ok2 := v.([]db.ValueMap); ok2 {
 			o.{{oName}} = []*{{= ref.AssociatedObjectType }}{}
-			o.{{mName}} = map[string]*{{= ref.AssociatedObjectType }}{}
+			o.{{mName}} = map[{{= ref.AssociatedTablePkType }}]*{{= ref.AssociatedObjectType }}{}
 
 			for _,v2 := range {{oName}} {
 				obj := new({{= ref.AssociatedObjectType }})

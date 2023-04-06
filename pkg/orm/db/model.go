@@ -378,15 +378,18 @@ func (m *Model) makeManyManyRef(
 	}
 	var objName string
 	var objPlural string
+	var pkType string
 
 	if isType {
 		destTable := m.TypeTable(destTableName)
 		objName = destTable.GoName
 		objPlural = destTable.GoPlural
+		pkType = "int"
 	} else {
 		destTable := m.Table(destTableName)
 		objName = destTable.GoName
 		objPlural = destTable.GoPlural
+		pkType = destTable.PrimaryKeyGoType()
 	}
 
 	goName := g2
@@ -412,6 +415,7 @@ func (m *Model) makeManyManyRef(
 		AssnTableName:         t,
 		AssnColumnName:        c1,
 		AssociatedTableName:   t2,
+		AssociatedTablePkType: pkType,
 		AssociatedColumnName:  c2,
 		AssociatedObjectType:  objName,
 		AssociatedObjectTypes: objPlural,

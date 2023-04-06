@@ -11,6 +11,8 @@ type ManyManyReference struct {
 	SupportsForeignKeys bool
 	// AssociatedTableName is the database table being linked. NoSQL & SQL: The table we are joining to
 	AssociatedTableName string
+	// AssociatedTablePkType is the type of the primary key of the associated object so we can index it
+	AssociatedTablePkType string
 	// AssociatedColumnName is the database column being linked. NoSQL: table point backwards to us. SQL: Column in association table pointing forwards to refTable
 	AssociatedColumnName string
 	// AssociatedObjectType is the name of the object type pointed to by this reference

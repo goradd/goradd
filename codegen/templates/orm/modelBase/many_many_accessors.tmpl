@@ -26,11 +26,12 @@ func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []{{ref.AssociatedObje
 
 	} else {
 
+    pkType := ref.AssociatedTablePkType
 
 {{
 // {{ref.GoName}} returns a single {{ref.AssociatedObjectType}} object by primary key, if one was loaded
 // otherwise, it will return nil.
-func (o *{{privateName}}Base) {{= ref.GoName }}(pk string) *{{ref.AssociatedObjectType}} {
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= pkType }}) *{{ref.AssociatedObjectType}} {
 	if o.m{{= ref.GoPlural }} == nil {
 		return nil
 	}
@@ -55,7 +56,7 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context) {
 		Where(op.Equal(node.{{= ref.AssociatedObjectType}}().{{= ref.MM.GoPlural}}(), o.PrimaryKey())).
 		Load()
 
-	o.m{{= ref.GoPlural }} = map[string]*{{= ref.AssociatedObjectType}}{}
+	o.m{{= ref.GoPlural }} = map[{{= pkType }}]*{{= ref.AssociatedObjectType}}{}
 	for _,i := range o.{{oName}} {
 	    o.m{{= ref.GoPlural }}[i.PrimaryKey()] = i
 	}
