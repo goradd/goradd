@@ -39,6 +39,7 @@ type pgColumn struct {
 	dataType        string
 	charLen         int
 	characterMaxLen sql.NullInt64
+	isIdentity      string
 	comment         string
 	options         map[string]interface{}
 }
@@ -181,6 +182,7 @@ func (m *DB) getColumns(table string, schema string) (columns []pgColumn, err er
 	c.is_nullable,
 	c.data_type,
 	c.character_maximum_length,
+	c.is_identity,
 	pgd.description
 FROM
 	information_schema.columns as c
@@ -210,7 +212,7 @@ ORDER BY
 	for rows.Next() {
 		col = pgColumn{}
 		var descr sql.NullString
-		err = rows.Scan(&col.name, &col.defaultValue, &col.isNullable, &col.dataType, &col.characterMaxLen, &descr)
+		err = rows.Scan(&col.name, &col.defaultValue, &col.isNullable, &col.dataType, &col.characterMaxLen, &col.isIdentity, &descr)
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
@@ -605,7 +607,7 @@ func (m *DB) getColumnDescription(table pgTable, column pgColumn, isPk bool, isU
 	m.processTypeInfo(table.name, column, &cd)
 
 	// treat auto incrementing values as id values
-	cd.IsId = column.defaultValue.Valid && strings.Contains(column.defaultValue.String, "nextval")
+	cd.IsId = column.isIdentity == "YES" || (column.defaultValue.Valid && strings.Contains(column.defaultValue.String, "nextval"))
 	cd.IsPk = isPk
 	cd.IsNullable = column.isNullable == "YES"
 	cd.IsUnique = isUnique
