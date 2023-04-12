@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
+	"github.com/goradd/goradd/pkg/reflect"
 	time2 "github.com/goradd/goradd/pkg/time"
 	"html"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/goradd/goradd/pkg/base"
@@ -716,6 +718,7 @@ func (c *ColumnBase) ApplyOptions(ctx context.Context, parent TableI, opt Column
 
 // ApplyFormat is used by table columns to apply the given fmt.Sprintf and time.Format strings to the data.
 // It is exported to allow custom cell Texter objects to use it.
+// For slice data, the format is applied to each item in the slice and each item is separated with a comma.
 func (c *ColumnBase) ApplyFormat(data interface{}) string {
 	var out string
 
@@ -754,9 +757,22 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 		return ""
 	default:
 		if c.format == "" {
-			out = fmt.Sprint(d)
+			if reflect.IsSlice(d) {
+				return reflect.JoinStringers(d, ", ")
+			} else {
+				out = fmt.Sprint(d)
+			}
 		} else {
-			out = fmt.Sprintf(c.format, d)
+			if reflect.IsSlice(d) {
+				s := reflect.InterfaceSlice(d)
+				var items []string
+				for _, i := range s {
+					items = append(items, fmt.Sprintf(c.format, i))
+				}
+				return strings.Join(items, ", ")
+			} else {
+				out = fmt.Sprintf(c.format, d)
+			}
 		}
 	}
 	return out
