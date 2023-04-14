@@ -14,14 +14,14 @@ type PersonWithLock struct {
 	personWithLockBase
 }
 
-// Create a new PersonWithLock object and initialize to default values.
+// NewPersonWithLock creates a new PersonWithLock object and initializes it to default values.
 func NewPersonWithLock() *PersonWithLock {
 	o := new(PersonWithLock)
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a PersonWithLock database object to default values.
+// Initialize will initialize or re-initialize a PersonWithLock database object to default values.
 func (o *PersonWithLock) Initialize() {
 	o.personWithLockBase.Initialize()
 	// Add your own initializations here

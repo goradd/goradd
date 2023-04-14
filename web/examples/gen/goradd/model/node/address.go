@@ -9,41 +9,40 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type loginNode struct {
+type addressNode struct {
 	query.ReferenceNodeI
 }
 
-func Login() *loginNode {
-	n := loginNode{
-		query.NewTableNode("goradd", "login", "Login"),
+func Address() *addressNode {
+	n := addressNode{
+		query.NewTableNode("goradd", "public.address", "Address"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
 }
 
-func (n *loginNode) SelectNodes_() (nodes []*query.ColumnNode) {
+func (n *addressNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.PersonID())
-	nodes = append(nodes, n.Username())
-	nodes = append(nodes, n.Password())
-	nodes = append(nodes, n.IsEnabled())
+	nodes = append(nodes, n.Street())
+	nodes = append(nodes, n.City())
 	return nodes
 }
-func (n *loginNode) PrimaryKeyNode() *query.ColumnNode {
+func (n *addressNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
-func (n *loginNode) EmbeddedNode_() query.NodeI {
+func (n *addressNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
-func (n *loginNode) Copy_() query.NodeI {
-	return &loginNode{query.CopyNode(n.ReferenceNodeI)}
+func (n *addressNode) Copy_() query.NodeI {
+	return &addressNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 // ID represents the id column in the database.
-func (n *loginNode) ID() *query.ColumnNode {
+func (n *addressNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
+		"public.address",
 		"id",
 		"ID",
 		query.ColTypeString,
@@ -54,10 +53,10 @@ func (n *loginNode) ID() *query.ColumnNode {
 }
 
 // PersonID represents the person_id column in the database.
-func (n *loginNode) PersonID() *query.ColumnNode {
+func (n *addressNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
+		"public.address",
 		"person_id",
 		"PersonID",
 		query.ColTypeString,
@@ -68,15 +67,15 @@ func (n *loginNode) PersonID() *query.ColumnNode {
 }
 
 // Person represents the link to the Person object.
-func (n *loginNode) Person() *personNode {
+func (n *addressNode) Person() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
 			"goradd",
-			"login",
+			"public.address",
 			"person_id",
 			"PersonID",
 			"Person",
-			"person",
+			"public.person",
 			"id",
 			false,
 			query.ColTypeString,
@@ -86,13 +85,13 @@ func (n *loginNode) Person() *personNode {
 	return cn
 }
 
-// Username represents the username column in the database.
-func (n *loginNode) Username() *query.ColumnNode {
+// Street represents the street column in the database.
+func (n *addressNode) Street() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
-		"username",
-		"Username",
+		"public.address",
+		"street",
+		"Street",
 		query.ColTypeString,
 		false,
 	)
@@ -100,13 +99,13 @@ func (n *loginNode) Username() *query.ColumnNode {
 	return cn
 }
 
-// Password represents the password column in the database.
-func (n *loginNode) Password() *query.ColumnNode {
+// City represents the city column in the database.
+func (n *addressNode) City() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
-		"password",
-		"Password",
+		"public.address",
+		"city",
+		"City",
 		query.ColTypeString,
 		false,
 	)
@@ -114,29 +113,15 @@ func (n *loginNode) Password() *query.ColumnNode {
 	return cn
 }
 
-// IsEnabled represents the is_enabled column in the database.
-func (n *loginNode) IsEnabled() *query.ColumnNode {
-	cn := query.NewColumnNode(
-		"goradd",
-		"login",
-		"is_enabled",
-		"IsEnabled",
-		query.ColTypeBool,
-		false,
-	)
-	query.SetParentNode(cn, n)
-	return cn
-}
-
-type loginNodeEncoded struct {
+type addressNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
-func (n *loginNode) GobEncode() (data []byte, err error) {
+func (n *addressNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
-	s := loginNodeEncoded{
+	s := addressNodeEncoded{
 		RefNode: n.ReferenceNodeI,
 	}
 
@@ -147,11 +132,11 @@ func (n *loginNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-func (n *loginNode) GobDecode(data []byte) (err error) {
+func (n *addressNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
-	var s loginNodeEncoded
+	var s addressNodeEncoded
 	if err = dec.Decode(&s); err != nil {
 		panic(err)
 	}
@@ -161,5 +146,5 @@ func (n *loginNode) GobDecode(data []byte) (err error) {
 }
 
 func init() {
-	gob.RegisterName("loginNode2", &loginNode{})
+	gob.RegisterName("addressNode2", &addressNode{})
 }

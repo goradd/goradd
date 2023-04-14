@@ -34,10 +34,10 @@ func (n *personTypeNode) ID() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"person_type",
+		"public.person_type",
 		"id",
 		"ID",
-		query.ColTypeUnsigned,
+		query.ColTypeInteger,
 		true,
 	)
 	query.SetParentNode(cn, n)
@@ -47,7 +47,7 @@ func (n *personTypeNode) Name() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"person_type",
+		"public.person_type",
 		"name",
 		"Name",
 		query.ColTypeString,

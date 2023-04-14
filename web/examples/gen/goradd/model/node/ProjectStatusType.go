@@ -37,10 +37,10 @@ func (n *projectStatusTypeNode) ID() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_type",
 		"id",
 		"ID",
-		query.ColTypeUnsigned,
+		query.ColTypeInteger,
 		true,
 	)
 	query.SetParentNode(cn, n)
@@ -50,7 +50,7 @@ func (n *projectStatusTypeNode) Name() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_type",
 		"name",
 		"Name",
 		query.ColTypeString,
@@ -63,7 +63,7 @@ func (n *projectStatusTypeNode) Description() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_type",
 		"description",
 		"Description",
 		query.ColTypeString,
@@ -76,7 +76,7 @@ func (n *projectStatusTypeNode) Guidelines() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_type",
 		"guidelines",
 		"Guidelines",
 		query.ColTypeString,
@@ -89,7 +89,7 @@ func (n *projectStatusTypeNode) IsActive() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_type",
 		"is_active",
 		"IsActive",
 		query.ColTypeBool,

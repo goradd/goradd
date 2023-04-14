@@ -14,14 +14,14 @@ type EmployeeInfo struct {
 	employeeInfoBase
 }
 
-// Create a new EmployeeInfo object and initialize to default values.
+// NewEmployeeInfo creates a new EmployeeInfo object and initializes it to default values.
 func NewEmployeeInfo() *EmployeeInfo {
 	o := new(EmployeeInfo)
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a EmployeeInfo database object to default values.
+// Initialize will initialize or re-initialize a EmployeeInfo database object to default values.
 func (o *EmployeeInfo) Initialize() {
 	o.employeeInfoBase.Initialize()
 	// Add your own initializations here

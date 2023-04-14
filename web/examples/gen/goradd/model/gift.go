@@ -13,14 +13,14 @@ type Gift struct {
 	giftBase
 }
 
-// Create a new Gift object and initialize to default values.
+// NewGift creates a new Gift object and initializes it to default values.
 func NewGift() *Gift {
 	o := new(Gift)
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a Gift database object to default values.
+// Initialize will initialize or re-initialize a Gift database object to default values.
 func (o *Gift) Initialize() {
 	o.giftBase.Initialize()
 	// Add your own initializations here

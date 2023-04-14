@@ -14,14 +14,14 @@ type Address struct {
 	addressBase
 }
 
-// Create a new Address object and initialize to default values.
+// NewAddress creates a new Address object and initializes it to default values.
 func NewAddress() *Address {
 	o := new(Address)
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a Address database object to default values.
+// Initialize will initialize or re-initialize a Address database object to default values.
 func (o *Address) Initialize() {
 	o.addressBase.Initialize()
 	// Add your own initializations here

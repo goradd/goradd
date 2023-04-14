@@ -31,7 +31,7 @@ type projectBase struct {
 	numIsValid bool
 	numIsDirty bool
 
-	statusTypeID        uint
+	statusTypeID        int
 	statusTypeIDIsValid bool
 	statusTypeIDIsDirty bool
 
@@ -147,8 +147,8 @@ const (
 func (o *projectBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = false
-	o.idIsDirty = false
+	o.idIsValid = true
+	o.idIsDirty = true
 
 	o.num = 0
 	o.numIsValid = false
@@ -624,8 +624,8 @@ func (o *projectBase) StatusType() ProjectStatusType {
 }
 
 func (o *projectBase) SetStatusType(v ProjectStatusType) {
-	if o.statusTypeID != uint(v) {
-		o.statusTypeID = uint(v)
+	if o.statusTypeID != int(v) {
+		o.statusTypeID = int(v)
 		o.statusTypeIDIsDirty = true
 		o.statusTypeIDIsValid = true
 	}
@@ -1018,7 +1018,7 @@ func (b *ProjectsBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *ProjectsBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "project")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.project")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -1049,7 +1049,7 @@ func CountProjectByNum(ctx context.Context, num int) uint {
 	return queryProjects(ctx).Where(Equal(node.Project().Num(), num)).Count(false)
 }
 
-func CountProjectByStatusTypeID(ctx context.Context, statusTypeID uint) uint {
+func CountProjectByStatusTypeID(ctx context.Context, statusTypeID int) uint {
 	return queryProjects(ctx).Where(Equal(node.Project().StatusTypeID(), statusTypeID)).Count(false)
 }
 
@@ -1111,7 +1111,7 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 	}
 
 	if v, ok := m["status_type_id"]; ok && v != nil {
-		if o.statusTypeID, ok = v.(uint); ok {
+		if o.statusTypeID, ok = v.(int); ok {
 			o.statusTypeIDIsValid = true
 			o.statusTypeIDIsDirty = false
 		} else {
@@ -1368,7 +1368,7 @@ func (o *projectBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "project", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "public.project", modifiedFields, "id", o._originalPK)
 		}
 
 		if o.oMilestonesIsDirty {
@@ -1412,7 +1412,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"related_project_assn",
 					"parent_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"child_id",
 					pks)
 			}
@@ -1432,7 +1432,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"related_project_assn",
 					"child_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"parent_id",
 					pks)
 			}
@@ -1452,7 +1452,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"team_member_project_assn",
 					"project_id",
 					o.PrimaryKey(),
-					"person",
+					"public.person",
 					"team_member_id",
 					pks)
 			}
@@ -1461,7 +1461,7 @@ func (o *projectBase) update(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "project", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.project", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -1488,7 +1488,7 @@ func (o *projectBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "project", m)
+		id := d.Insert(ctx, "public.project", m)
 		o.id = id
 		o._originalPK = id
 
@@ -1513,7 +1513,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"related_project_assn",
 					"parent_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"child_id",
 					pks)
 			}
@@ -1531,7 +1531,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"related_project_assn",
 					"child_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"parent_id",
 					pks)
 			}
@@ -1549,7 +1549,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"team_member_project_assn",
 					"project_id",
 					o.PrimaryKey(),
-					"person",
+					"public.person",
 					"team_member_id",
 					pks)
 			}
@@ -1558,7 +1558,7 @@ func (o *projectBase) insert(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "project", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.project", o.PrimaryKey())
 }
 
 func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1723,21 +1723,19 @@ func (o *projectBase) Delete(ctx context.Context) {
 	db.ExecuteTransaction(ctx, d, func() {
 
 		{
-			objs := QueryMilestones(ctx).
+			c := QueryMilestones(ctx).
 				Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
-				Select(node.Milestone().PrimaryKeyNode()).
-				Load()
-			for _, obj := range objs {
-				obj.Delete(ctx)
+				Count(false)
+			if c > 0 {
+				panic("Cannot delete a record that has restricted foreign keys pointing to it.")
 			}
-			o.oMilestones = nil
 		}
 
 		d.Associate(ctx,
 			"related_project_assn",
 			"parent_id",
 			o.PrimaryKey(),
-			"project",
+			"public.project",
 			"child_id",
 			nil)
 
@@ -1745,7 +1743,7 @@ func (o *projectBase) Delete(ctx context.Context) {
 			"related_project_assn",
 			"child_id",
 			o.PrimaryKey(),
-			"project",
+			"public.project",
 			"parent_id",
 			nil)
 
@@ -1753,13 +1751,13 @@ func (o *projectBase) Delete(ctx context.Context) {
 			"team_member_project_assn",
 			"project_id",
 			o.PrimaryKey(),
-			"person",
+			"public.person",
 			"team_member_id",
 			nil)
 
-		d.Delete(ctx, "project", "id", o.id)
+		d.Delete(ctx, "public.project", "id", o.id)
 	})
-	broadcast.Delete(ctx, "goradd", "project", fmt.Sprint(o.id))
+	broadcast.Delete(ctx, "goradd", "public.project", fmt.Sprint(o.id))
 }
 
 // deleteProject deletes the associated record from the database.
@@ -2447,7 +2445,7 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 
 //   "num" - int
 
-//   "statusTypeID" - uint
+//   "statusTypeID" - int
 
 //   "managerID" - string, nullable
 

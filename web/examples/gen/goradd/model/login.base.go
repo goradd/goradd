@@ -58,7 +58,7 @@ const (
 	LoginPersonIDDefault  = ""
 	LoginUsernameDefault  = ""
 	LoginPasswordDefault  = ""
-	LoginIsEnabledDefault = true
+	LoginIsEnabledDefault = false
 )
 
 const (
@@ -79,8 +79,8 @@ const (
 func (o *loginBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = false
-	o.idIsDirty = false
+	o.idIsValid = true
+	o.idIsDirty = true
 
 	o.personID = ""
 	o.personIDIsNull = true
@@ -96,7 +96,7 @@ func (o *loginBase) Initialize() {
 	o.passwordIsValid = true
 	o.passwordIsDirty = true
 
-	o.isEnabled = true
+	o.isEnabled = false
 	o.isEnabledIsValid = true
 	o.isEnabledIsDirty = true
 
@@ -565,7 +565,7 @@ func (b *LoginsBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *LoginsBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "login")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.login")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -695,7 +695,7 @@ func (o *loginBase) load(m map[string]interface{}, objThis *Login, objParent int
 		}
 	} else {
 		o.isEnabledIsValid = false
-		o.isEnabled = true
+		o.isEnabled = false
 	}
 
 	if v, ok := m["aliases_"]; ok {
@@ -732,13 +732,13 @@ func (o *loginBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "login", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "public.login", modifiedFields, "id", o._originalPK)
 		}
 
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "login", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.login", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -757,14 +757,14 @@ func (o *loginBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "login", m)
+		id := d.Insert(ctx, "public.login", m)
 		o.id = id
 		o._originalPK = id
 
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "login", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.login", o.PrimaryKey())
 }
 
 func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
@@ -844,15 +844,15 @@ func (o *loginBase) Delete(ctx context.Context) {
 		panic("Cannot delete a record that has no primary key value.")
 	}
 	d := Database()
-	d.Delete(ctx, "login", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "login", fmt.Sprint(o.id))
+	d.Delete(ctx, "public.login", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "public.login", fmt.Sprint(o.id))
 }
 
 // deleteLogin deletes the associated record from the database.
 func deleteLogin(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "login", "id", pk)
-	broadcast.Delete(ctx, "goradd", "login", fmt.Sprint(pk))
+	d.Delete(ctx, "public.login", "id", pk)
+	broadcast.Delete(ctx, "goradd", "public.login", fmt.Sprint(pk))
 }
 
 func (o *loginBase) resetDirtyStatus() {

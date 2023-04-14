@@ -13,14 +13,14 @@ type Project struct {
 	projectBase
 }
 
-// Create a new Project object and initialize to default values.
+// NewProject creates a new Project object and initializes it to default values.
 func NewProject() *Project {
 	o := new(Project)
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a Project database object to default values.
+// Initialize will initialize or re-initialize a Project database object to default values.
 func (o *Project) Initialize() {
 	o.projectBase.Initialize()
 	// Add your own initializations here
