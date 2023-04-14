@@ -57,3 +57,51 @@ func TestSnakeToKebab(t *testing.T) {
 		})
 	}
 }
+
+func ExampleCamelToKebab() {
+	a := CamelToKebab("AbcDef")
+	fmt.Println(a)
+	b := CamelToKebab("AbcDEFghi")
+	fmt.Println(b)
+	//Output: abc-def
+	//abc-de-fghi
+}
+
+func ExampleCamelToSnake() {
+	a := CamelToSnake("AbcDef")
+	fmt.Println(a)
+	b := CamelToSnake("AbcDEFghi")
+	fmt.Println(b)
+	//Output: abc_def
+	//abc_de_fghi
+}
+
+func TestCamelToKebab(t *testing.T) {
+	tests := []struct {
+		name string
+		s    string
+		want string
+	}{
+		{"empty", "", ""},
+		{"a", "a", "a"},
+		{"A", "A", "a"},
+		{"ab", "ab", "ab"},
+		{"AB", "AB", "ab"},
+		{"Ab", "Ab", "ab"},
+		{"aB", "aB", "a-b"},
+		{"Abc", "Abc", "abc"},
+		{"AbC", "AbC", "ab-c"},
+		{"ABc", "ABc", "a-bc"},
+		{"a1b", "a1b", "ab"},
+		{"ABC", "ABC", "abc"},
+		{"ABCd", "ABCd", "ab-cd"},
+		{"AbCdE", "ABCdE", "ab-cd-e"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CamelToKebab(tt.s); got != tt.want {
+				t.Errorf("SnakeToKebab() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
