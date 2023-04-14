@@ -6,8 +6,8 @@
 // Override to change what records get displayed.
 func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
     switch s.ID() {
-    case p.ID() + "-list": // the table
-        t := table.GetPagedTable(p, p.ID() + "-list")
+    case {{= t.LcGoName }}ListID: // the table
+        t := p.listTable()
         if t.HasDataPagers() {
             t.SetTotalItems(p.BuildQuery(ctx).Count(false))
         }
@@ -40,7 +40,7 @@ func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural
 {{if}}
 
 	if {{= t.LcGoName }}ListShowFilterBar {
-        filterText := textbox.GetTextboxI(p, p.ID() + "-filterText").Text()
+        filterText := p.filterText().Text()
 
 	    q = q.Where(op.Or(
 {{for _,col := range t.Columns }}

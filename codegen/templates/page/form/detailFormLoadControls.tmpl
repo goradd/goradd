@@ -6,8 +6,7 @@
 // It is the place to load up the form controls with data after the form has been created.
 func (f *{{= formName }}) LoadControls(ctx context.Context) {
     f.FormBase.LoadControls(ctx) // Load site-wide controls
-
-    id := session.GetString(ctx, "{{= t.LcGoName }}DetailID")
+    id := session.GetString(ctx, panel.{{= t.GoName }}ListPanelDetailSessionID)
 
     if id == "" {
         // This is a programming error. Perhaps you inadvertently deleted the "{{= t.LcGoName }}DetailID" session variable?

@@ -7,10 +7,10 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 	if {{= t.LcGoName }}ListShowFilterBar {
         p.AddControls(ctx,
             {{= ctrlPkg }}.PanelCreator{
-                ID: p.ID() + "-filterPanel",
+                ID: {{= t.LcGoName }}FilterPanelID,
                 Children: {{= ctrlPkg }}.Children(
                     textbox.TextboxCreator{
-                        ID:          p.ID() + "-filterText",
+                        ID:          {{= t.LcGoName }}FilterTextID,
                         Placeholder: p.GT("Search..."),
                         Type:        textbox.SearchType,
                         ControlOptions: page.ControlOptions{
@@ -27,14 +27,14 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     var caption interface{}
     if {{= t.LcGoName }}ListShowDataPager {
         caption = {{= codegen.ObjectType(generator.DefaultDataPagerCreator) }} {
-                                  ID:            p.ID() + "-pager",
-                                  PagedControl:  p.ID() + "-list",
+                                  ID:            {{= t.LcGoName }}PagerID,
+                                  PagedControl:  {{= t.LcGoName }}ListID,
                               }
     }
 
 	p.AddControls(ctx,
         table.PagedTableCreator{
-            ID:  p.ID() + "-list",
+            ID:  p.ID() + {{= t.LcGoName }}ListID,
             HeaderRowCount: 0,
             DataProviderID: p.ID(),
             RowStylerID: p.ID(),
@@ -48,10 +48,10 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
             Columns: p.ColumnCreators(ctx),
         },
 		{{= ctrlPkg }}.PanelCreator {
-			ID: p.ID()+"-buttonPanel",
+			ID: {{= t.LcGoName }}ButtonPanelID,
 			Children:{{= ctrlPkg }}.Children(
 				{{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
-					ID: p.ID()+"-newButton",
+					ID: {{= t.LcGoName }}NewButtonID,
 					Text: p.GT("New"),
 					OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),
 				},

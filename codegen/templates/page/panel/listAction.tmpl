@@ -4,7 +4,7 @@
 func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case {{= lcPanelName }}Search:
-		p.Page().GetControl(p.ID() + "-list").Refresh() // redraw the table
+		p.listTable().Refresh() // redraw the table
 	case {{= lcPanelName }}RowClick: // edit
 		id := a.ActionValueString()
 	    if id != "" {
@@ -38,9 +38,9 @@ func (p *{{= panelName }}) EditItem(ctx context.Context, pk string) {
 // EditItemWithForm will go to the corresponding edit form to edit the item
 func (p *{{= panelName }}) EditItemWithForm(ctx context.Context, pk string) {
     if pk == "" {
-        session.Remove(ctx, "{{= t.LcGoName }}EditID")
+        session.Remove(ctx, {{= panelName }}EditSessionID)
     } else {
-        session.SetString(ctx, "{{= t.LcGoName }}EditID", pk)
+        session.SetString(ctx, {{= panelName }}EditSessionID, pk)
     }
     // This points to the default edit form path created by the templates. If you change the URL there, also change this.
 	p.ParentForm().ChangeLocation("{{= editFormPath }}")
@@ -66,7 +66,7 @@ func (p *{{= panelName }}) EditItemWithDialog(ctx context.Context, pk string) {
 func (p *{{= panelName }}) ZoomItem(ctx context.Context, id string) {
     // This points to the default detail form path created by the templates. If you change the URL there, also change this.
     if id != "" {
-        session.SetString(ctx, "{{= t.LcGoName }}DetailID", id)
+        session.SetString(ctx, {{= panelName }}DetailSessionID, id)
     }
 	p.ParentForm().ChangeLocation("{{= detailFormPath }}")
 }

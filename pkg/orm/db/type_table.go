@@ -2,6 +2,7 @@ package db
 
 import (
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/kenshaw/snaker"
 )
 
 // TypeTable describes a type table, which essentially defines an enumerated type.
@@ -54,4 +55,8 @@ func (tt *TypeTable) FieldGoColumnType(i int) GoColumnType {
 	fn := tt.FieldNames[i]
 	ft := tt.FieldTypes[fn]
 	return ft
+}
+
+func (tt *TypeTable) FileName() string {
+	return snaker.CamelToSnake(tt.GoName)
 }

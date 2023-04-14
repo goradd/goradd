@@ -70,8 +70,15 @@ func (t *Table) GetColumn(name string) *Column {
 	return t.columnMap[name]
 }
 
+// DefaultHtmlID is the default id of corresponding form object when used in generated HTML.
 func (t *Table) DefaultHtmlID() string {
 	defaultID := snaker.CamelToSnake(t.GoName)
 	defaultID = strings2.SnakeToKebab(defaultID)
 	return defaultID
+}
+
+// FileName is the base name of generated file names that correspond to this database table.
+// Typically, Go files are lower case snake case by convention.
+func (t *Table) FileName() string {
+	return snaker.CamelToSnake(t.GoName)
 }

@@ -31,7 +31,7 @@ func (n *TypeTableTemplate) FileName(key string, tt generator.TypeTableType) str
     } else {
         targetDir = config.ProjectDir() + "/gen"
     }
-	return targetDir + "/" + key + "/model/" + tt.GoName + ".base.go"
+	return targetDir + "/" + key + "/model/" + tt.FileName() + ".base.go"
 }
 
 func (n *TypeTableTemplate) GenerateTypeTable(codegen generator.CodeGenerator, dd *db.Model, tt generator.TypeTableType, _w io.Writer) (err error) {
