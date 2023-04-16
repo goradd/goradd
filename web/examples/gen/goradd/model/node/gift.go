@@ -15,7 +15,7 @@ type giftNode struct {
 
 func Gift() *giftNode {
 	n := giftNode{
-		query.NewTableNode("goradd", "public.gift", "Gift"),
+		query.NewTableNode("goradd", "gift", "Gift"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
@@ -40,7 +40,7 @@ func (n *giftNode) Copy_() query.NodeI {
 func (n *giftNode) Number() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.gift",
+		"gift",
 		"number",
 		"Number",
 		query.ColTypeInteger,
@@ -54,7 +54,7 @@ func (n *giftNode) Number() *query.ColumnNode {
 func (n *giftNode) Name() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.gift",
+		"gift",
 		"name",
 		"Name",
 		query.ColTypeString,

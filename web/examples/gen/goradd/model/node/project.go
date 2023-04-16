@@ -15,7 +15,7 @@ type projectNode struct {
 
 func Project() *projectNode {
 	n := projectNode{
-		query.NewTableNode("goradd", "public.project", "Project"),
+		query.NewTableNode("goradd", "project", "Project"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
@@ -48,7 +48,7 @@ func (n *projectNode) Copy_() query.NodeI {
 func (n *projectNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"id",
 		"ID",
 		query.ColTypeString,
@@ -62,7 +62,7 @@ func (n *projectNode) ID() *query.ColumnNode {
 func (n *projectNode) Num() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"num",
 		"Num",
 		query.ColTypeInteger,
@@ -76,10 +76,10 @@ func (n *projectNode) Num() *query.ColumnNode {
 func (n *projectNode) StatusTypeID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"status_type_id",
 		"StatusTypeID",
-		query.ColTypeInteger,
+		query.ColTypeUnsigned,
 		false,
 	)
 	query.SetParentNode(cn, n)
@@ -91,14 +91,14 @@ func (n *projectNode) StatusType() *projectStatusTypeNode {
 	cn := &projectStatusTypeNode{
 		query.NewReferenceNode(
 			"goradd",
-			"public.project",
+			"project",
 			"status_type_id",
 			"StatusTypeID",
 			"StatusType",
-			"public.project_status_type",
+			"project_status_type",
 			"id",
 			true,
-			query.ColTypeInteger,
+			query.ColTypeUnsigned,
 		),
 	}
 	query.SetParentNode(cn, n)
@@ -109,7 +109,7 @@ func (n *projectNode) StatusType() *projectStatusTypeNode {
 func (n *projectNode) ManagerID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"manager_id",
 		"ManagerID",
 		query.ColTypeString,
@@ -124,11 +124,11 @@ func (n *projectNode) Manager() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
 			"goradd",
-			"public.project",
+			"project",
 			"manager_id",
 			"ManagerID",
 			"Manager",
-			"public.person",
+			"person",
 			"id",
 			false,
 			query.ColTypeString,
@@ -142,7 +142,7 @@ func (n *projectNode) Manager() *personNode {
 func (n *projectNode) Name() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"name",
 		"Name",
 		query.ColTypeString,
@@ -156,7 +156,7 @@ func (n *projectNode) Name() *query.ColumnNode {
 func (n *projectNode) Description() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"description",
 		"Description",
 		query.ColTypeString,
@@ -170,7 +170,7 @@ func (n *projectNode) Description() *query.ColumnNode {
 func (n *projectNode) StartDate() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"start_date",
 		"StartDate",
 		query.ColTypeTime,
@@ -184,7 +184,7 @@ func (n *projectNode) StartDate() *query.ColumnNode {
 func (n *projectNode) EndDate() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"end_date",
 		"EndDate",
 		query.ColTypeTime,
@@ -198,7 +198,7 @@ func (n *projectNode) EndDate() *query.ColumnNode {
 func (n *projectNode) Budget() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"budget",
 		"Budget",
 		query.ColTypeString,
@@ -212,7 +212,7 @@ func (n *projectNode) Budget() *query.ColumnNode {
 func (n *projectNode) Spent() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.project",
+		"project",
 		"spent",
 		"Spent",
 		query.ColTypeString,
@@ -230,7 +230,7 @@ func (n *projectNode) ChildrenAsParent() *projectNode {
 			"related_project_assn",
 			"parent_id",
 			"ChildrenAsParent",
-			"public.project",
+			"project",
 			"child_id",
 			"id",
 			false,
@@ -249,7 +249,7 @@ func (n *projectNode) ParentsAsChild() *projectNode {
 			"related_project_assn",
 			"child_id",
 			"ParentsAsChild",
-			"public.project",
+			"project",
 			"parent_id",
 			"id",
 			false,
@@ -268,7 +268,7 @@ func (n *projectNode) TeamMembers() *personNode {
 			"team_member_project_assn",
 			"project_id",
 			"TeamMembers",
-			"public.person",
+			"person",
 			"team_member_id",
 			"id",
 			false,
@@ -280,17 +280,17 @@ func (n *projectNode) TeamMembers() *personNode {
 }
 
 // Milestones represents the many-to-one relationship formed by the reverse reference from the
-// milestones column in the public.project table.
+// milestones column in the project table.
 func (n *projectNode) Milestones() *milestoneNode {
 
 	cn := &milestoneNode{
 		query.NewReverseReferenceNode(
 			"goradd",
-			"public.project",
+			"project",
 			"id",
 			"milestones",
 			"Milestones",
-			"public.milestone",
+			"milestone",
 			"project_id",
 			true,
 		),

@@ -139,7 +139,7 @@ func testTableProxyCol(t *browsertest.TestForm) {
 
 }
 
-// PanelCreator creates a div control with child controls.
+// ProjectPanelCreator creates a div control with child controls.
 // Pass it to AddControls or as a child of a parent control.
 type ProjectPanelCreator struct {
 }
