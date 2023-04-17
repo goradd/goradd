@@ -6,4 +6,13 @@ func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
 	return c.Page().GetControl(id).(*{{= panelName }})
 }
 
+func (p *{{= panelName }}) listTable() *table.PagedTable {
+    return table.GetPagedTable(p, {{= t.LcGoName }}ListID)
+}
+
+func (p *{{= panelName }}) filterText() *textbox.Textbox {
+    return textbox.GetTextbox(p, {{= t.LcGoName }}FilterTextID)
+}
+
+
 }}

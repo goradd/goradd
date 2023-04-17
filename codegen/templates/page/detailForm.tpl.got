@@ -26,7 +26,7 @@ type DetailFormTemplate struct {
 }
 
 func (n *DetailFormTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/form/" + t.DbName + "_detail_form.go"
+	return n.TargetDir + "/" + key + "/form/" + t.FileName() + "_detail_form.go"
 }
 
 func (n *DetailFormTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Model, t generator.TableType,  _w io.Writer) (err error) {

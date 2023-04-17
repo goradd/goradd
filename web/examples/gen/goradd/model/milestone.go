@@ -13,14 +13,14 @@ type Milestone struct {
 	milestoneBase
 }
 
-// Create a new Milestone object and initialize to default values.
+// NewMilestone creates a new Milestone object and initializes it to default values.
 func NewMilestone() *Milestone {
 	o := new(Milestone)
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a Milestone database object to default values.
+// Initialize will initialize or re-initialize a Milestone database object to default values.
 func (o *Milestone) Initialize() {
 	o.milestoneBase.Initialize()
 	// Add your own initializations here

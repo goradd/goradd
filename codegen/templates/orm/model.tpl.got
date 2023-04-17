@@ -29,7 +29,7 @@ func (n *ModelTemplate) FileName(key string, t generator.TableType) string {
     } else {
         targetDir = config.ProjectDir() + "/gen"
     }
-	return targetDir + "/" + key + "/model/" + t.GoName + ".go"
+	return targetDir + "/" + key + "/model/" + t.FileName() + ".go"
 }
 
 func (n *ModelTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Model, t generator.TableType, _w io.Writer) (err error) {

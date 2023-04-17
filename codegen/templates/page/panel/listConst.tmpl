@@ -1,0 +1,55 @@
+// listConst.tmpl
+
+{{
+
+// Session IDs
+const (
+    {{= panelName }}DetailSessionID = "{{= t.GoName }}DetailSessionID"
+    {{= panelName }}EditSessionID = "{{= t.GoName }}EditSessionID"
+)
+
+const (
+	{{= lcPanelName }}RowClick = iota + 1000
+	{{= lcPanelName }}NewClick
+	{{= lcPanelName }}Search
+	{{= lcPanelName }}ButtonClick
+)
+
+// {{= t.LcGoName }}ListEditWithDialog controls whether the edit panel is displayed in a popup dialog,
+// or in a separate edit page
+const {{= t.LcGoName }}ListEditWithDialog = true
+
+// {{= t.LcGoName }}ListShowEditColumn controls whether an edit column is shown. If the column is shown, then
+// tapping the column will do the edit function, and tapping the rest of the row will go to
+// the detail view.
+const {{= t.LcGoName }}ListShowEditColumn = true
+
+// {{= t.LcGoName }}ListTapZoom controls whether tapping an item will zoom the item, as in,
+// go to the details screen.
+const {{= t.LcGoName }}ListTapZoom = true
+
+
+// {{= t.LcGoName }}ListShowDataPager sets whether to use a data pager or instead just show all items
+const {{= t.LcGoName }}ListShowDataPager = true
+
+// {{= t.LcGoName }}ListShowFilterBar sets whether to show the filter bar
+const {{= t.LcGoName }}ListShowFilterBar = true
+
+// sub-panel IDs
+const (
+    {{= t.LcGoName }}FilterPanelID = "{{= kebabPanelName}}-filter-panel"
+    {{= t.LcGoName }}FilterTextID = "{{= kebabPanelName}}-filter-text"
+    {{= t.LcGoName }}PagerID = "{{= kebabPanelName}}-pager"
+    {{= t.LcGoName }}ListID = "{{= kebabPanelName}}-list"
+    {{= t.LcGoName }}ButtonPanelID = "{{= kebabPanelName}}-button-panel"
+    {{= t.LcGoName }}NewButtonID = "{{= kebabPanelName}}-new-button"
+)
+
+// column IDs
+const (
+{{for _,col := range t.Columns }}
+     {{= lcPanelName }}{{= col.GoName }}ColID = "{{= strings2.CamelToKebab(col.GoName) }}-col"
+{{for}}
+)
+
+}}

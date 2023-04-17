@@ -7,7 +7,7 @@ func (p *{{= panelName }}) ColumnCreators(_ context.Context) []table.ColumnCreat
 	creators := []table.ColumnCreator {
 {{for _,col := range t.Columns }}
         column.NodeColumnCreator{
-            ID: "{{= strings2.SnakeToKebab(col.DbName) }}",
+            ID: {{= lcPanelName }}{{= col.GoName }}ColID,
 {{if col.IsReference() || col.IsType() }}
             Node: node.{{= t.GoName }}().{{= col.ReferenceFunction() }}(),
 {{else}}

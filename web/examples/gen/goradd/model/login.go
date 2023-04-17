@@ -14,14 +14,14 @@ type Login struct {
 	loginBase
 }
 
-// Create a new Login object and initialize to default values.
+// NewLogin creates a new Login object and initializes it to default values.
 func NewLogin() *Login {
 	o := new(Login)
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a Login database object to default values.
+// Initialize will initialize or re-initialize a Login database object to default values.
 func (o *Login) Initialize() {
 	o.loginBase.Initialize()
 	// Add your own initializations here

@@ -14,14 +14,14 @@ type Person struct {
 	personBase
 }
 
-// Create a new Person object and initialize to default values.
+// NewPerson creates a new Person object and initializes it to default values.
 func NewPerson() *Person {
 	o := new(Person)
 	o.Initialize()
 	return o
 }
 
-// Initialize or re-initialize a Person database object to default values.
+// Initialize will initialize or re-initialize a Person database object to default values.
 func (o *Person) Initialize() {
 	o.personBase.Initialize()
 	// Add your own initializations here

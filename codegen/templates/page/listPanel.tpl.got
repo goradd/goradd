@@ -25,7 +25,7 @@ type ListPanelTemplate struct {
 }
 
 func (n *ListPanelTemplate) FileName(key string, t generator.TableType) string {
-	return n.TargetDir + "/" + key + "/panel/" + t.DbName + "_list_panel.go"
+	return n.TargetDir + "/" + key + "/panel/" + t.FileName() + "_list_panel.go"
 }
 
 func (n *ListPanelTemplate) GenerateTable(codegen generator.CodeGenerator, dd *db.Model, t generator.TableType,  _w io.Writer) (err error) {
