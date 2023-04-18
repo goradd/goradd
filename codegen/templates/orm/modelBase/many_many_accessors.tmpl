@@ -62,6 +62,13 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context) {
 	}
 }
 
+// Count{{= ref.GoPlural }} counts the number of associated {{= ref.GoName }} objects in the database.
+func (o *{{privateName}}Base) Count{{= ref.GoPlural }}(ctx context.Context) int {
+	return int(Query{{= ref.AssociatedObjectTypes}}(ctx).
+		Where(op.Equal(node.{{= ref.AssociatedObjectType}}().{{= ref.MM.GoPlural}}(), o.PrimaryKey())).
+		Count(false))
+
+}
 
 
 }}
