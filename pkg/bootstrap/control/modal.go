@@ -416,7 +416,7 @@ func (c ModalCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 	return ctrl
 }
 
-// GetListGroup is a convenience method to return the control with the given id from the page.
+// GetModal is a convenience method to return the control with the given id from the page.
 func GetModal(c page.ControlI, id string) *Modal {
 	return c.Page().GetControl(id).(*Modal)
 }
