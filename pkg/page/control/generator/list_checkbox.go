@@ -80,6 +80,21 @@ func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDes
 	return ``
 }
 
+func (d CheckboxList) GenerateModifies(ref interface{}, desc *generator.ControlDescription) string {
+	/*	switch ref.(type) {
+		case *db.ReverseReference:
+			return `
+				var values []string
+				for _,obj := range objects {
+					values = append(values, fmt.Sprint(obj.PrimaryKey()))
+				}
+				ctrl.SetSelectedValues(values)`
+		case *db.ManyManyReference:
+			return `false`
+		}*/
+	return ``
+}
+
 func (d CheckboxList) GenerateProvider(ref interface{}, desc *generator.ControlDescription) string {
 	switch col := ref.(type) {
 	case *db.ReverseReference:

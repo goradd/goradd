@@ -24,6 +24,7 @@ type ControlGenerator interface {
 	GenerateCreator(ref interface{}, desc *ControlDescription) string
 	GenerateRefresh(ref interface{}, desc *ControlDescription) string
 	GenerateUpdate(ref interface{}, desc *ControlDescription) string
+	GenerateModifies(ref interface{}, desc *ControlDescription) string
 }
 
 type ProviderGenerator interface {

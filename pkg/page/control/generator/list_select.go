@@ -95,6 +95,10 @@ if sv == "" {
 	return s
 }
 
+func (d SelectList) GenerateModifies(ref interface{}, desc *generator.ControlDescription) string {
+	return `val != ctrl.Value()`
+}
+
 func (d SelectList) GenerateProvider(ref interface{}, desc *generator.ControlDescription) string {
 	col := ref.(*db.Column)
 	if col.ForeignKey.IsType {

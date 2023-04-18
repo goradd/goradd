@@ -64,3 +64,6 @@ func (d FloatTextbox) GenerateUpdate(ref interface{}, desc *generator.ControlDes
 		return `val := ctrl.Float64()`
 	}
 }
+func (d FloatTextbox) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return `val != ctrl.Value()`
+}

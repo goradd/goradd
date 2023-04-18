@@ -45,3 +45,7 @@ func (d PhoneTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 func (d PhoneTextbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Text()`
 }
+
+func (d PhoneTextbox) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return `val != ctrl.Value()`
+}

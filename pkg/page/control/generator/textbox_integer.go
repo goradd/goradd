@@ -70,3 +70,7 @@ func (d IntegerTextbox) GenerateUpdate(ref interface{}, desc *generator.ControlD
 	}
 	panic("not a compatible column type")
 }
+
+func (d IntegerTextbox) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return `val != ctrl.Value()`
+}

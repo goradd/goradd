@@ -39,3 +39,7 @@ func (d Span) GenerateRefresh(ref interface{}, desc *generator.ControlDescriptio
 func (d Span) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return ""
 }
+
+func (d Span) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return ""
+}

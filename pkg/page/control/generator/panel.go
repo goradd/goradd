@@ -39,3 +39,7 @@ func (d Panel) GenerateRefresh(ref interface{}, desc *generator.ControlDescripti
 func (d Panel) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return ""
 }
+
+func (d Panel) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return ""
+}

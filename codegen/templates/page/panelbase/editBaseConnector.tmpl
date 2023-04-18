@@ -8,12 +8,13 @@ for _,col := range t.Columns {
     if cd.Generator != nil {
         sRefresh := cd.Generator.GenerateRefresh(col, cd)
         sUpdate := cd.Generator.GenerateUpdate(col, cd)
-
+        sModifies := cd.Generator.GenerateModifies(col, cd)
 
 {{
 type {{= cd.Connector }}  struct {
 }
 
+// Refresh will copy the data value to its corresponding control
 func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
     if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
@@ -27,6 +28,7 @@ func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if}}
 }
 
+// Update will copy the control's value to its corresponding data field
 func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
@@ -39,6 +41,22 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
     }
 {{if}}
 }
+
+// Modifies returns true if the control's value does not match the corresponding data value
+func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) (modifies bool) {
+{{if sModifies != ""}}
+    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+{{if col.IsType() }}
+        val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().ID()
+{{else}}
+        val := data.(*model.{{= t.GoName }}).{{= col.GoName }}()
+{{if}}
+        modifies = {{= sModifies }}
+    }
+{{if}}
+    return
+}
+
 
 }}
 
@@ -71,12 +89,13 @@ for _,rr := range t.ReverseReferences {
     if cd.Generator != nil {
         sRefresh := cd.Generator.GenerateRefresh(rr, cd)
         sUpdate := cd.Generator.GenerateUpdate(rr, cd)
-
+        sModifies := cd.Generator.GenerateModifies(rr, cd)
 
 {{
 type {{= cd.Connector }}  struct {
 }
 
+// Refresh will copy the data value to its corresponding control
 func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
     if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
@@ -90,6 +109,7 @@ func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if}}
 }
 
+// Update will copy the control's value to its corresponding data field
 func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
@@ -97,6 +117,17 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
    }
 {{if}}
 }
+
+// Modifies returns true if the control's value does not match the corresponding data value
+func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) (modifies bool) {
+{{if sModifies != ""}}
+   if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+        modifies = {{= sModifies }}
+   }
+{{if}}
+    return
+}
+
 
 }}
 

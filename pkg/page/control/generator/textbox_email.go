@@ -45,3 +45,7 @@ func (d EmailTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 func (d EmailTextbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Text()`
 }
+
+func (d EmailTextbox) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return `val != ctrl.Text()`
+}

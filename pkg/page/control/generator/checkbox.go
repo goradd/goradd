@@ -42,3 +42,7 @@ func (d Checkbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescri
 func (d Checkbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Checked()`
 }
+
+func (d Checkbox) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return `val != ctrl.Checked()`
+}

@@ -93,8 +93,8 @@ func (d *TitleBar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	}
 	if d.HasCloseBox {
 
-		if _, err = io.WriteString(_w, `    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
+		if _, err = io.WriteString(_w, `    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true"></span>
     </button>
 `); err != nil {
 			return

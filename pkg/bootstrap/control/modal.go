@@ -240,6 +240,13 @@ func (m *Modal) SetButtonText(id string, text string) {
 	}
 }
 
+// MergeButtonAttributes merges the give attributes into the button's current attributes.
+func (m *Modal) MergeButtonAttributes(id string, a html5tag.Attributes) {
+	if ctrl := m.buttonBar.Child(m.ID() + "-btn-" + id); ctrl != nil {
+		ctrl.MergeAttributes(a)
+	}
+}
+
 // AddCloseButton adds a button to the list of buttons with the given label, but this button will trigger the DialogCloseEvent
 // instead of the DialogButtonEvent. The button will also close the dialog (by hiding it).
 func (m *Modal) AddCloseButton(label string, id string) {
