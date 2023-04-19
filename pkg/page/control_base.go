@@ -80,6 +80,8 @@ type DataConnector interface {
 	Refresh(i ControlI, model interface{})
 	// Update reads data from the control, and puts it into the model
 	Update(i ControlI, model interface{})
+	// Modifies returns true if the control has been changed such that it will modify its corresponding data
+	Modifies(i ControlI, model interface{}) bool
 }
 
 // DataLoader is an optional interface that DataConnectors can use if they need to load data from the database
@@ -136,6 +138,8 @@ type ControlI interface {
 	SetWidthStyle(w interface{}) ControlI
 	SetHeightStyle(w interface{}) ControlI
 	Attributes() html5tag.Attributes
+	MergeAttributes(a html5tag.Attributes) ControlI
+
 	SetDisplay(d string) ControlI
 	SetDisabled(d bool)
 	IsDisabled() bool
@@ -287,8 +291,8 @@ type ControlBase struct {
 
 	// internal status functions. Do not serialize.
 
-	// isModified will cause the control to redraw as part of the response.
-	isModified bool
+	// needsRefresh will cause the control to redraw as part of the response.
+	needsRefresh bool
 	// isRendering is true when we are in the middle of rendering the control.
 	isRendering bool
 	// wasRendered indicates that the page was drawn during the current response.
@@ -355,7 +359,7 @@ func (c *ControlBase) Init(parent ControlI, id string) {
 		c.id = c.page.GenerateControlID(id)
 	}
 	c.this().SetParent(parent)
-	c.isModified = true
+	c.needsRefresh = true
 }
 
 // this supports object-oriented features by giving easy access to the virtual function interface.
@@ -443,7 +447,7 @@ func (c *ControlBase) PutCustomScript(ctx context.Context, response *Response) {
 // NeedsRefresh returns true if the control needs to be completely redrawn. Generally you control
 // this by calling Refresh(), but subclasses can implement other ways of detecting this.
 func (c *ControlBase) NeedsRefresh() bool {
-	return c.isModified
+	return c.needsRefresh
 }
 
 // DrawAjax will be called by the framework during an Ajax rendering of the ControlBase. Every ControlBase gets called. Each ControlBase
@@ -498,7 +502,7 @@ func (c *ControlBase) DrawPostRender(ctx context.Context, w io.Writer) {
 	c.isRendering = false
 	c.wasRendered = true
 	c.isOnPage = true
-	c.isModified = false
+	c.needsRefresh = false
 	c.attributeScripts = nil // Entire control was redrawn, so don't need these
 	return
 }
@@ -893,7 +897,7 @@ func (c *ControlBase) Page() *Page {
 
 // Refresh will force the control to be completely redrawn on the next update.
 func (c *ControlBase) Refresh() {
-	c.isModified = true
+	c.needsRefresh = true
 }
 
 // SetIsRequired will set whether the control requires a value from the user. Setting it to true
@@ -1664,6 +1668,16 @@ func (c *ControlBase) UpdateData(data interface{}) {
 	}
 }
 
+// ModifiesData is called by forms to determine if the control has been changed such that it will modify its
+// corresponding data when UpdateData is called.
+// The default calls the data connector to do this.
+func (c *ControlBase) ModifiesData(data interface{}) bool {
+	if c.dataConnector != nil && c.IsOnPage() {
+		return c.dataConnector.Modifies(c.this(), data)
+	}
+	return false
+}
+
 // WatchDbTables will add the table nodes to the list of database tables that the control is watching.
 // When data in that table changes, the control is updated.
 // It also adds all the parents of those nodes.
@@ -1798,7 +1812,7 @@ func (c *ControlBase) Serialize(e Encoder) {
 		EventCounter:          c.eventCounter,
 		ShouldSaveState:       c.shouldSaveState,
 		ParentID:              c.parentId,
-		IsModified:            c.isModified,
+		IsModified:            c.needsRefresh,
 		DataConnector:         c.dataConnector,
 		WatchedKeys:           c.watchedKeys,
 	}
@@ -1853,7 +1867,7 @@ func (c *ControlBase) Deserialize(d Decoder) {
 	c.events = s.Events
 	c.eventCounter = s.EventCounter
 	c.shouldSaveState = s.ShouldSaveState
-	c.isModified = s.IsModified
+	c.needsRefresh = s.IsModified
 	c.dataConnector = s.DataConnector
 	c.watchedKeys = s.WatchedKeys
 

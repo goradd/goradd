@@ -10,7 +10,7 @@ func Load{{= t.GoName }}(ctx context.Context, primaryKey {{= t.PrimaryKeyColumn(
 	return query{{t.GoPlural}}(ctx).Where(Equal(node.{{t.GoName}}().{{t.PrimaryKeyColumn().GoName}}(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// Has{{= t.GoName }} returns true if a {{t.GoName}} with the give key exists database.
+// Has{{= t.GoName }} returns true if a {{t.GoName}} with the given key exists database.
 func Has{{= t.GoName }}(ctx context.Context, primaryKey {{= t.PrimaryKeyColumn().ColumnType.GoType() }}) bool {
     q := query{{t.GoPlural}}(ctx)
     q = q.Where(Equal(node.{{= t.GoName}}().{{= t.PrimaryKeyColumn().GoName }}(), primaryKey))

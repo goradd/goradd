@@ -45,3 +45,7 @@ func (d Textbox) GenerateRefresh(ref interface{}, desc *generator.ControlDescrip
 func (d Textbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Text()`
 }
+
+func (d Textbox) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return `val != ctrl.Text()`
+}

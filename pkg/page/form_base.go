@@ -198,7 +198,7 @@ func (f *FormBase) resetDrawingFlags() {
 	f.RangeSelfAndAllChildren(func(ctrl ControlI) {
 		c := ctrl.control()
 		c.wasRendered = false
-		c.isModified = false
+		c.needsRefresh = false
 	})
 }
 

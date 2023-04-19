@@ -137,6 +137,11 @@ func (p *DialogPanel) SetButtonText(id string, text string) {
 	p.getDialog().SetButtonText(id, text)
 }
 
+// MergeButtonAttributes merges the give attributes into the button's current attributes.
+func (p *DialogPanel) MergeButtonAttributes(id string, a html5tag.Attributes) {
+	p.getDialog().MergeButtonAttributes(id, a)
+}
+
 // RemoveButton removes the given button from the dialog
 func (p *DialogPanel) RemoveButton(id string) {
 	p.getDialog().RemoveButton(id)
@@ -149,44 +154,42 @@ func (p *DialogPanel) RemoveAllButtons() {
 
 // Alert is used by the framework to create an alert type message dialog.
 //
-// If you specify no buttons, a close box in the corner will be created that will just close the dialog. If you
-// specify just a string in buttons, or just one string as a slice of strings,
-// one button will be shown that will just close the message.
+// If you specify no buttons, a close box in the corner will be created that will just close the dialog.
 //
-// If you specify more than one button, the first button will be the default button (the one pressed if the
-// user presses the return key). In this case, you will need to detect the button by calling
+// If you specify one button, clicking it will close the dialog and be the same as the close button.
+//
+// If you specify more buttons, the first button will be the default button (the one pressed if the
+// user presses the return key) and you will need to detect the button by calling
 // OnButton(action) on the dialog panel returned.
 // You will also be responsible for calling Hide() on the dialog panel after detecting a button in this case.
 // You can detect a close button by calling OnClose(action).
-// Call SetDialogStyle on the result to control the look of the alery.
-func Alert(parent page.ControlI, message string, buttons interface{}) *DialogPanel {
+// Call SetDialogStyle on the result to control the look of the alert.
+func Alert(parent page.ControlI, title string, message string, hasClose bool, buttons ...string) *DialogPanel {
 	dialogPanel, _ := GetDialogPanel(parent, "gr-alert")
 	dialogPanel.SetText(message)
 	dialogPanel.RemoveAllButtons()
-	if buttons != nil {
-		dialogPanel.SetHasCloseBox(false)
-		switch b := buttons.(type) {
-		case string:
-			dialogPanel.AddCloseButton(b, "")
-		case []string:
-			if len(b) == 1 {
-				dialogPanel.AddCloseButton(b[0], "")
-			} else {
-				for _, l := range b {
-					dialogPanel.AddButton(l, "", nil)
-				}
-			}
-		}
-	} else {
+	dialogPanel.SetHasCloseBox(hasClose)
+	dialogPanel.SetTitle(title)
+
+	switch len(buttons) {
+	case 0:
 		dialogPanel.SetHasCloseBox(true)
+	case 1:
+		dialogPanel.AddCloseButton(buttons[0], "")
+	default:
+		for _, l := range buttons {
+			dialogPanel.AddButton(l, "", nil)
+		}
+
 	}
+
 	dialogPanel.Show()
 	return dialogPanel
 }
 
 // YesNo is an alert that has just two buttons, a Yes and a No button.
-func YesNo(parent page.ControlI, message string, resultAction action.ActionI) *DialogPanel {
-	p := Alert(parent, message, []string{parent.GT("Yes"), parent.GT("No")})
+func YesNo(parent page.ControlI, title string, message string, resultAction action.ActionI) *DialogPanel {
+	p := Alert(parent, title, message, false, parent.GT("Yes"), parent.GT("No"))
 	p.OnButton(resultAction)
 	return p
 }

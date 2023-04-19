@@ -9,11 +9,11 @@ if generator.DefaultStaticTextType != "" {
         if cd == nil || cd.Generator == nil {continue}
         var staticControl string
         if col.ForeignKey != nil {
-            staticControl = t.GoName + col.ForeignKey.GoName + "Static"
+            staticControl = col.ForeignKey.GoName + "Static"
         } else {
-            staticControl = t.GoName + col.GoName + "Static"
+            staticControl = col.GoName + "Static"
         }
-        cd.Connector = staticControl + "Connector"
+        cd.Connector = t.GoName + staticControl + "Connector"
 		cd.Package = codegen.ObjectPackage(generator.DefaultStaticTextType)
         creatorString := gen.GenerateCreator(col, cd)
         creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
@@ -41,6 +41,10 @@ func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 }
 
 func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
+}
+
+func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) bool {
+    return false
 }
 
 func init() {

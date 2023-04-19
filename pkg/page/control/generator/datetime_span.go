@@ -47,3 +47,7 @@ func (d DateTimeSpan) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 func (d DateTimeSpan) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return ""
 }
+
+func (d DateTimeSpan) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return ""
+}

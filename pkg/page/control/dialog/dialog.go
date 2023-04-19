@@ -53,6 +53,7 @@ type DialogI interface {
 	SetButtonText(id string, text string)
 	SetButtonVisible(id string, visible bool)
 	SetButtonStyle(id string, a html5tag.Style)
+	MergeButtonAttributes(id string, a html5tag.Attributes)
 	RemoveButton(id string)
 	RemoveAllButtons()
 }
@@ -247,6 +248,14 @@ func (d *Dialog) SetButtonStyle(id string, a html5tag.Style) {
 	bb := d.ButtonBar()
 	if ctrl := bb.Child(id); ctrl != nil {
 		ctrl.SetStyles(a)
+	}
+}
+
+// MergeButtonAttributes merges the given attributes into the button's attributes.
+func (d *Dialog) MergeButtonAttributes(id string, a html5tag.Attributes) {
+	bb := d.ButtonBar()
+	if ctrl := bb.Child(id); ctrl != nil {
+		ctrl.MergeAttributes(a)
 	}
 }
 

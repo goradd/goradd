@@ -16,8 +16,10 @@ func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 		return
 	}
 
-	d.titleBar.AddClass("modal-header")
-	d.titleBar.Draw(ctx, _w)
+	if d.titleBar.Title != "" || d.titleBar.HasCloseBox {
+		d.titleBar.AddClass("modal-header")
+		d.titleBar.Draw(ctx, _w)
+	}
 
 	if _, err = io.WriteString(_w, `            <div class="modal-body">
 `); err != nil {
@@ -53,8 +55,10 @@ func (d *Modal) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 		return
 	}
 
-	d.buttonBar.AddClass("modal-footer")
-	d.buttonBar.Draw(ctx, _w)
+	if len(d.buttonBar.Children()) > 0 {
+		d.buttonBar.AddClass("modal-footer")
+		d.buttonBar.Draw(ctx, _w)
+	}
 
 	if _, err = io.WriteString(_w, `        </div>
     </div>
@@ -93,8 +97,8 @@ func (d *TitleBar) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	}
 	if d.HasCloseBox {
 
-		if _, err = io.WriteString(_w, `    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
+		if _, err = io.WriteString(_w, `    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+      <span aria-hidden="true"></span>
     </button>
 `); err != nil {
 			return

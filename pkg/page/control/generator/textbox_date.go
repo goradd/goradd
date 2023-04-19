@@ -53,3 +53,7 @@ func (d DateTextbox) GenerateRefresh(ref interface{}, desc *generator.ControlDes
 func (d DateTextbox) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) (s string) {
 	return `val := ctrl.Date()`
 }
+
+func (d DateTextbox) GenerateModifies(ref interface{}, desc *generator.ControlDescription) (s string) {
+	return `val != ctrl.Date()`
+}

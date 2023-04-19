@@ -52,7 +52,7 @@ func (p *DialogsPanel) Init(ctx context.Context, parent page.ControlI, id string
 func (p *DialogsPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonAlert:
-		Alert(p, "Look out!", nil)
+		Alert(p, "Alert", "Look out!", true)
 	case ButtonMessage:
 		// GetDialogPanel here will create a new one if one is not already in the form, or will retrieve an old
 		// one if its just hidden
