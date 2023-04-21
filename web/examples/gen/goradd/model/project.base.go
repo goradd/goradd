@@ -31,7 +31,7 @@ type projectBase struct {
 	numIsValid bool
 	numIsDirty bool
 
-	statusID        int
+	statusID        uint
 	statusIDIsValid bool
 	statusIDIsDirty bool
 
@@ -147,8 +147,8 @@ const (
 func (o *projectBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = true
-	o.idIsDirty = true
+	o.idIsValid = false
+	o.idIsDirty = false
 
 	o.num = 0
 	o.numIsValid = false
@@ -624,8 +624,8 @@ func (o *projectBase) Status() ProjectStatus {
 }
 
 func (o *projectBase) SetStatus(v ProjectStatus) {
-	if o.statusID != int(v) {
-		o.statusID = int(v)
+	if o.statusID != uint(v) {
+		o.statusID = uint(v)
 		o.statusIDIsDirty = true
 		o.statusIDIsValid = true
 	}
@@ -1043,7 +1043,7 @@ func (b *ProjectsBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *ProjectsBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "public.project")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "project")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -1074,7 +1074,7 @@ func CountProjectByNum(ctx context.Context, num int) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().Num(), num)).Count(false))
 }
 
-func CountProjectByStatusID(ctx context.Context, statusID int) int {
+func CountProjectByStatusID(ctx context.Context, statusID uint) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().StatusID(), statusID)).Count(false))
 }
 
@@ -1136,7 +1136,7 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 	}
 
 	if v, ok := m["status_id"]; ok && v != nil {
-		if o.statusID, ok = v.(int); ok {
+		if o.statusID, ok = v.(uint); ok {
 			o.statusIDIsValid = true
 			o.statusIDIsDirty = false
 		} else {
@@ -1393,7 +1393,7 @@ func (o *projectBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "public.project", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "project", modifiedFields, "id", o._originalPK)
 		}
 
 		if o.oMilestonesIsDirty {
@@ -1437,7 +1437,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"related_project_assn",
 					"parent_id",
 					o.PrimaryKey(),
-					"public.project",
+					"project",
 					"child_id",
 					pks)
 			}
@@ -1457,7 +1457,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"related_project_assn",
 					"child_id",
 					o.PrimaryKey(),
-					"public.project",
+					"project",
 					"parent_id",
 					pks)
 			}
@@ -1477,7 +1477,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"team_member_project_assn",
 					"project_id",
 					o.PrimaryKey(),
-					"public.person",
+					"person",
 					"team_member_id",
 					pks)
 			}
@@ -1486,7 +1486,7 @@ func (o *projectBase) update(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "public.project", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "project", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -1513,7 +1513,7 @@ func (o *projectBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "public.project", m)
+		id := d.Insert(ctx, "project", m)
 		o.id = id
 		o._originalPK = id
 
@@ -1538,7 +1538,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"related_project_assn",
 					"parent_id",
 					o.PrimaryKey(),
-					"public.project",
+					"project",
 					"child_id",
 					pks)
 			}
@@ -1556,7 +1556,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"related_project_assn",
 					"child_id",
 					o.PrimaryKey(),
-					"public.project",
+					"project",
 					"parent_id",
 					pks)
 			}
@@ -1574,7 +1574,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"team_member_project_assn",
 					"project_id",
 					o.PrimaryKey(),
-					"public.person",
+					"person",
 					"team_member_id",
 					pks)
 			}
@@ -1583,7 +1583,7 @@ func (o *projectBase) insert(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "public.project", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "project", o.PrimaryKey())
 }
 
 func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1748,19 +1748,21 @@ func (o *projectBase) Delete(ctx context.Context) {
 	db.ExecuteTransaction(ctx, d, func() {
 
 		{
-			c := QueryMilestones(ctx).
+			objs := QueryMilestones(ctx).
 				Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
-				Count(false)
-			if c > 0 {
-				panic("Cannot delete a record that has restricted foreign keys pointing to it.")
+				Select(node.Milestone().PrimaryKeyNode()).
+				Load()
+			for _, obj := range objs {
+				obj.Delete(ctx)
 			}
+			o.oMilestones = nil
 		}
 
 		d.Associate(ctx,
 			"related_project_assn",
 			"parent_id",
 			o.PrimaryKey(),
-			"public.project",
+			"project",
 			"child_id",
 			nil)
 
@@ -1768,7 +1770,7 @@ func (o *projectBase) Delete(ctx context.Context) {
 			"related_project_assn",
 			"child_id",
 			o.PrimaryKey(),
-			"public.project",
+			"project",
 			"parent_id",
 			nil)
 
@@ -1776,13 +1778,13 @@ func (o *projectBase) Delete(ctx context.Context) {
 			"team_member_project_assn",
 			"project_id",
 			o.PrimaryKey(),
-			"public.person",
+			"person",
 			"team_member_id",
 			nil)
 
-		d.Delete(ctx, "public.project", "id", o.id)
+		d.Delete(ctx, "project", "id", o.id)
 	})
-	broadcast.Delete(ctx, "goradd", "public.project", fmt.Sprint(o.id))
+	broadcast.Delete(ctx, "goradd", "project", fmt.Sprint(o.id))
 }
 
 // deleteProject deletes the associated record from the database.
@@ -2470,7 +2472,7 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 
 //   "num" - int
 
-//   "statusID" - int
+//   "statusID" - uint
 
 //   "managerID" - string, nullable
 

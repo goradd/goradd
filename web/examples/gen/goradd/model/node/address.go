@@ -15,7 +15,7 @@ type addressNode struct {
 
 func Address() *addressNode {
 	n := addressNode{
-		query.NewTableNode("goradd", "public.address", "Address"),
+		query.NewTableNode("goradd", "address", "Address"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
@@ -42,7 +42,7 @@ func (n *addressNode) Copy_() query.NodeI {
 func (n *addressNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.address",
+		"address",
 		"id",
 		"ID",
 		query.ColTypeString,
@@ -56,7 +56,7 @@ func (n *addressNode) ID() *query.ColumnNode {
 func (n *addressNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.address",
+		"address",
 		"person_id",
 		"PersonID",
 		query.ColTypeString,
@@ -71,11 +71,11 @@ func (n *addressNode) Person() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
 			"goradd",
-			"public.address",
+			"address",
 			"person_id",
 			"PersonID",
 			"Person",
-			"public.person",
+			"person",
 			"id",
 			false,
 			query.ColTypeString,
@@ -89,7 +89,7 @@ func (n *addressNode) Person() *personNode {
 func (n *addressNode) Street() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.address",
+		"address",
 		"street",
 		"Street",
 		query.ColTypeString,
@@ -103,7 +103,7 @@ func (n *addressNode) Street() *query.ColumnNode {
 func (n *addressNode) City() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.address",
+		"address",
 		"city",
 		"City",
 		query.ColTypeString,

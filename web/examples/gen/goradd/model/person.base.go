@@ -90,8 +90,8 @@ const (
 func (o *personBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = true
-	o.idIsDirty = true
+	o.idIsValid = false
+	o.idIsDirty = false
 
 	o.firstName = ""
 	o.firstNameIsValid = false
@@ -647,7 +647,7 @@ func (b *PeopleBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *PeopleBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "public.person")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "person")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -858,7 +858,7 @@ func (o *personBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "public.person", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "person", modifiedFields, "id", o._originalPK)
 		}
 
 		if o.oAddressesIsDirty {
@@ -959,7 +959,7 @@ func (o *personBase) update(ctx context.Context) {
 				"person_persontype_assn",
 				"person_id",
 				o.PrimaryKey(),
-				"public.person_type_enum",
+				"person_type_enum",
 				"person_type_id",
 				o.oPersonTypes)
 		}
@@ -978,7 +978,7 @@ func (o *personBase) update(ctx context.Context) {
 					"team_member_project_assn",
 					"team_member_id",
 					o.PrimaryKey(),
-					"public.project",
+					"project",
 					"project_id",
 					pks)
 			}
@@ -987,7 +987,7 @@ func (o *personBase) update(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "public.person", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "person", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -1006,7 +1006,7 @@ func (o *personBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "public.person", m)
+		id := d.Insert(ctx, "person", m)
 		o.id = id
 		o._originalPK = id
 
@@ -1042,7 +1042,7 @@ func (o *personBase) insert(ctx context.Context) {
 				"person_persontype_assn",
 				"person_id",
 				o.PrimaryKey(),
-				"public.person_type_enum",
+				"person_type_enum",
 				"person_type_id",
 				o.oPersonTypes)
 		}
@@ -1059,7 +1059,7 @@ func (o *personBase) insert(ctx context.Context) {
 					"team_member_project_assn",
 					"team_member_id",
 					o.PrimaryKey(),
-					"public.project",
+					"project",
 					"project_id",
 					pks)
 			}
@@ -1068,7 +1068,7 @@ func (o *personBase) insert(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "public.person", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "person", o.PrimaryKey())
 }
 
 func (o *personBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1160,7 +1160,7 @@ func (o *personBase) Delete(ctx context.Context) {
 			"person_persontype_assn",
 			"person_id",
 			o.PrimaryKey(),
-			"public.person_type_enum",
+			"person_type_enum",
 			"person_type_id",
 			nil)
 
@@ -1168,13 +1168,13 @@ func (o *personBase) Delete(ctx context.Context) {
 			"team_member_project_assn",
 			"team_member_id",
 			o.PrimaryKey(),
-			"public.project",
+			"project",
 			"project_id",
 			nil)
 
-		d.Delete(ctx, "public.person", "id", o.id)
+		d.Delete(ctx, "person", "id", o.id)
 	})
-	broadcast.Delete(ctx, "goradd", "public.person", fmt.Sprint(o.id))
+	broadcast.Delete(ctx, "goradd", "person", fmt.Sprint(o.id))
 }
 
 // deletePerson deletes the associated record from the database.

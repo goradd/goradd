@@ -15,7 +15,7 @@ type employeeInfoNode struct {
 
 func EmployeeInfo() *employeeInfoNode {
 	n := employeeInfoNode{
-		query.NewTableNode("goradd", "public.employee_info", "EmployeeInfo"),
+		query.NewTableNode("goradd", "employee_info", "EmployeeInfo"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
@@ -41,7 +41,7 @@ func (n *employeeInfoNode) Copy_() query.NodeI {
 func (n *employeeInfoNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.employee_info",
+		"employee_info",
 		"id",
 		"ID",
 		query.ColTypeString,
@@ -55,7 +55,7 @@ func (n *employeeInfoNode) ID() *query.ColumnNode {
 func (n *employeeInfoNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.employee_info",
+		"employee_info",
 		"person_id",
 		"PersonID",
 		query.ColTypeString,
@@ -70,11 +70,11 @@ func (n *employeeInfoNode) Person() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
 			"goradd",
-			"public.employee_info",
+			"employee_info",
 			"person_id",
 			"PersonID",
 			"Person",
-			"public.person",
+			"person",
 			"id",
 			false,
 			query.ColTypeString,
@@ -88,7 +88,7 @@ func (n *employeeInfoNode) Person() *personNode {
 func (n *employeeInfoNode) EmployeeNumber() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"public.employee_info",
+		"employee_info",
 		"employee_number",
 		"EmployeeNumber",
 		query.ColTypeInteger,
