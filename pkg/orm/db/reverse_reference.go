@@ -1,7 +1,7 @@
 package db
 
 import (
-	"strings"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 )
 
 // ReverseReference represents a kind of virtual column that is a result of a foreign-key
@@ -34,7 +34,7 @@ func (r *ReverseReference) AssociatedGoName() string {
 }
 
 func (r *ReverseReference) JsonKey(dd *Model) string {
-	return LowerCaseIdentifier(strings.TrimSuffix(r.AssociatedColumn.DbName, dd.ForeignKeySuffix))
+	return strings2.LcFirst(r.GoPlural)
 }
 
 func (r *ReverseReference) IsUnique() bool {

@@ -1,5 +1,7 @@
 package db
 
+import "github.com/goradd/goradd/pkg/strings"
+
 // The ManyManyReference structure is used by the templates during the codegen process to describe a many-to-many relationship.
 type ManyManyReference struct {
 	// AssnTableName is the database table creating the association. NoSQL: The originating table. SQL: The association table
@@ -33,5 +35,5 @@ type ManyManyReference struct {
 }
 
 func (m *ManyManyReference) JsonKey(dd *Model) string {
-	return LowerCaseIdentifier(m.GoPlural)
+	return strings.LcFirst(m.GoPlural)
 }
