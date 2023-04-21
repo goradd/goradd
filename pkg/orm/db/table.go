@@ -28,8 +28,8 @@ type Table struct {
 	Indexes []Index
 	// Options are key-value pairs of values that can be used to customize how code generation is performed
 	Options map[string]interface{}
-	// IsType is true if this is a type table
-	IsType bool
+	// isEnum is true if this is a enum table
+	isEnum bool
 	// Comment is the general comment included in the database
 	Comment string
 

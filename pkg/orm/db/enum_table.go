@@ -5,11 +5,11 @@ import (
 	"github.com/kenshaw/snaker"
 )
 
-// TypeTable describes a type table, which essentially defines an enumerated type.
+// EnumTable describes a enum table, which essentially defines an enumerated type.
 // In the SQL world, they are a table with an integer key (starting index 1) and a "name" value, though
 // they can have other values associated with them too. Goradd will maintain the
 // relationships in SQL, but in a No-SQL situation, it will embed all the ids and values.
-type TypeTable struct {
+type EnumTable struct {
 	// DbKey is the key used to find the database in the global database cluster
 	DbKey string
 	// DbName is the name of the table in the database
@@ -38,7 +38,7 @@ type TypeTable struct {
 }
 
 // FieldGoName returns the go name corresponding to the given field offset
-func (tt *TypeTable) FieldGoName(i int) string {
+func (tt *EnumTable) FieldGoName(i int) string {
 	if i >= len(tt.FieldNames) {
 		return ""
 	}
@@ -48,7 +48,7 @@ func (tt *TypeTable) FieldGoName(i int) string {
 }
 
 // FieldGoColumnType returns the GoColumnType corresponding to the given field offset
-func (tt *TypeTable) FieldGoColumnType(i int) GoColumnType {
+func (tt *EnumTable) FieldGoColumnType(i int) GoColumnType {
 	if i >= len(tt.FieldNames) {
 		return ColTypeUnknown
 	}
@@ -57,6 +57,6 @@ func (tt *TypeTable) FieldGoColumnType(i int) GoColumnType {
 	return ft
 }
 
-func (tt *TypeTable) FileName() string {
+func (tt *EnumTable) FileName() string {
 	return snaker.CamelToSnake(tt.GoName)
 }

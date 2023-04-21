@@ -24,7 +24,7 @@ func Project() *projectNode {
 func (n *projectNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.Num())
-	nodes = append(nodes, n.StatusTypeID())
+	nodes = append(nodes, n.StatusID())
 	nodes = append(nodes, n.ManagerID())
 	nodes = append(nodes, n.Name())
 	nodes = append(nodes, n.Description())
@@ -72,13 +72,13 @@ func (n *projectNode) Num() *query.ColumnNode {
 	return cn
 }
 
-// StatusTypeID represents the status_type_id column in the database.
-func (n *projectNode) StatusTypeID() *query.ColumnNode {
+// StatusID represents the status_id column in the database.
+func (n *projectNode) StatusID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"project",
-		"status_type_id",
-		"StatusTypeID",
+		"status_id",
+		"StatusID",
 		query.ColTypeUnsigned,
 		false,
 	)
@@ -86,16 +86,16 @@ func (n *projectNode) StatusTypeID() *query.ColumnNode {
 	return cn
 }
 
-// StatusType represents the link to the StatusType object.
-func (n *projectNode) StatusType() *projectStatusTypeNode {
-	cn := &projectStatusTypeNode{
+// Status represents the link to the Status object.
+func (n *projectNode) Status() *projectStatusNode {
+	cn := &projectStatusNode{
 		query.NewReferenceNode(
 			"goradd",
 			"project",
-			"status_type_id",
-			"StatusTypeID",
-			"StatusType",
-			"project_status_type",
+			"status_id",
+			"StatusID",
+			"Status",
+			"project_status_enum",
 			"id",
 			true,
 			query.ColTypeUnsigned,

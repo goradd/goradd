@@ -17,8 +17,8 @@ func oRef(obj any) string {
         if !r.IsReference() || r.ForeignKey == nil {
             panic("not a reference")
         }
-        if r.IsType() {
-            panic("type tables do not store a reference")
+        if r.IsEnum() {
+            panic("enum tables do not store a reference")
         }
         return objectPrefix + r.ForeignKey.GoName
     }

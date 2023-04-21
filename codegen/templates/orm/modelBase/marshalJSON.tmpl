@@ -29,7 +29,7 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
 {{if}}
     }
 
-{{if col.IsType()}}
+{{if col.IsEnum()}}
     if o.{{= col.ModelName() }}IsValid {
         v["{{= col.ReferenceJsonKey(dd) }}"] = o.{{= col.ReferenceFunction() }}().String()
     }
@@ -63,7 +63,7 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
 {{g
     key := ref.JsonKey(dd)
 }}
-{{if ref.IsTypeAssociation}}
+{{if ref.IsEnumAssociation}}
     if val := o.{{= ref.GoPlural }}(); val != nil {
         var val2 []uint
         for _,v2 := range val {
@@ -130,8 +130,8 @@ func (o *{{privateName}}Base) UnmarshalStringMap(m map[string]interface{}) (err 
                 continue
             }
 {{if}}
-{{if col.IsType()}}
-{{# handle type tables specially}}
+{{if col.IsEnum()}}
+{{# handle enum tables specially}}
            if n,ok := v.(int); ok {
                 o.Set{{= col.ReferenceFunction() }}({{= col.ForeignKey.GoType }}(n))
            } else if n,ok := v.(float64); ok {
@@ -269,7 +269,7 @@ case query.ColTypeTime:
 }}
 {{if}}
            }
-{{if col.IsType()}}
+{{if col.IsEnum()}}
 {{# Add setting type value by string}}
         case "{{= col.ReferenceJsonKey(dd) }}":
             if s,ok := v.(string); !ok {
@@ -289,7 +289,7 @@ case query.ColTypeTime:
 {{g
     key := ref.JsonKey(dd)
 }}
-{{if ref.IsTypeAssociation}}
+{{if ref.IsEnumAssociation}}
         case "{{= key }}":
             if vals,ok := v.([]interface{}); !ok {
                 return fmt.Errorf("json field %s must be an array", k)

@@ -227,7 +227,7 @@ func LoadPersonWithLock(ctx context.Context, primaryKey string, joinOrSelectNode
 	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasPersonWithLock returns true if a PersonWithLock with the give key exists database.
+// HasPersonWithLock returns true if a PersonWithLock with the given key exists database.
 func HasPersonWithLock(ctx context.Context, primaryKey string) bool {
 	q := queryPersonWithLocks(ctx)
 	q = q.Where(Equal(node.PersonWithLock().ID(), primaryKey))
@@ -436,20 +436,20 @@ func (b *PersonWithLocksBuilder) joinOrSelect(nodes ...query.NodeI) *PersonWithL
 	return b
 }
 
-func CountPersonWithLockByID(ctx context.Context, id string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), id)).Count(false)
+func CountPersonWithLockByID(ctx context.Context, id string) int {
+	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), id)).Count(false))
 }
 
-func CountPersonWithLockByFirstName(ctx context.Context, firstName string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(false)
+func CountPersonWithLockByFirstName(ctx context.Context, firstName string) int {
+	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(false))
 }
 
-func CountPersonWithLockByLastName(ctx context.Context, lastName string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(false)
+func CountPersonWithLockByLastName(ctx context.Context, lastName string) int {
+	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(false))
 }
 
-func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp time.Time) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(false)
+func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp time.Time) int {
+	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

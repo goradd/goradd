@@ -199,7 +199,7 @@ func LoadEmployeeInfo(ctx context.Context, primaryKey string, joinOrSelectNodes 
 	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasEmployeeInfo returns true if a EmployeeInfo with the give key exists database.
+// HasEmployeeInfo returns true if a EmployeeInfo with the given key exists database.
 func HasEmployeeInfo(ctx context.Context, primaryKey string) bool {
 	q := queryEmployeeInfos(ctx)
 	q = q.Where(Equal(node.EmployeeInfo().ID(), primaryKey))
@@ -428,16 +428,16 @@ func (b *EmployeeInfosBuilder) joinOrSelect(nodes ...query.NodeI) *EmployeeInfos
 	return b
 }
 
-func CountEmployeeInfoByID(ctx context.Context, id string) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), id)).Count(false)
+func CountEmployeeInfoByID(ctx context.Context, id string) int {
+	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), id)).Count(false))
 }
 
-func CountEmployeeInfoByPersonID(ctx context.Context, personID string) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().PersonID(), personID)).Count(false)
+func CountEmployeeInfoByPersonID(ctx context.Context, personID string) int {
+	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().PersonID(), personID)).Count(false))
 }
 
-func CountEmployeeInfoByEmployeeNumber(ctx context.Context, employeeNumber int) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().EmployeeNumber(), employeeNumber)).Count(false)
+func CountEmployeeInfoByEmployeeNumber(ctx context.Context, employeeNumber int) int {
+	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().EmployeeNumber(), employeeNumber)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

@@ -87,7 +87,10 @@ func NewMysql2 (dbKey string , options DbOptions, config *mysql.Config) (*DB, er
 func (m *DB) Analyze(options Options) {
 	rawTables := m.getRawTables()
 	description := m.descriptionFromRawTables(rawTables, options)
-	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, false, description)
+	m.model = db.NewModel(m.DbKey(),
+		options.ForeignKeySuffix,
+		options.EnumTableSuffix,
+		false, description)
 }
 
 func (m *DB) getRawTables() map[string]mysqlTable {
@@ -511,7 +514,7 @@ func (m *DB) processTypeInfo(tableName string, column mysqlColumn, cd *db.Column
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
 	case "enum":
-		log.Print("Note: Using type tables is preferred to using DB ENUM columns in table " + tableName + ":" + column.name + ".")
+		log.Print("Note: Using enum tables is preferred to using DB ENUM columns in table " + tableName + ":" + column.name + ".")
 		cd.GoType = ColTypeString.GoType()
 		cd.MaxCharLength = uint64(column.characterMaxLen.Int64)
 
@@ -533,11 +536,11 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]mysqlTable, options O
 			continue
 		}
 
-		if strings2.EndsWith(tableName, options.TypeTableSuffix) {
-			t := m.getTypeTableDescription(table)
+		if strings2.EndsWith(tableName, options.EnumTableSuffix) {
+			t := m.getEnumTableDescription(table)
 			dd.Tables = append(dd.Tables, t)
 		} else if strings2.EndsWith(tableName, options.AssociationTableSuffix) {
-			if mm, ok := m.getManyManyDescription(table, options.TypeTableSuffix); ok {
+			if mm, ok := m.getManyManyDescription(table, options.EnumTableSuffix); ok {
 				dd.MM = append(dd.MM, mm)
 			}
 		} else {
@@ -617,7 +620,7 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 	return td
 }
 
-func (m *DB) getTypeTableDescription(t mysqlTable) db.TableDescription {
+func (m *DB) getEnumTableDescription(t mysqlTable) db.TableDescription {
 	td := m.getTableDescription(t)
 
 	var columnNames []string
@@ -645,7 +648,7 @@ func (m *DB) getTypeTableDescription(t mysqlTable) db.TableDescription {
 	}
 
 	values := sql2.SqlReceiveRows(result, columnTypes, columnNames, nil)
-	td.TypeData = values
+	td.EnumData = values
 	return td
 }
 
@@ -680,7 +683,7 @@ func (m *DB) getColumnDescription(table mysqlTable, column mysqlColumn, isPk boo
 	return cd
 }
 
-func (m *DB) getManyManyDescription(t mysqlTable, typeTableSuffix string) (mm db.ManyManyDescription, ok bool) {
+func (m *DB) getManyManyDescription(t mysqlTable, enumTableSuffix string) (mm db.ManyManyDescription, ok bool) {
 	td := m.getTableDescription(t)
 	if len(td.Columns) != 2 {
 		log.Print("Error: table " + td.Name + " must have only 2 primary key columns.")
@@ -707,9 +710,9 @@ func (m *DB) getManyManyDescription(t mysqlTable, typeTableSuffix string) (mm db
 			return
 		}
 
-		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, typeTableSuffix) {
+		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, enumTableSuffix) {
 			if typeIndex != -1 {
-				log.Print("Error: column " + td.Name + ":" + " cannot have two foreign keys to type tables.")
+				log.Print("Error: column " + td.Name + ":" + " cannot have two foreign keys to enum tables.")
 				return
 			}
 			typeIndex = i

@@ -22,8 +22,8 @@ type ForeignKeyInfo struct {
 	GoType string
 	// GoTypePlural is the plural version of the type when referring to groups of related objects
 	GoTypePlural string
-	// IsType is true if this is a related type
-	IsType bool
+	// isEnum is true if this is a related type
+	IsEnum bool
 	// RR is filled in by the analyzer and represents a reverse reference relationship
 	RR *ReverseReference
 }

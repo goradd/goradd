@@ -14,7 +14,7 @@ func TestJsonMarshall1(t *testing.T) {
 	ctx := getContext()
 	p := model.LoadProject(ctx, "1",
 		node.Project().Name(),
-		node.Project().StatusType(),
+		node.Project().Status(),
 		node.Project().Manager().FirstName())
 	j, err := json.Marshal(p)
 	assert.NoError(t, err)
@@ -22,7 +22,7 @@ func TestJsonMarshall1(t *testing.T) {
 	err = json.Unmarshal(j, &m)
 	assert.NoError(t, err)
 	assert.Exactly(t, "ACME Website Redesign", m["name"])
-	assert.Exactly(t, "Completed", m["statusType"])
+	assert.Exactly(t, "Completed", m["status"])
 	assert.Exactly(t, "Karen", m["manager"].(map[string]interface{})["firstName"])
 }
 
@@ -31,8 +31,7 @@ func TestJsonUnmarshall1(t *testing.T) {
 	err := json.Unmarshal([]byte(
 		`{
 	"name":"ACME Website Redesign",
-	"statusType":"Completed",
-	"statusTypeID":3,
+	"status":"Completed",
 	"num":14,
 	"startDate":"2020-11-01T00:00:00Z"
 }
@@ -40,7 +39,7 @@ func TestJsonUnmarshall1(t *testing.T) {
 		&p)
 	assert.NoError(t, err)
 	assert.Exactly(t, "ACME Website Redesign", p.Name())
-	assert.Exactly(t, model.ProjectStatusTypeCompleted, p.StatusType())
+	assert.Exactly(t, model.ProjectStatusCompleted, p.Status())
 	assert.Exactly(t, 14, p.Num())
 	assert.Exactly(t, 2020, p.StartDate().Year())
 }

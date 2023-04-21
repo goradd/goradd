@@ -199,7 +199,7 @@ func LoadMilestone(ctx context.Context, primaryKey string, joinOrSelectNodes ...
 	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasMilestone returns true if a Milestone with the give key exists database.
+// HasMilestone returns true if a Milestone with the given key exists database.
 func HasMilestone(ctx context.Context, primaryKey string) bool {
 	q := queryMilestones(ctx)
 	q = q.Where(Equal(node.Milestone().ID(), primaryKey))
@@ -408,16 +408,16 @@ func (b *MilestonesBuilder) joinOrSelect(nodes ...query.NodeI) *MilestonesBuilde
 	return b
 }
 
-func CountMilestoneByID(ctx context.Context, id string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), id)).Count(false)
+func CountMilestoneByID(ctx context.Context, id string) int {
+	return int(queryMilestones(ctx).Where(Equal(node.Milestone().ID(), id)).Count(false))
 }
 
-func CountMilestoneByProjectID(ctx context.Context, projectID string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(false)
+func CountMilestoneByProjectID(ctx context.Context, projectID string) int {
+	return int(queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(false))
 }
 
-func CountMilestoneByName(ctx context.Context, name string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().Name(), name)).Count(false)
+func CountMilestoneByName(ctx context.Context, name string) int {
+	return int(queryMilestones(ctx).Where(Equal(node.Milestone().Name(), name)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

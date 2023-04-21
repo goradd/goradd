@@ -145,12 +145,12 @@ func (cd *Column) JsonKey() string {
 
 // IsReference returns true if the column is a reference to an object in another table.
 func (cd *Column) IsReference() bool {
-	return cd.ForeignKey != nil && !cd.ForeignKey.IsType
+	return cd.ForeignKey != nil && !cd.ForeignKey.IsEnum
 }
 
-// IsType returns true if the column contains a type defined by a type table.
-func (cd *Column) IsType() bool {
-	return cd.ForeignKey != nil && cd.ForeignKey.IsType
+// IsEnum returns true if the column contains a type defined by a enum table.
+func (cd *Column) IsEnum() bool {
+	return cd.ForeignKey != nil && cd.ForeignKey.IsEnum
 }
 
 // ReferenceFunction returns the function name that should be used to refer to the object

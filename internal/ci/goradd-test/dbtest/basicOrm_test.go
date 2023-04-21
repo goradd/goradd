@@ -116,7 +116,7 @@ func TestBasicType(t *testing.T) {
 		OrderBy(node.Project().ID()).
 		Load()
 
-	if projects[0].StatusType() != model.ProjectStatusTypeCompleted {
+	if projects[0].Status() != model.ProjectStatusCompleted {
 		t.Error("Did not find correct project type.")
 	}
 }

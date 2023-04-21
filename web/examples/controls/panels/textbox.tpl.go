@@ -83,7 +83,7 @@ a sql database. To make a <i>textarea</i> instead of an <i>input</i> tag, set th
 <h4>IntegerTextbox</h4>
 <p>
 An *IntegerTextbox corresponds to an integer item in a database, like an INT in
-a sql database. IntegerTextbox textboxes are validated to make sure they contain an integer.
+a sql database. Integer textboxes are validated to make sure they contain an integer.
 `); err != nil {
 		return
 	}
@@ -113,9 +113,9 @@ a sql database. IntegerTextbox textboxes are validated to make sure they contain
 	}
 
 	if _, err = io.WriteString(_w, `</p>
-<h4>Date</h4>
+<h4>DateTextbox</h4>
 <p>
-A *Date corresponds to a Date, Time or DateTime in a database.
+A *DateTextbox corresponds to a Date, Time or DateTime in a database.
 Timestamps generally are not editable, so they usually generate a DateTimeSpan (as in html span).
 These textboxes validate to make sure they match a particular format.
 `); err != nil {
@@ -199,7 +199,7 @@ These textboxes validate to make sure they match a particular format.
 <h4>FloatTextbox</h4>
 <p>
 A *FloatTextbox corresponds to a floating point number item in a database, like a FLOAT in
-a sql database. FloatTextbox textboxes are validated to make sure they contain a numeric value.
+a sql database. Float textboxes are validated to make sure they contain a numeric value.
 Click on one of the Submit buttons below to cause the controls to validate.
 `); err != nil {
 		return
@@ -231,7 +231,7 @@ Click on one of the Submit buttons below to cause the controls to validate.
 
 	if _, err = io.WriteString(_w, `</p>
 <h3>Validating Textboxes</h3>
-<h4>EmailTextbox Textbox</h4>
+<h4>Email Textbox</h4>
 <p>
 The EmailTextbox accepts email addresses only. It is capable of accepting multiple email addresses separated
 by commas. If it is set up to only accept one email address, it will also set its "type" attribute to "email"

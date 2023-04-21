@@ -148,7 +148,7 @@ func TestConditionalJoin(t *testing.T) {
 	// Reverse references
 	people := model.QueryPeople(ctx).
 		Join(node.Person().Addresses(), Equal(node.Person().Addresses().City(), "New York")).
-		Join(node.Person().ProjectsAsManager(), Equal(node.Person().ProjectsAsManager().StatusTypeID(), model.ProjectStatusTypeOpen)).
+		Join(node.Person().ProjectsAsManager(), Equal(node.Person().ProjectsAsManager().StatusID(), model.ProjectStatusOpen)).
 		Join(node.Person().ProjectsAsManager().Milestones()).
 		Join(node.Person().Login(), Like(node.Person().Login().Username(), "b%")).
 		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsManager().Name()).

@@ -17,9 +17,9 @@ type TableTemplateI interface {
 	Overwrite() bool
 }
 
-type TypeTableTemplateI interface {
-	GenerateTypeTable(codegen CodeGenerator, dd *db.Model, t TypeTableType, _w io.Writer) (err error)
-	FileName(key string, t TypeTableType) string
+type EnumTableTemplateI interface {
+	GenerateEnumTable(codegen CodeGenerator, dd *db.Model, t EnumTableType, _w io.Writer) (err error)
+	FileName(key string, t EnumTableType) string
 	Overwrite() bool
 }
 
@@ -38,10 +38,10 @@ func AddTableTemplate(t TableTemplateI) {
 	TableTemplates = append(TableTemplates, t)
 }
 
-var TypeTableTemplates []TypeTableTemplateI
+var EnumTableTemplates []EnumTableTemplateI
 
-func AddTypeTableTemplate(t TypeTableTemplateI) {
-	TypeTableTemplates = append(TypeTableTemplates, t)
+func AddEnumTableTemplate(t EnumTableTemplateI) {
+	EnumTableTemplates = append(EnumTableTemplates, t)
 }
 
 var OneTimeTemplates []OneTimeTemplateI

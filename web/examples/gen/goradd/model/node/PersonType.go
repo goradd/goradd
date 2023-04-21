@@ -34,7 +34,7 @@ func (n *personTypeNode) ID() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"person_type",
+		"person_type_enum",
 		"id",
 		"ID",
 		query.ColTypeUnsigned,
@@ -47,7 +47,7 @@ func (n *personTypeNode) Name() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"person_type",
+		"person_type_enum",
 		"name",
 		"Name",
 		query.ColTypeString,

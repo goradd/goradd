@@ -20,11 +20,11 @@ func (n *{{privateName}}Node) {{= col.GoName }}() *query.ColumnNode {
 }}
 
 	if col.ForeignKey != nil {
-		isType := dd.IsTypeTable(col.ForeignKey.ReferencedTable)
+		isEnum := dd.IsEnumTable(col.ForeignKey.ReferencedTable)
 		var objName string
 
-		if isType {
-			objName = dd.TypeTable(col.ForeignKey.ReferencedTable).GoName
+		if isEnum {
+			objName = dd.EnumTable(col.ForeignKey.ReferencedTable).GoName
 		} else {
 			objName = dd.Table(col.ForeignKey.ReferencedTable).GoName
 		}
@@ -41,7 +41,7 @@ func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFir
 			"{{= col.ForeignKey.GoName }}",
 			"{{= col.ForeignKey.ReferencedTable }}",
 			"{{= col.ForeignKey.ReferencedColumn }}",
-			{{b isType }},
+			{{b isEnum }},
 			query.{{= col.ColumnType.String() }},
 		),
 	}
@@ -57,8 +57,8 @@ func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFir
 
 for _,ref := range t.ManyManyReferences {
 
-	if ref.IsTypeAssociation {
-		assnTable := dd.TypeTable(ref.AssociatedTableName)
+	if ref.IsEnumAssociation {
+		assnTable := dd.EnumTable(ref.AssociatedTableName)
 		pk := assnTable.FieldNames[0]
 
 {{

@@ -133,7 +133,7 @@ simply call the appropriate Set* function to set the slice of items, and then ca
 	project2 := model.NewProject()
 	project2.SetName("NewProject")
 	project2.SetNum(100)
-	project2.SetStatusType(model.ProjectStatusTypeOpen)
+	project2.SetStatus(model.ProjectStatusOpen)
 
 	p1 := model.NewPerson()
 	p1.SetFirstName("Me")

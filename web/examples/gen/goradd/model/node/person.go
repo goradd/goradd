@@ -87,7 +87,7 @@ func (n *personNode) PersonTypes() *personTypeNode {
 			"person_persontype_assn",
 			"person_id",
 			"PersonTypes",
-			"person_type",
+			"person_type_enum",
 			"person_type_id",
 			"id",
 			true,

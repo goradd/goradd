@@ -331,7 +331,7 @@ func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...quer
 	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasLogin returns true if a Login with the give key exists database.
+// HasLogin returns true if a Login with the given key exists database.
 func HasLogin(ctx context.Context, primaryKey string) bool {
 	q := queryLogins(ctx)
 	q = q.Where(Equal(node.Login().ID(), primaryKey))
@@ -588,24 +588,24 @@ func (b *LoginsBuilder) joinOrSelect(nodes ...query.NodeI) *LoginsBuilder {
 	return b
 }
 
-func CountLoginByID(ctx context.Context, id string) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().ID(), id)).Count(false)
+func CountLoginByID(ctx context.Context, id string) int {
+	return int(queryLogins(ctx).Where(Equal(node.Login().ID(), id)).Count(false))
 }
 
-func CountLoginByPersonID(ctx context.Context, personID string) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().PersonID(), personID)).Count(false)
+func CountLoginByPersonID(ctx context.Context, personID string) int {
+	return int(queryLogins(ctx).Where(Equal(node.Login().PersonID(), personID)).Count(false))
 }
 
-func CountLoginByUsername(ctx context.Context, username string) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().Username(), username)).Count(false)
+func CountLoginByUsername(ctx context.Context, username string) int {
+	return int(queryLogins(ctx).Where(Equal(node.Login().Username(), username)).Count(false))
 }
 
-func CountLoginByPassword(ctx context.Context, password string) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().Password(), password)).Count(false)
+func CountLoginByPassword(ctx context.Context, password string) int {
+	return int(queryLogins(ctx).Where(Equal(node.Login().Password(), password)).Count(false))
 }
 
-func CountLoginByIsEnabled(ctx context.Context, isEnabled bool) uint {
-	return queryLogins(ctx).Where(Equal(node.Login().IsEnabled(), isEnabled)).Count(false)
+func CountLoginByIsEnabled(ctx context.Context, isEnabled bool) int {
+	return int(queryLogins(ctx).Where(Equal(node.Login().IsEnabled(), isEnabled)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

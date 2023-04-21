@@ -30,7 +30,7 @@ func BootstrapCodegenSetup() {
 				return
 			}
 
-			if col.IsReference() || col.IsType() {
+			if col.IsReference() || col.IsEnum() {
 				return "github.com/goradd/goradd/pkg/bootstrap/control/SelectList"
 			}
 

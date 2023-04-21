@@ -84,7 +84,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
             return nil, err
         }
     }
-{{# We will need to rebuild the map (when not a type table association) based on the object decoded, since they are pointers to the same objects}}
+{{# We will need to rebuild the map (when not a enum table association) based on the object decoded, since they are pointers to the same objects}}
 {{for}}
 
     if o._aliases == nil {
@@ -182,7 +182,7 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
         if err = dec.Decode(&o.{{= objectPrefix}}{{ref.GoPlural}}); err != nil {
             return
         }
-{{if !ref.IsTypeAssociation}}
+{{if !ref.IsEnumAssociation}}
         if len(o.{{= objectPrefix}}{{= ref.GoPlural }}) > 0 {
             o.m{{= ref.GoPlural }} = make(map[{{= ref.AssociatedTablePkType }}] *{{= ref.AssociatedObjectType }})
 

@@ -29,16 +29,20 @@ type Model struct {
 	DbKey string
 	// Tables are the tables in the database
 	Tables []*Table
-	// TypeTables contains a description of the enumerated types from the type tables in the database
-	TypeTables []*TypeTable
+	// EnumTables contains a description of the enumerated types from the enum tables in the database
+	EnumTables []*EnumTable
 
-	// Text to strip off the end of foreign key references when converting to names. Defaults to "_id"
+	// ForeignKeySuffix is the text to strip off the end of foreign key references when converting to names.
+	// Defaults to "_id"
 	ForeignKeySuffix string
+	// EnumTableSuffix is the text to string off the end of an enum table when converting it to a type name.
+	// Defaults to "_enum".
+	EnumTableSuffix string
 
 	// tableMap is used to get to tables by internal name
 	tableMap map[string]*Table
-	// typeTableMap gets to type tables by internal name
-	typeTableMap map[string]*TypeTable
+	// enumTableMap gets to enum tables by internal name
+	enumTableMap map[string]*EnumTable
 	// ignoreSchemas indicates that the database uses table schemas, but we will ignore
 	// them when generating object names. This means that the different tables in the schemas in the database
 	// will not have overlapping names.
@@ -58,11 +62,13 @@ type Model struct {
 // desc is the description of the database.
 func NewModel(dbKey string,
 	foreignKeySuffix string,
+	enumTableSuffix string,
 	ignoreSchemas bool,
 	desc DatabaseDescription) *Model {
 	d := Model{
 		DbKey:            dbKey,
 		ForeignKeySuffix: foreignKeySuffix,
+		EnumTableSuffix:  enumTableSuffix,
 		ignoreSchemas:    ignoreSchemas,
 	}
 	d.importDescription(desc)
@@ -73,21 +79,21 @@ func NewModel(dbKey string,
 // tables as objects and columns as member variables.
 func (m *Model) importDescription(desc DatabaseDescription) {
 
-	m.typeTableMap = make(map[string]*TypeTable)
+	m.enumTableMap = make(map[string]*EnumTable)
 	m.tableMap = make(map[string]*Table)
 
-	// deal with type tables first
+	// deal with enum tables first
 	for _, table := range desc.Tables {
-		if table.TypeData != nil {
-			tt := m.importTypeTable(table)
-			m.TypeTables = append(m.TypeTables, tt)
-			m.typeTableMap[tt.DbName] = tt
+		if table.EnumData != nil {
+			tt := m.importEnumTable(table)
+			m.EnumTables = append(m.EnumTables, tt)
+			m.enumTableMap[tt.DbName] = tt
 		}
 	}
 
 	// get the regular tables
 	for _, table := range desc.Tables {
-		if table.TypeData == nil {
+		if table.EnumData == nil {
 			t := m.importTable(table)
 			if t != nil {
 				m.Tables = append(m.Tables, t)
@@ -98,7 +104,7 @@ func (m *Model) importDescription(desc DatabaseDescription) {
 
 	// import foreign keys after the columns are in place
 	for _, table := range desc.Tables {
-		if table.TypeData == nil {
+		if table.EnumData == nil {
 			m.importForeignKeys(table)
 		}
 	}
@@ -113,22 +119,24 @@ func (m *Model) importDescription(desc DatabaseDescription) {
 	}
 }
 
-// importTypeTable will import the type table provided by the database description
-func (m *Model) importTypeTable(desc TableDescription) *TypeTable {
-	tableName := desc.Name
+// importEnumTable will import the enum table provided by the database description
+func (m *Model) importEnumTable(desc TableDescription) *EnumTable {
+	typeName := desc.Name
 	if m.ignoreSchemas {
-		parts := strings.Split(tableName, ".")
+		parts := strings.Split(typeName, ".")
 		if len(parts) == 2 {
-			tableName = parts[1]
+			typeName = parts[1]
 		}
 	}
-	t := &TypeTable{
+	typeName = strings.TrimSuffix(typeName, m.EnumTableSuffix)
+
+	t := &EnumTable{
 		DbKey:         m.DbKey,
 		DbName:        desc.Name,
-		LiteralName:   m.dbNameToEnglishName(tableName),
-		LiteralPlural: m.dbNameToEnglishPlural(tableName),
-		GoName:        m.dbNameToGoName(tableName),
-		GoPlural:      m.dbNameToGoPlural(tableName),
+		LiteralName:   m.dbNameToEnglishName(typeName),
+		LiteralPlural: m.dbNameToEnglishPlural(typeName),
+		GoName:        m.dbNameToGoName(typeName),
+		GoPlural:      m.dbNameToGoPlural(typeName),
 	}
 
 	var ok bool
@@ -158,7 +166,7 @@ func (m *Model) importTypeTable(desc TableDescription) *TypeTable {
 
 	t.LcGoName = strings.ToLower(t.GoName[:1]) + t.GoName[1:]
 
-	t.Values = desc.TypeData
+	t.Values = desc.EnumData
 	t.FieldTypes = make(map[string]GoColumnType)
 
 	for _, col := range desc.Columns {
@@ -170,14 +178,14 @@ func (m *Model) importTypeTable(desc TableDescription) *TypeTable {
 	names := t.FieldNames
 
 	if len(t.Values) == 0 {
-		log.Print("Warning: type table " + t.DbName + " has no data entries. Specify constants by adding entries to this table.")
+		log.Print("Warning: enum table " + t.DbName + " has no data entries. Specify constants by adding entries to this table.")
 	}
 
 	r := regexp.MustCompile("[^a-zA-Z0-9_]+")
 	for _, val := range t.Values {
 		key, ok := val[names[0]].(int)
 		if !ok {
-			panic("first column of type table must be an integer")
+			panic("first column of enum table must be an integer")
 		}
 		value := val[names[1]].(string)
 		var con string
@@ -285,7 +293,7 @@ func (m *Model) importReverseReferences(td *Table) {
 		if col.ForeignKey != nil {
 			td2 = m.Table(col.ForeignKey.ReferencedTable)
 			if td2 == nil {
-				continue // pointing to a type table
+				continue // pointing to a enum table
 			}
 			// Determine the go name, which is the name used to refer to the reverse reference.
 			// This is somewhat tricky, because there is no easy way to extract an expression for this.
@@ -349,20 +357,20 @@ func (m *Model) importReverseReferences(td *Table) {
 // Association tables are used by SQL databases to create many-many relationships. NoSQL databases can define their
 // association columns directly and store an array of records numbers on either end of the association.
 func (m *Model) importAssociation(mm ManyManyDescription) {
-	if m.TypeTable(mm.Table2) == nil {
+	if m.EnumTable(mm.Table2) == nil {
 		ref1 := m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, false, mm.SupportsForeignKeys)
 		ref2 := m.makeManyManyRef(mm.Table2, mm.Column2, mm.Table1, mm.Column1, mm.GoName1, mm.GoPlural1, mm.AssnTableName, false, mm.SupportsForeignKeys)
 		ref1.MM = ref2
 		ref2.MM = ref1
 	} else {
-		// type table
+		// enum table
 		m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, true, mm.SupportsForeignKeys)
 	}
 }
 
 func (m *Model) makeManyManyRef(
 	t1, c1, t2, c2, g2, g2p, t string,
-	isType, supportsForeignKeys bool,
+	isEnum, supportsForeignKeys bool,
 ) *ManyManyReference {
 	sourceTableName := t1
 	destTableName := t2
@@ -380,8 +388,8 @@ func (m *Model) makeManyManyRef(
 	var objPlural string
 	var pkType string
 
-	if isType {
-		destTable := m.TypeTable(destTableName)
+	if isEnum {
+		destTable := m.EnumTable(destTableName)
 		objName = destTable.GoName
 		objPlural = destTable.GoPlural
 		pkType = "int"
@@ -421,7 +429,7 @@ func (m *Model) makeManyManyRef(
 		AssociatedObjectTypes: objPlural,
 		GoName:                goName,
 		GoPlural:              goPlural,
-		IsTypeAssociation:     isType,
+		IsEnumAssociation:     isEnum,
 		SupportsForeignKeys:   supportsForeignKeys,
 	}
 	sourceTable.ManyManyReferences = append(sourceTable.ManyManyReferences, &ref)
@@ -518,10 +526,10 @@ func (m *Model) importForeignKey(t *Table, cd ColumnDescription) {
 			goName = UpperCaseIdentifier(goName)
 		}
 		f.GoName = goName
-		f.IsType = m.IsTypeTable(cd.ForeignKey.ReferencedTable)
+		f.IsEnum = m.IsEnumTable(cd.ForeignKey.ReferencedTable)
 
-		if f.IsType {
-			tt := m.TypeTable(cd.ForeignKey.ReferencedTable)
+		if f.IsEnum {
+			tt := m.EnumTable(cd.ForeignKey.ReferencedTable)
 			f.GoType = tt.GoName
 			f.GoTypePlural = tt.GoPlural
 			suf := UpperCaseIdentifier(m.ForeignKeySuffix)
@@ -565,14 +573,14 @@ func (m *Model) Table(name string) *Table {
 	}
 }
 
-// TypeTable returns a TypeTable from the database given the table name.
-func (m *Model) TypeTable(name string) *TypeTable {
-	return m.typeTableMap[name]
+// EnumTable returns a EnumTable from the database given the table name.
+func (m *Model) EnumTable(name string) *EnumTable {
+	return m.enumTableMap[name]
 }
 
-// IsTypeTable returns true if the given name is the name of a type table in the database
-func (m *Model) IsTypeTable(name string) bool {
-	_, ok := m.typeTableMap[name]
+// IsEnumTable returns true if the given name is the name of a enum table in the database
+func (m *Model) IsEnumTable(name string) bool {
+	_, ok := m.enumTableMap[name]
 	return ok
 }
 

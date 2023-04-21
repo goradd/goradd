@@ -18,7 +18,7 @@ for _,col := range t.Columns {
 {{if col.IsNullable}}
         items = list.NoSelectionItemList()
 {{else}}
-    {{if col.IsType() }}
+    {{if col.IsEnum() }}
         if p.{{= t.GoName }} == nil || int(p.{{= t.GoName }}.{{= col.ReferenceFunction() }}()) == 0 {
     {{else}}
         if p.{{= t.GoName }} == nil || p.{{= t.GoName }}.{{= col.GoName }}() == {{= col.ColumnType.DefaultValue() }} {

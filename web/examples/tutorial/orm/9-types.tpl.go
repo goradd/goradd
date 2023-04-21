@@ -10,11 +10,11 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-func (ctrl *TypesPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
+func (ctrl *EnumsPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
-	if _, err = io.WriteString(_w, `<h1>Type Tables</h1>
+	if _, err = io.WriteString(_w, `<h1>Enum Tables</h1>
 <p>
-Goradd uses special tables to model enumerated types in the database called Type Tables. A type table is simply
+Goradd uses special tables to model enumerated types in the database called Enum Tables. An enum table is simply
 a table that has a minimum of a primary key and a name field. The name-value pairs will be converted to constants in Go,
 with the name field becoming the name of the constant in Go,
 and the primary key becoming the value.
@@ -24,16 +24,16 @@ You can refer to these constant values from fields in your database, and that re
 the corresponding type in Go. You can also use association tables to create references to a slice of these constant values.
 </p>
 <p>
-Type tables can also have additional fields that you can use as a lookup table in Go. These additional values will become
+Enum tables can also have additional fields that you can use as a lookup table in Go. These additional values will become
 constant values in Go that you can lookup using the corresponding type value.
 </p>
 <p>
-Type tables give you the ability to not only easily create enumerated types in Go, but also use these values in queries
+Enum tables give you the ability to not only easily create enumerated types in Go, but also use these values in queries
 that you make to the database.
 </p>
 <p>
-Since type tables become constants at compile time, you cannot change the values during program execution. So only use
-type tables for values that you know will not change.
+Since enum tables become constants at compile time, you cannot change the values during program execution. So only use
+enum tables for values that you know will not change.
 </p>
 `); err != nil {
 		return
@@ -54,7 +54,7 @@ The status of the `); err != nil {
 		return
 	}
 
-	if _, err = io.WriteString(_w, project.StatusType().String()); err != nil {
+	if _, err = io.WriteString(_w, project.Status().String()); err != nil {
 		return
 	}
 
@@ -64,7 +64,7 @@ The status of the `); err != nil {
 		return
 	}
 
-	person := model.LoadPerson(ctx, "3", node.Person().PersonTypes()) // Note that we are joining the type table because it has a many-many association
+	person := model.LoadPerson(ctx, "3", node.Person().PersonTypes()) // Note that we are joining the enum table because it has a many-many association
 
 	if _, err = io.WriteString(_w, `<p>
 The types of `); err != nil {

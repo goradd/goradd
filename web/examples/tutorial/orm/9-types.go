@@ -9,30 +9,28 @@ import (
 	"path/filepath"
 )
 
-type TypesPanel struct {
+type EnumsPanel struct {
 	Panel
 }
 
-func NewTypesPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &TypesPanel{}
+func NewEnumsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
+	p := &EnumsPanel{}
 	p.Self = p
 	p.Init(ctx, parent, "")
 	return p
 }
 
-func (p *TypesPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+func (p *EnumsPanel) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 }
 
-
 func init() {
-	page.RegisterControl(&TypesPanel{})
+	page.RegisterControl(&EnumsPanel{})
 
 	dir := sys.SourceDirectory()
-	tutorial.RegisterTutorialPage("orm", 9, "types", "Type Tables", NewTypesPanel,
-		[]string {
+	tutorial.RegisterTutorialPage("orm", 9, "types", "Type Tables", NewEnumsPanel,
+		[]string{
 			sys.SourcePath(),
 			filepath.Join(dir, "9-types.tpl.got"),
 		})
 }
-

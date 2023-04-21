@@ -262,7 +262,7 @@ func LoadAddress(ctx context.Context, primaryKey string, joinOrSelectNodes ...qu
 	return queryAddresses(ctx).Where(Equal(node.Address().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasAddress returns true if a Address with the give key exists database.
+// HasAddress returns true if a Address with the given key exists database.
 func HasAddress(ctx context.Context, primaryKey string) bool {
 	q := queryAddresses(ctx)
 	q = q.Where(Equal(node.Address().ID(), primaryKey))
@@ -471,20 +471,20 @@ func (b *AddressesBuilder) joinOrSelect(nodes ...query.NodeI) *AddressesBuilder 
 	return b
 }
 
-func CountAddressByID(ctx context.Context, id string) uint {
-	return queryAddresses(ctx).Where(Equal(node.Address().ID(), id)).Count(false)
+func CountAddressByID(ctx context.Context, id string) int {
+	return int(queryAddresses(ctx).Where(Equal(node.Address().ID(), id)).Count(false))
 }
 
-func CountAddressByPersonID(ctx context.Context, personID string) uint {
-	return queryAddresses(ctx).Where(Equal(node.Address().PersonID(), personID)).Count(false)
+func CountAddressByPersonID(ctx context.Context, personID string) int {
+	return int(queryAddresses(ctx).Where(Equal(node.Address().PersonID(), personID)).Count(false))
 }
 
-func CountAddressByStreet(ctx context.Context, street string) uint {
-	return queryAddresses(ctx).Where(Equal(node.Address().Street(), street)).Count(false)
+func CountAddressByStreet(ctx context.Context, street string) int {
+	return int(queryAddresses(ctx).Where(Equal(node.Address().Street(), street)).Count(false))
 }
 
-func CountAddressByCity(ctx context.Context, city string) uint {
-	return queryAddresses(ctx).Where(Equal(node.Address().City(), city)).Count(false)
+func CountAddressByCity(ctx context.Context, city string) int {
+	return int(queryAddresses(ctx).Where(Equal(node.Address().City(), city)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

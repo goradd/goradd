@@ -141,7 +141,7 @@ func LoadGift(ctx context.Context, primaryKey int, joinOrSelectNodes ...query.No
 	return queryGifts(ctx).Where(Equal(node.Gift().Number(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasGift returns true if a Gift with the give key exists database.
+// HasGift returns true if a Gift with the given key exists database.
 func HasGift(ctx context.Context, primaryKey int) bool {
 	q := queryGifts(ctx)
 	q = q.Where(Equal(node.Gift().Number(), primaryKey))
@@ -350,12 +350,12 @@ func (b *GiftsBuilder) joinOrSelect(nodes ...query.NodeI) *GiftsBuilder {
 	return b
 }
 
-func CountGiftByNumber(ctx context.Context, number int) uint {
-	return queryGifts(ctx).Where(Equal(node.Gift().Number(), number)).Count(false)
+func CountGiftByNumber(ctx context.Context, number int) int {
+	return int(queryGifts(ctx).Where(Equal(node.Gift().Number(), number)).Count(false))
 }
 
-func CountGiftByName(ctx context.Context, name string) uint {
-	return queryGifts(ctx).Where(Equal(node.Gift().Name(), name)).Count(false)
+func CountGiftByName(ctx context.Context, name string) int {
+	return int(queryGifts(ctx).Where(Equal(node.Gift().Name(), name)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships

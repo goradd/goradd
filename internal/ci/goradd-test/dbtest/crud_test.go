@@ -171,17 +171,20 @@ func TestCrudReverseOneManySetNull(t *testing.T) {
 	f2 := model2.NewForwardNull()
 	f2.SetName("testForward2")
 
+	// Set foreign keys through the object setting method
 	r.SetForwardNulls([]*model2.ForwardNull{f1, f2})
 	r.Save(ctx)
 
+	// make sure foreign keys were set
 	r2 := model2.LoadReverse(ctx, r.ID(), node2.Reverse().ForwardNulls())
-
 	assert.Equal(t, "testReverse", r2.Name())
 	assert.Equal(t, "testForward2", r2.ForwardNulls()[1].Name())
 
+	// Set a value through the relationship
 	r2.ForwardNulls()[1].SetName("Other")
 	r2.Save(ctx)
 
+	// Make sure value was saved
 	r3 := model2.LoadReverse(ctx, r.ID(), node2.Reverse().ForwardNulls())
 	assert.Equal(t, r3.ForwardNulls()[1].Name(), "Other")
 
@@ -547,7 +550,7 @@ func TestCrudManyMany(t *testing.T) {
 	project := model.NewProject()
 	project.SetName("NewProject")
 	project.SetNum(100)
-	project.SetStatusType(model.ProjectStatusTypeOpen)
+	project.SetStatus(model.ProjectStatusOpen)
 
 	p1 := model.NewPerson()
 	p1.SetFirstName("Me")
