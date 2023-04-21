@@ -10,19 +10,19 @@ import (
 )
 
 func init() {
-	t := TypeTableNodeTemplate {
+	t := EnumTableNodeTemplate {
 		generator.Template {
 			Overwrite: true,
 		},
 	}
-	generator.AddTypeTableTemplate(&t)
+	generator.AddEnumTableTemplate(&t)
 }
 
-type TypeTableNodeTemplate struct {
+type EnumTableNodeTemplate struct {
 	generator.Template
 }
 
-func (n *TypeTableNodeTemplate) FileName(key string, tt generator.TypeTableType) string {
+func (n *EnumTableNodeTemplate) FileName(key string, tt generator.EnumTableType) string {
     var targetDir string
     if generator.BuildingExamples {
         targetDir = config.GoraddDir() + "/web/examples/gen"
@@ -32,11 +32,11 @@ func (n *TypeTableNodeTemplate) FileName(key string, tt generator.TypeTableType)
 	return targetDir + "/" + key + "/model/node/" + tt.GoName + ".go"
 }
 
-func (n *TypeTableNodeTemplate) GenerateTypeTable(codegen generator.CodeGenerator, dd *db.Model, tt generator.TypeTableType, _w io.Writer) (err error) {
-	{{: "typeTable/typeTableNode.tmpl" }}
+func (n *EnumTableNodeTemplate) GenerateEnumTable(codegen generator.CodeGenerator, dd *db.Model, tt generator.EnumTableType, _w io.Writer) (err error) {
+	{{: "enumTable/enumTableNode.tmpl" }}
 	return
 }
 
-func (n *TypeTableNodeTemplate) Overwrite() bool {
+func (n *EnumTableNodeTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }

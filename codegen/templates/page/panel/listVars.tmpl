@@ -10,7 +10,7 @@ var forwardJoins []*db.Column
 
 // columns for default forward joins
 for _,col := range t.Columns {
-    if col.ForeignKey != nil && !col.ForeignKey.IsType {
+    if col.ForeignKey != nil && !col.ForeignKey.IsEnum{
         forwardJoins = append(forwardJoins, col)
     }
 }

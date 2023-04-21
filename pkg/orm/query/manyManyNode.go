@@ -30,8 +30,8 @@ type ManyManyNode struct {
 	refPk string
 	// Are we expanding as an array, or one item at a time.
 	isArray bool
-	// Is this pointing to a type table item?
-	isTypeTable bool
+	// Is this pointing to a enum table item?
+	isEnumTable bool
 }
 
 // NewManyManyNode  is used internally by the ORM to create a new many-to-many node.
@@ -49,8 +49,8 @@ func NewManyManyNode(
 	refColumn string,
 	// The primary key of refTableName
 	refPk string,
-	// Are we pointing to a type table
-	isType bool,
+	// Are we pointing to a enum table
+	isEnum bool,
 ) *ManyManyNode {
 	n := &ManyManyNode{
 		dbKey:       dbKey,
@@ -61,7 +61,7 @@ func NewManyManyNode(
 		refColumn:   refColumn,
 		refPk:       refPk,
 		isArray:     true,
-		isTypeTable: isType,
+		isEnumTable: isEnum,
 	}
 	return n
 }
@@ -76,7 +76,7 @@ func (n *ManyManyNode) copy() NodeI {
 		refColumn:     n.refColumn,
 		refPk:         n.refPk,
 		isArray:       n.isArray,
-		isTypeTable:   n.isTypeTable,
+		isEnumTable:   n.isEnumTable,
 		nodeAlias:     nodeAlias{n.alias},
 		nodeCondition: nodeCondition{n.condition}, // shouldn't need to duplicate condition
 	}
@@ -146,7 +146,7 @@ type manyManyNodeEncoded struct {
 	RefColumn   string
 	RefPk       string
 	IsArray     bool
-	IsTypeTable bool
+	IsEnumTable bool
 }
 
 func (n *ManyManyNode) GobEncode() (data []byte, err error) {
@@ -165,7 +165,7 @@ func (n *ManyManyNode) GobEncode() (data []byte, err error) {
 		RefColumn:   n.refColumn,
 		RefPk:       n.refPk,
 		IsArray:     n.isArray,
-		IsTypeTable: n.isTypeTable,
+		IsEnumTable: n.isEnumTable,
 	}
 
 	if err = e.Encode(s); err != nil {
@@ -194,7 +194,7 @@ func (n *ManyManyNode) GobDecode(data []byte) (err error) {
 	n.refColumn = s.RefColumn
 	n.refPk = s.RefPk
 	n.isArray = s.IsArray
-	n.isTypeTable = s.IsTypeTable
+	n.isEnumTable = s.IsEnumTable
 	SetParentNode(n, s.Parent)
 	return
 }
@@ -208,9 +208,9 @@ func ManyManyNodeIsArray(n *ManyManyNode) bool {
 	return n.isArray
 }
 
-// ManyManyNodeIsTypeTable is used internally by the framework to return whether the node points to a type table
-func ManyManyNodeIsTypeTable(n *ManyManyNode) bool {
-	return n.isTypeTable
+// ManyManyNodeIsEnumTable is used internally by the framework to return whether the node points to a enum table
+func ManyManyNodeIsEnumTable(n *ManyManyNode) bool {
+	return n.isEnumTable
 }
 
 // ManyManyNodeRefTable is used internally by the framework to return the table name on the other end of the link

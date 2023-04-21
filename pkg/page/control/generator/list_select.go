@@ -101,7 +101,7 @@ func (d SelectList) GenerateModifies(ref interface{}, desc *generator.ControlDes
 
 func (d SelectList) GenerateProvider(ref interface{}, desc *generator.ControlDescription) string {
 	col := ref.(*db.Column)
-	if col.ForeignKey.IsType {
+	if col.ForeignKey.IsEnum {
 		return fmt.Sprintf(`return model.All%sI()`, col.ForeignKey.GoTypePlural)
 	} else {
 		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.ForeignKey.GoTypePlural)

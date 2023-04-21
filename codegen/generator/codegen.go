@@ -22,8 +22,8 @@ var BuildingExamples bool
 type CodeGenerator struct {
 	// Tables is a map of the tables by database
 	Tables map[string]map[string]TableType
-	// TypeTables is a map of the type tables by database
-	TypeTables map[string]map[string]TypeTableType
+	// EnumTables is a map of the enum tables by database
+	EnumTables map[string]map[string]EnumTableType
 
 	// importAliasesByPath stores import paths by package name to help correctly manage packages with the same name
 	importAliasesByPath map[string]string
@@ -35,8 +35,8 @@ type TableType struct {
 	Imports             []ImportType
 }
 
-type TypeTableType struct {
-	*db.TypeTable
+type EnumTableType struct {
+	*db.EnumTable
 }
 
 // ImportType represents an import path required for a control. This is analyzed per-table.
@@ -85,7 +85,7 @@ func (t *TableType) ControlDescription(ref interface{}) *ControlDescription {
 func Generate() {
 	codegen := CodeGenerator{
 		Tables:     make(map[string]map[string]TableType),
-		TypeTables: make(map[string]map[string]TypeTableType),
+		EnumTables: make(map[string]map[string]EnumTableType),
 	}
 
 	databases := db.GetDatabases()
@@ -100,18 +100,18 @@ func Generate() {
 		}
 		key := database.Model().DbKey
 		codegen.Tables[key] = make(map[string]TableType)
-		codegen.TypeTables[key] = make(map[string]TypeTableType)
+		codegen.EnumTables[key] = make(map[string]EnumTableType)
 		dd := database.Model()
 
 		// Create wrappers for the tables with extra analysis required for form generation
-		for _, typeTable := range dd.TypeTables {
-			if _, ok := codegen.TypeTables[key][typeTable.GoName]; ok {
-				log.Println("Error: type table " + typeTable.GoName + " is defined more than once.")
+		for _, enumTable := range dd.EnumTables {
+			if _, ok := codegen.EnumTables[key][enumTable.GoName]; ok {
+				log.Println("Error: enum table " + enumTable.GoName + " is defined more than once.")
 			} else {
-				tt := TypeTableType{
-					typeTable,
+				tt := EnumTableType{
+					enumTable,
 				}
-				codegen.TypeTables[key][typeTable.GoName] = tt
+				codegen.EnumTables[key][enumTable.GoName] = tt
 			}
 		}
 		for _, table := range dd.Tables {
@@ -147,18 +147,18 @@ func Generate() {
 		dd := database.Model()
 		dbKey := dd.DbKey
 
-		for _, tableKey := range stringmap.SortedKeys(codegen.TypeTables[dbKey]) {
-			typeTable := codegen.TypeTables[dbKey][tableKey]
-			for _, typeTableTemplate := range TypeTableTemplates {
+		for _, tableKey := range stringmap.SortedKeys(codegen.EnumTables[dbKey]) {
+			enumTable := codegen.EnumTables[dbKey][tableKey]
+			for _, enumTableTemplate := range EnumTableTemplates {
 				buf.Reset()
 				// the template generator function in each template, by convention
-				typeTableTemplate.GenerateTypeTable(codegen, dd, typeTable, buf)
-				fileName := typeTableTemplate.FileName(dbKey, typeTable)
+				enumTableTemplate.GenerateEnumTable(codegen, dd, enumTable, buf)
+				fileName := enumTableTemplate.FileName(dbKey, enumTable)
 				fp := filepath.Dir(fileName)
 
 				// If the file already exists, and we are not over-writing, skip it
 				if _, err := os.Stat(fileName); err == nil {
-					if !typeTableTemplate.Overwrite() {
+					if !enumTableTemplate.Overwrite() {
 						continue
 					}
 				}

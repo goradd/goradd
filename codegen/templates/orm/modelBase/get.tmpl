@@ -21,7 +21,7 @@ for _,col := range t.Columns {
         return o.{{= col.ModelName() }}
 
 }}
-	if col.IsReference() || col.IsType() {
+	if col.IsReference() || col.IsEnum() {
 {{
     case "{{= col.ForeignKey.GoName }}":
         return o.{{= col.ForeignKey.GoName }}()

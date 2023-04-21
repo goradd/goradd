@@ -63,8 +63,8 @@ const (
 func (o *milestoneBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = false
-	o.idIsDirty = false
+	o.idIsValid = true
+	o.idIsDirty = true
 
 	o.projectID = ""
 	o.projectIDIsValid = false
@@ -199,7 +199,7 @@ func LoadMilestone(ctx context.Context, primaryKey string, joinOrSelectNodes ...
 	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasMilestone returns true if a Milestone with the give key exists database.
+// HasMilestone returns true if a Milestone with the given key exists database.
 func HasMilestone(ctx context.Context, primaryKey string) bool {
 	q := queryMilestones(ctx)
 	q = q.Where(Equal(node.Milestone().ID(), primaryKey))
@@ -385,7 +385,7 @@ func (b *MilestonesBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *MilestonesBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "milestone")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.milestone")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -408,16 +408,16 @@ func (b *MilestonesBuilder) joinOrSelect(nodes ...query.NodeI) *MilestonesBuilde
 	return b
 }
 
-func CountMilestoneByID(ctx context.Context, id string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), id)).Count(false)
+func CountMilestoneByID(ctx context.Context, id string) int {
+	return int(queryMilestones(ctx).Where(Equal(node.Milestone().ID(), id)).Count(false))
 }
 
-func CountMilestoneByProjectID(ctx context.Context, projectID string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(false)
+func CountMilestoneByProjectID(ctx context.Context, projectID string) int {
+	return int(queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(false))
 }
 
-func CountMilestoneByName(ctx context.Context, name string) uint {
-	return queryMilestones(ctx).Where(Equal(node.Milestone().Name(), name)).Count(false)
+func CountMilestoneByName(ctx context.Context, name string) int {
+	return int(queryMilestones(ctx).Where(Equal(node.Milestone().Name(), name)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -508,13 +508,13 @@ func (o *milestoneBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "milestone", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "public.milestone", modifiedFields, "id", o._originalPK)
 		}
 
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "milestone", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.milestone", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -537,14 +537,14 @@ func (o *milestoneBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "milestone", m)
+		id := d.Insert(ctx, "public.milestone", m)
 		o.id = id
 		o._originalPK = id
 
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "milestone", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.milestone", o.PrimaryKey())
 }
 
 func (o *milestoneBase) getModifiedFields() (fields map[string]interface{}) {
@@ -588,15 +588,15 @@ func (o *milestoneBase) Delete(ctx context.Context) {
 		panic("Cannot delete a record that has no primary key value.")
 	}
 	d := Database()
-	d.Delete(ctx, "milestone", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprint(o.id))
+	d.Delete(ctx, "public.milestone", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "public.milestone", fmt.Sprint(o.id))
 }
 
 // deleteMilestone deletes the associated record from the database.
 func deleteMilestone(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "milestone", "id", pk)
-	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprint(pk))
+	d.Delete(ctx, "public.milestone", "id", pk)
+	broadcast.Delete(ctx, "goradd", "public.milestone", fmt.Sprint(pk))
 }
 
 func (o *milestoneBase) resetDirtyStatus() {

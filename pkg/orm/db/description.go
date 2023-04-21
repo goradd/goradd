@@ -21,8 +21,8 @@ type TableDescription struct {
 	Columns []ColumnDescription
 	// Indexes are the indexes defined in the database. Unique indexes will result in LoadBy* functions.
 	Indexes []IndexDescription
-	// TypeData is the data of the type table if this is a type table. The data structure must match that of the columns.
-	TypeData []map[string]interface{}
+	// EnumData is the data of the enum table if this is a enum table. The data structure must match that of the columns.
+	EnumData []map[string]interface{}
 
 	// Comment is an optional comment about the table
 	Comment string

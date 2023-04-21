@@ -213,3 +213,15 @@ func TestReverseLoad(t *testing.T) {
 	assert.NotNil(t, milestone)
 	assert.Equal(t, "3", milestone.ID())
 }
+
+func TestReverseLoadUnsaved(t *testing.T) {
+	ctx := getContext()
+
+	project := model.LoadProject(ctx, "1")
+	project.LoadMilestones(ctx)
+	milestone := project.Milestone("3")
+	milestone.SetName("A new name")
+	assert.Panics(t, func() {
+		project.LoadMilestones(ctx)
+	})
+}

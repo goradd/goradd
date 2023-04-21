@@ -81,7 +81,7 @@ for _, col := range t.Columns {
 for _,ref := range t.ManyManyReferences {
 	oName := oRef(ref)
 
-	if ref.IsTypeAssociation {
+	if ref.IsEnumAssociation {
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {

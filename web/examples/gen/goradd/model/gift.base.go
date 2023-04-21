@@ -141,7 +141,7 @@ func LoadGift(ctx context.Context, primaryKey int, joinOrSelectNodes ...query.No
 	return queryGifts(ctx).Where(Equal(node.Gift().Number(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasGift returns true if a Gift with the give key exists database.
+// HasGift returns true if a Gift with the given key exists database.
 func HasGift(ctx context.Context, primaryKey int) bool {
 	q := queryGifts(ctx)
 	q = q.Where(Equal(node.Gift().Number(), primaryKey))
@@ -327,7 +327,7 @@ func (b *GiftsBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *GiftsBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "gift")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.gift")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -350,12 +350,12 @@ func (b *GiftsBuilder) joinOrSelect(nodes ...query.NodeI) *GiftsBuilder {
 	return b
 }
 
-func CountGiftByNumber(ctx context.Context, number int) uint {
-	return queryGifts(ctx).Where(Equal(node.Gift().Number(), number)).Count(false)
+func CountGiftByNumber(ctx context.Context, number int) int {
+	return int(queryGifts(ctx).Where(Equal(node.Gift().Number(), number)).Count(false))
 }
 
-func CountGiftByName(ctx context.Context, name string) uint {
-	return queryGifts(ctx).Where(Equal(node.Gift().Name(), name)).Count(false)
+func CountGiftByName(ctx context.Context, name string) int {
+	return int(queryGifts(ctx).Where(Equal(node.Gift().Name(), name)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -415,13 +415,13 @@ func (o *giftBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "gift", modifiedFields, "number", o._originalPK)
+			d.Update(ctx, "public.gift", modifiedFields, "number", o._originalPK)
 		}
 
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "gift", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.gift", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -440,14 +440,14 @@ func (o *giftBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		d.Insert(ctx, "gift", m)
+		d.Insert(ctx, "public.gift", m)
 		id := o.PrimaryKey()
 		o._originalPK = id
 
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "gift", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.gift", o.PrimaryKey())
 }
 
 func (o *giftBase) getModifiedFields() (fields map[string]interface{}) {
@@ -486,15 +486,15 @@ func (o *giftBase) Delete(ctx context.Context) {
 		panic("Cannot delete a record that has no primary key value.")
 	}
 	d := Database()
-	d.Delete(ctx, "gift", "number", o.number)
-	broadcast.Delete(ctx, "goradd", "gift", fmt.Sprint(o.number))
+	d.Delete(ctx, "public.gift", "number", o.number)
+	broadcast.Delete(ctx, "goradd", "public.gift", fmt.Sprint(o.number))
 }
 
 // deleteGift deletes the associated record from the database.
 func deleteGift(ctx context.Context, pk int) {
 	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "gift", "number", pk)
-	broadcast.Delete(ctx, "goradd", "gift", fmt.Sprint(pk))
+	d.Delete(ctx, "public.gift", "number", pk)
+	broadcast.Delete(ctx, "goradd", "public.gift", fmt.Sprint(pk))
 }
 
 func (o *giftBase) resetDirtyStatus() {

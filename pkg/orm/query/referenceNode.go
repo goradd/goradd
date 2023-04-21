@@ -17,7 +17,7 @@ type ReferenceNodeI interface {
 
 // A ReferenceNode is a forward-pointing foreign key relationship, and can define a one-to-one or
 // one-to-many relationship, depending on whether it is unique. If the other side of the relationship is
-// not a type table, then the other table will have a matching ReverseReferenceNode.
+// not a enum table, then the other table will have a matching ReverseReferenceNode.
 type ReferenceNode struct {
 	nodeAlias
 	nodeCondition
@@ -38,8 +38,8 @@ type ReferenceNode struct {
 	refTable string
 	// If a forward reference and NoSQL, the name of the table that will contain the reference or references backwards to us. If SQL, the Pk of the RefTable
 	refColumn string
-	// Is this pointing to a type table item?
-	isTypeTable bool
+	// Is this pointing to a enum table item?
+	isEnumTable bool
 	// The type of item acting as a pointer. This should be the same on both sides of the reference.
 	goType GoColumnType
 }
@@ -53,7 +53,7 @@ func NewReferenceNode(
 	goName string,
 	refTableName string,
 	refColumn string, // only used in NoSQL situation
-	isType bool,
+	isEnum bool,
 	goType GoColumnType,
 ) *ReferenceNode {
 	n := &ReferenceNode{
@@ -64,8 +64,8 @@ func NewReferenceNode(
 		goPropName:   goName,
 		refTable:     refTableName,
 		refColumn:    refColumn,
-		isTypeTable:  isType,
-		goType: 	  goType,
+		isEnumTable:  isEnum,
+		goType:       goType,
 	}
 	return n
 }
@@ -79,8 +79,8 @@ func (n *ReferenceNode) copy() NodeI {
 		goPropName:    n.goPropName,
 		refTable:      n.refTable,
 		refColumn:     n.refColumn,
-		isTypeTable:   n.isTypeTable,
-		goType: 	   n.goType,
+		isEnumTable:   n.isEnumTable,
+		goType:        n.goType,
 		nodeAlias:     nodeAlias{n.alias},
 		nodeCondition: nodeCondition{n.condition},
 	}
@@ -112,7 +112,6 @@ func (n *ReferenceNode) databaseKey() string {
 	return n.dbKey
 }
 
-
 func (n *ReferenceNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
 	log.Print(tabs + "R: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + " AS " + n.GetAlias())
@@ -143,42 +142,40 @@ func (n *ReferenceNode) isExpander() bool {
 }
 
 type referenceNodeEncoded struct {
-	Alias string
-	Condition NodeI
-	Parent NodeI
-	DbKey string
-	DbTable string
-	DbColumn string
+	Alias        string
+	Condition    NodeI
+	Parent       NodeI
+	DbKey        string
+	DbTable      string
+	DbColumn     string
 	GoColumnName string
-	GoPropName string
-	GoVarName string
-	RefTable string
-	RefColumn string
-	IsTypeTable bool
-	GoType GoColumnType
+	GoPropName   string
+	GoVarName    string
+	RefTable     string
+	RefColumn    string
+	IsEnumTable  bool
+	GoType       GoColumnType
 }
-
 
 func (n *ReferenceNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
 	s := referenceNodeEncoded{
-		Alias: n.alias,
-		Condition: n.condition,
-		Parent: n.parentNode,
-		DbKey: n.dbKey,
-		DbTable: n.dbTable,
-		DbColumn: n.dbColumn,
+		Alias:        n.alias,
+		Condition:    n.condition,
+		Parent:       n.parentNode,
+		DbKey:        n.dbKey,
+		DbTable:      n.dbTable,
+		DbColumn:     n.dbColumn,
 		GoColumnName: n.goColumnName,
-		GoPropName: n.goPropName,
-		GoVarName: n.goVarName,
-		RefTable: n.refTable,
-		RefColumn: n.refColumn,
-		IsTypeTable: n.isTypeTable,
-		GoType:n.goType,
+		GoPropName:   n.goPropName,
+		GoVarName:    n.goVarName,
+		RefTable:     n.refTable,
+		RefColumn:    n.refColumn,
+		IsEnumTable:  n.isEnumTable,
+		GoType:       n.goType,
 	}
-
 
 	if err = e.Encode(s); err != nil {
 		panic(err)
@@ -186,7 +183,6 @@ func (n *ReferenceNode) GobEncode() (data []byte, err error) {
 	data = buf.Bytes()
 	return
 }
-
 
 func (n *ReferenceNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
@@ -206,13 +202,12 @@ func (n *ReferenceNode) GobDecode(data []byte) (err error) {
 	n.goVarName = s.GoVarName
 	n.refTable = s.RefTable
 	n.refColumn = s.RefColumn
-	n.isTypeTable = s.IsTypeTable
+	n.isEnumTable = s.IsEnumTable
 	n.goType = s.GoType
 
 	SetParentNode(n, s.Parent)
 	return
 }
-
 
 func init() {
 	gob.Register(&ReferenceNode{})

@@ -18,7 +18,7 @@ type {{= cd.Connector }}  struct {
 func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
 {{if sRefresh != ""}}
     if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
-{{if col.IsType() }}
+{{if col.IsEnum() }}
         val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().ID()
 {{else}}
         val := data.(*model.{{= t.GoName }}).{{= col.GoName }}()
@@ -33,7 +33,7 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
         {{= sUpdate }}
-{{if col.IsType()}}
+{{if col.IsEnum()}}
         data.(*model.{{= t.GoName }}).Set{{= col.ReferenceFunction() }}(model.{{= col.ForeignKey.GoType }}(val))
 {{else}}
         data.(*model.{{= t.GoName }}).Set{{= col.GoName }}(val)
@@ -46,7 +46,7 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) (modifies bool) {
 {{if sModifies != ""}}
     if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
-{{if col.IsType() }}
+{{if col.IsEnum() }}
         val := data.(*model.{{= t.GoName }}).{{= col.ReferenceFunction() }}().ID()
 {{else}}
         val := data.(*model.{{= t.GoName }}).{{= col.GoName }}()

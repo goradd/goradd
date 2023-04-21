@@ -63,8 +63,8 @@ const (
 func (o *employeeInfoBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = false
-	o.idIsDirty = false
+	o.idIsValid = true
+	o.idIsDirty = true
 
 	o.personID = ""
 	o.personIDIsValid = false
@@ -199,7 +199,7 @@ func LoadEmployeeInfo(ctx context.Context, primaryKey string, joinOrSelectNodes 
 	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasEmployeeInfo returns true if a EmployeeInfo with the give key exists database.
+// HasEmployeeInfo returns true if a EmployeeInfo with the given key exists database.
 func HasEmployeeInfo(ctx context.Context, primaryKey string) bool {
 	q := queryEmployeeInfos(ctx)
 	q = q.Where(Equal(node.EmployeeInfo().ID(), primaryKey))
@@ -405,7 +405,7 @@ func (b *EmployeeInfosBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *EmployeeInfosBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "employee_info")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.employee_info")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -428,16 +428,16 @@ func (b *EmployeeInfosBuilder) joinOrSelect(nodes ...query.NodeI) *EmployeeInfos
 	return b
 }
 
-func CountEmployeeInfoByID(ctx context.Context, id string) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), id)).Count(false)
+func CountEmployeeInfoByID(ctx context.Context, id string) int {
+	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), id)).Count(false))
 }
 
-func CountEmployeeInfoByPersonID(ctx context.Context, personID string) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().PersonID(), personID)).Count(false)
+func CountEmployeeInfoByPersonID(ctx context.Context, personID string) int {
+	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().PersonID(), personID)).Count(false))
 }
 
-func CountEmployeeInfoByEmployeeNumber(ctx context.Context, employeeNumber int) uint {
-	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().EmployeeNumber(), employeeNumber)).Count(false)
+func CountEmployeeInfoByEmployeeNumber(ctx context.Context, employeeNumber int) int {
+	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().EmployeeNumber(), employeeNumber)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -528,13 +528,13 @@ func (o *employeeInfoBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "employee_info", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "public.employee_info", modifiedFields, "id", o._originalPK)
 		}
 
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "employee_info", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.employee_info", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -557,14 +557,14 @@ func (o *employeeInfoBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "employee_info", m)
+		id := d.Insert(ctx, "public.employee_info", m)
 		o.id = id
 		o._originalPK = id
 
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "employee_info", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.employee_info", o.PrimaryKey())
 }
 
 func (o *employeeInfoBase) getModifiedFields() (fields map[string]interface{}) {
@@ -608,15 +608,15 @@ func (o *employeeInfoBase) Delete(ctx context.Context) {
 		panic("Cannot delete a record that has no primary key value.")
 	}
 	d := Database()
-	d.Delete(ctx, "employee_info", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "employee_info", fmt.Sprint(o.id))
+	d.Delete(ctx, "public.employee_info", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "public.employee_info", fmt.Sprint(o.id))
 }
 
 // deleteEmployeeInfo deletes the associated record from the database.
 func deleteEmployeeInfo(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "employee_info", "id", pk)
-	broadcast.Delete(ctx, "goradd", "employee_info", fmt.Sprint(pk))
+	d.Delete(ctx, "public.employee_info", "id", pk)
+	broadcast.Delete(ctx, "goradd", "public.employee_info", fmt.Sprint(pk))
 }
 
 func (o *employeeInfoBase) resetDirtyStatus() {

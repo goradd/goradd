@@ -77,10 +77,10 @@ func TestRecordSerializeComplex1(t *testing.T) {
 	ctx := getContext()
 	person := model.LoadPerson(ctx, "7",
 		node.Person().ProjectsAsTeamMember(), // many many
-		node.Person().ProjectsAsManager(), // reverse
-		node.Person().PersonTypes(), // many many type
-		node.Person().Login(), // reverse unique
-		)
+		node.Person().ProjectsAsManager(),    // reverse
+		node.Person().PersonTypes(),          // many many type
+		node.Person().Login(),                // reverse unique
+	)
 
 	// Serialize and deserialize
 	person2 := serObject(t, person).(*model.Person)
@@ -94,9 +94,9 @@ func TestRecordSerializeComplex2(t *testing.T) {
 	ctx := getContext()
 	login := model.LoadLogin(ctx, "4",
 		node.Login().Person().ProjectsAsTeamMember(), // many many
-		node.Login().Person().ProjectsAsManager(), // reverse
-		node.Login().Person().PersonTypes(), // many many type
-		node.Login().Person().Login(), // reverse unique
+		node.Login().Person().ProjectsAsManager(),    // reverse
+		node.Login().Person().PersonTypes(),          // many many type
+		node.Login().Person().Login(),                // reverse unique
 	)
 
 	// Serialize and deserialize
@@ -106,6 +106,3 @@ func TestRecordSerializeComplex2(t *testing.T) {
 	assert.Len(t, login2.Person().PersonTypes(), 2)
 	assert.Equal(t, "kwolfe", login2.Person().Login().Username())
 }
-
-
-

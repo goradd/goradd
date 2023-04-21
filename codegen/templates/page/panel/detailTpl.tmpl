@@ -22,7 +22,7 @@ var panelName = t.GoName + "DetailPanel"
             continue
         }
         var name string
-        if col.IsReference() || col.IsType() {
+        if col.IsReference() || col.IsEnum() {
             name = col.ReferenceFunction()
         } else {
             name = col.GoName

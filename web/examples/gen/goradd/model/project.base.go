@@ -31,9 +31,9 @@ type projectBase struct {
 	numIsValid bool
 	numIsDirty bool
 
-	statusTypeID        uint
-	statusTypeIDIsValid bool
-	statusTypeIDIsDirty bool
+	statusID        int
+	statusIDIsValid bool
+	statusIDIsDirty bool
 
 	managerID        string
 	managerIDIsNull  bool
@@ -99,16 +99,16 @@ type projectBase struct {
 }
 
 const (
-	ProjectIDDefault           = ""
-	ProjectNumDefault          = 0
-	ProjectStatusTypeIDDefault = 0
-	ProjectManagerIDDefault    = ""
-	ProjectNameDefault         = ""
-	ProjectDescriptionDefault  = ""
-	ProjectStartDateDefault    = time2.Zero
-	ProjectEndDateDefault      = time2.Zero
-	ProjectBudgetDefault       = ""
-	ProjectSpentDefault        = ""
+	ProjectIDDefault          = ""
+	ProjectNumDefault         = 0
+	ProjectStatusIDDefault    = 0
+	ProjectManagerIDDefault   = ""
+	ProjectNameDefault        = ""
+	ProjectDescriptionDefault = ""
+	ProjectStartDateDefault   = time2.Zero
+	ProjectEndDateDefault     = time2.Zero
+	ProjectBudgetDefault      = ""
+	ProjectSpentDefault       = ""
 )
 
 const (
@@ -116,7 +116,7 @@ const (
 
 	Project_Num = `Num`
 
-	Project_StatusTypeID = `StatusTypeID`
+	Project_StatusID = `StatusID`
 
 	Project_ManagerID = `ManagerID`
 
@@ -147,16 +147,16 @@ const (
 func (o *projectBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = false
-	o.idIsDirty = false
+	o.idIsValid = true
+	o.idIsDirty = true
 
 	o.num = 0
 	o.numIsValid = false
 	o.numIsDirty = false
 
-	o.statusTypeID = 0
-	o.statusTypeIDIsValid = false
-	o.statusTypeIDIsDirty = false
+	o.statusID = 0
+	o.statusIDIsValid = false
+	o.statusIDIsDirty = false
 
 	o.managerID = ""
 	o.managerIDIsNull = true
@@ -616,18 +616,18 @@ func (o *projectBase) IsNew() bool {
 	return !o._restored
 }
 
-func (o *projectBase) StatusType() ProjectStatusType {
-	if o._restored && !o.statusTypeIDIsValid {
-		panic("statusTypeID was not selected in the last query and so is not valid")
+func (o *projectBase) Status() ProjectStatus {
+	if o._restored && !o.statusIDIsValid {
+		panic("statusID was not selected in the last query and so is not valid")
 	}
-	return ProjectStatusType(o.statusTypeID)
+	return ProjectStatus(o.statusID)
 }
 
-func (o *projectBase) SetStatusType(v ProjectStatusType) {
-	if o.statusTypeID != uint(v) {
-		o.statusTypeID = uint(v)
-		o.statusTypeIDIsDirty = true
-		o.statusTypeIDIsValid = true
+func (o *projectBase) SetStatus(v ProjectStatus) {
+	if o.statusID != int(v) {
+		o.statusID = int(v)
+		o.statusIDIsDirty = true
+		o.statusIDIsValid = true
 	}
 }
 
@@ -664,6 +664,14 @@ func (o *projectBase) LoadChildrenAsParent(ctx context.Context) {
 	}
 }
 
+// CountChildrenAsParent counts the number of associated ChildAsParent objects in the database.
+func (o *projectBase) CountChildrenAsParent(ctx context.Context) int {
+	return int(QueryProjects(ctx).
+		Where(op.Equal(node.Project().ParentsAsChild(), o.PrimaryKey())).
+		Count(false))
+
+}
+
 // ParentAsChild returns a single Project object by primary key, if one was loaded
 // otherwise, it will return nil.
 func (o *projectBase) ParentAsChild(pk string) *Project {
@@ -695,6 +703,14 @@ func (o *projectBase) LoadParentsAsChild(ctx context.Context) {
 	for _, i := range o.oParentsAsChild {
 		o.mParentsAsChild[i.PrimaryKey()] = i
 	}
+}
+
+// CountParentsAsChild counts the number of associated ParentAsChild objects in the database.
+func (o *projectBase) CountParentsAsChild(ctx context.Context) int {
+	return int(QueryProjects(ctx).
+		Where(op.Equal(node.Project().ChildrenAsParent(), o.PrimaryKey())).
+		Count(false))
+
 }
 
 // TeamMember returns a single Person object by primary key, if one was loaded
@@ -730,6 +746,14 @@ func (o *projectBase) LoadTeamMembers(ctx context.Context) {
 	}
 }
 
+// CountTeamMembers counts the number of associated TeamMember objects in the database.
+func (o *projectBase) CountTeamMembers(ctx context.Context) int {
+	return int(QueryPeople(ctx).
+		Where(op.Equal(node.Person().ProjectsAsTeamMember(), o.PrimaryKey())).
+		Count(false))
+
+}
+
 // Milestone returns a single Milestone object by primary key, if one was loaded.
 // Otherwise, it will return nil. It will not return Milestone objects that are not saved.
 func (o *projectBase) Milestone(pk string) *Milestone {
@@ -750,6 +774,9 @@ func (o *projectBase) Milestones() []*Milestone {
 
 // LoadMilestones loads a new slice of Milestone objects and returns it.
 func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interface{}) []*Milestone {
+	if o.IsNew() {
+		return nil
+	}
 	for _, obj := range o.oMilestones {
 		if obj.IsDirty() {
 			panic("You cannot load over items that have changed but have not been saved.")
@@ -776,9 +803,7 @@ func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interfac
 
 // CountMilestones returns the number of Milestone objects in the database connected to this object.
 func (o *projectBase) CountMilestones(ctx context.Context) int {
-	return int(QueryMilestones(ctx).
-		Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
-		Count(false))
+	return CountMilestoneByProjectID(ctx, o.PrimaryKey())
 }
 
 // SetMilestones associates the given objects with the Project.
@@ -812,7 +837,7 @@ func LoadProject(ctx context.Context, primaryKey string, joinOrSelectNodes ...qu
 	return queryProjects(ctx).Where(Equal(node.Project().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasProject returns true if a Project with the give key exists database.
+// HasProject returns true if a Project with the given key exists database.
 func HasProject(ctx context.Context, primaryKey string) bool {
 	q := queryProjects(ctx)
 	q = q.Where(Equal(node.Project().ID(), primaryKey))
@@ -1018,7 +1043,7 @@ func (b *ProjectsBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *ProjectsBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "project")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.project")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -1041,44 +1066,44 @@ func (b *ProjectsBuilder) joinOrSelect(nodes ...query.NodeI) *ProjectsBuilder {
 	return b
 }
 
-func CountProjectByID(ctx context.Context, id string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().ID(), id)).Count(false)
+func CountProjectByID(ctx context.Context, id string) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().ID(), id)).Count(false))
 }
 
-func CountProjectByNum(ctx context.Context, num int) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Num(), num)).Count(false)
+func CountProjectByNum(ctx context.Context, num int) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().Num(), num)).Count(false))
 }
 
-func CountProjectByStatusTypeID(ctx context.Context, statusTypeID uint) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().StatusTypeID(), statusTypeID)).Count(false)
+func CountProjectByStatusID(ctx context.Context, statusID int) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().StatusID(), statusID)).Count(false))
 }
 
-func CountProjectByManagerID(ctx context.Context, managerID string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().ManagerID(), managerID)).Count(false)
+func CountProjectByManagerID(ctx context.Context, managerID string) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().ManagerID(), managerID)).Count(false))
 }
 
-func CountProjectByName(ctx context.Context, name string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Name(), name)).Count(false)
+func CountProjectByName(ctx context.Context, name string) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().Name(), name)).Count(false))
 }
 
-func CountProjectByDescription(ctx context.Context, description string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Description(), description)).Count(false)
+func CountProjectByDescription(ctx context.Context, description string) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().Description(), description)).Count(false))
 }
 
-func CountProjectByStartDate(ctx context.Context, startDate time.Time) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().StartDate(), startDate)).Count(false)
+func CountProjectByStartDate(ctx context.Context, startDate time.Time) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().StartDate(), startDate)).Count(false))
 }
 
-func CountProjectByEndDate(ctx context.Context, endDate time.Time) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().EndDate(), endDate)).Count(false)
+func CountProjectByEndDate(ctx context.Context, endDate time.Time) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().EndDate(), endDate)).Count(false))
 }
 
-func CountProjectByBudget(ctx context.Context, budget string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Budget(), budget)).Count(false)
+func CountProjectByBudget(ctx context.Context, budget string) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().Budget(), budget)).Count(false))
 }
 
-func CountProjectBySpent(ctx context.Context, spent string) uint {
-	return queryProjects(ctx).Where(Equal(node.Project().Spent(), spent)).Count(false)
+func CountProjectBySpent(ctx context.Context, spent string) int {
+	return int(queryProjects(ctx).Where(Equal(node.Project().Spent(), spent)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -1110,16 +1135,16 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 		o.num = 0
 	}
 
-	if v, ok := m["status_type_id"]; ok && v != nil {
-		if o.statusTypeID, ok = v.(uint); ok {
-			o.statusTypeIDIsValid = true
-			o.statusTypeIDIsDirty = false
+	if v, ok := m["status_id"]; ok && v != nil {
+		if o.statusID, ok = v.(int); ok {
+			o.statusIDIsValid = true
+			o.statusIDIsDirty = false
 		} else {
-			panic("Wrong type found for status_type_id.")
+			panic("Wrong type found for status_id.")
 		}
 	} else {
-		o.statusTypeIDIsValid = false
-		o.statusTypeID = 0
+		o.statusIDIsValid = false
+		o.statusID = 0
 	}
 
 	if v, ok := m["manager_id"]; ok {
@@ -1368,7 +1393,7 @@ func (o *projectBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "project", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "public.project", modifiedFields, "id", o._originalPK)
 		}
 
 		if o.oMilestonesIsDirty {
@@ -1412,7 +1437,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"related_project_assn",
 					"parent_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"child_id",
 					pks)
 			}
@@ -1432,7 +1457,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"related_project_assn",
 					"child_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"parent_id",
 					pks)
 			}
@@ -1452,7 +1477,7 @@ func (o *projectBase) update(ctx context.Context) {
 					"team_member_project_assn",
 					"project_id",
 					o.PrimaryKey(),
-					"person",
+					"public.person",
 					"team_member_id",
 					pks)
 			}
@@ -1461,7 +1486,7 @@ func (o *projectBase) update(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "project", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.project", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -1478,8 +1503,8 @@ func (o *projectBase) insert(ctx context.Context) {
 			panic("a value for Num is required, and there is no default value. Call SetNum() before inserting the record.")
 		}
 
-		if !o.statusTypeIDIsValid {
-			panic("a value for StatusTypeID is required, and there is no default value. Call SetStatusTypeID() before inserting the record.")
+		if !o.statusIDIsValid {
+			panic("a value for StatusID is required, and there is no default value. Call SetStatusID() before inserting the record.")
 		}
 
 		if !o.nameIsValid {
@@ -1488,7 +1513,7 @@ func (o *projectBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "project", m)
+		id := d.Insert(ctx, "public.project", m)
 		o.id = id
 		o._originalPK = id
 
@@ -1513,7 +1538,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"related_project_assn",
 					"parent_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"child_id",
 					pks)
 			}
@@ -1531,7 +1556,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"related_project_assn",
 					"child_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"parent_id",
 					pks)
 			}
@@ -1549,7 +1574,7 @@ func (o *projectBase) insert(ctx context.Context) {
 					"team_member_project_assn",
 					"project_id",
 					o.PrimaryKey(),
-					"person",
+					"public.person",
 					"team_member_id",
 					pks)
 			}
@@ -1558,7 +1583,7 @@ func (o *projectBase) insert(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "project", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.project", o.PrimaryKey())
 }
 
 func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1573,9 +1598,9 @@ func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
 		fields["num"] = o.num
 
 	}
-	if o.statusTypeIDIsDirty {
+	if o.statusIDIsDirty {
 
-		fields["status_type_id"] = o.statusTypeID
+		fields["status_id"] = o.statusID
 
 	}
 	if o.managerIDIsDirty {
@@ -1647,9 +1672,9 @@ func (o *projectBase) getValidFields() (fields map[string]interface{}) {
 		fields["num"] = o.num
 
 	}
-	if o.statusTypeIDIsValid {
+	if o.statusIDIsValid {
 
-		fields["status_type_id"] = o.statusTypeID
+		fields["status_id"] = o.statusID
 
 	}
 	if o.managerIDIsValid {
@@ -1723,21 +1748,19 @@ func (o *projectBase) Delete(ctx context.Context) {
 	db.ExecuteTransaction(ctx, d, func() {
 
 		{
-			objs := QueryMilestones(ctx).
+			c := QueryMilestones(ctx).
 				Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
-				Select(node.Milestone().PrimaryKeyNode()).
-				Load()
-			for _, obj := range objs {
-				obj.Delete(ctx)
+				Count(false)
+			if c > 0 {
+				panic("Cannot delete a record that has restricted foreign keys pointing to it.")
 			}
-			o.oMilestones = nil
 		}
 
 		d.Associate(ctx,
 			"related_project_assn",
 			"parent_id",
 			o.PrimaryKey(),
-			"project",
+			"public.project",
 			"child_id",
 			nil)
 
@@ -1745,7 +1768,7 @@ func (o *projectBase) Delete(ctx context.Context) {
 			"related_project_assn",
 			"child_id",
 			o.PrimaryKey(),
-			"project",
+			"public.project",
 			"parent_id",
 			nil)
 
@@ -1753,13 +1776,13 @@ func (o *projectBase) Delete(ctx context.Context) {
 			"team_member_project_assn",
 			"project_id",
 			o.PrimaryKey(),
-			"person",
+			"public.person",
 			"team_member_id",
 			nil)
 
-		d.Delete(ctx, "project", "id", o.id)
+		d.Delete(ctx, "public.project", "id", o.id)
 	})
-	broadcast.Delete(ctx, "goradd", "project", fmt.Sprint(o.id))
+	broadcast.Delete(ctx, "goradd", "public.project", fmt.Sprint(o.id))
 }
 
 // deleteProject deletes the associated record from the database.
@@ -1772,7 +1795,7 @@ func deleteProject(ctx context.Context, pk string) {
 func (o *projectBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.numIsDirty = false
-	o.statusTypeIDIsDirty = false
+	o.statusIDIsDirty = false
 	o.managerIDIsDirty = false
 	o.nameIsDirty = false
 	o.descriptionIsDirty = false
@@ -1787,7 +1810,7 @@ func (o *projectBase) resetDirtyStatus() {
 func (o *projectBase) IsDirty() bool {
 	return o.idIsDirty ||
 		o.numIsDirty ||
-		o.statusTypeIDIsDirty ||
+		o.statusIDIsDirty ||
 		o.managerIDIsDirty ||
 		(o.oManager != nil && o.oManager.IsDirty()) ||
 		o.nameIsDirty ||
@@ -1818,14 +1841,14 @@ func (o *projectBase) Get(key string) interface{} {
 		}
 		return o.num
 
-	case "StatusTypeID":
-		if !o.statusTypeIDIsValid {
+	case "StatusID":
+		if !o.statusIDIsValid {
 			return nil
 		}
-		return o.statusTypeID
+		return o.statusID
 
-	case "StatusType":
-		return o.StatusType()
+	case "Status":
+		return o.Status()
 
 	case "ManagerID":
 		if !o.managerIDIsValid {
@@ -1916,13 +1939,13 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		return nil, err
 	}
 
-	if err := encoder.Encode(o.statusTypeID); err != nil {
+	if err := encoder.Encode(o.statusID); err != nil {
 		return nil, err
 	}
-	if err := encoder.Encode(o.statusTypeIDIsValid); err != nil {
+	if err := encoder.Encode(o.statusIDIsValid); err != nil {
 		return nil, err
 	}
-	if err := encoder.Encode(o.statusTypeIDIsDirty); err != nil {
+	if err := encoder.Encode(o.statusIDIsDirty); err != nil {
 		return nil, err
 	}
 
@@ -2127,13 +2150,13 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 
-	if err = dec.Decode(&o.statusTypeID); err != nil {
+	if err = dec.Decode(&o.statusID); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.statusTypeIDIsValid); err != nil {
+	if err = dec.Decode(&o.statusIDIsValid); err != nil {
 		return
 	}
-	if err = dec.Decode(&o.statusTypeIDIsDirty); err != nil {
+	if err = dec.Decode(&o.statusIDIsDirty); err != nil {
 		return
 	}
 
@@ -2336,12 +2359,12 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 		v["num"] = o.num
 	}
 
-	if o.statusTypeIDIsValid {
-		v["statusTypeID"] = o.statusTypeID
+	if o.statusIDIsValid {
+		v["statusID"] = o.statusID
 	}
 
-	if o.statusTypeIDIsValid {
-		v["statusType"] = o.StatusType().String()
+	if o.statusIDIsValid {
+		v["status"] = o.Status().String()
 	}
 	if o.managerIDIsValid {
 		if o.managerIDIsNull {
@@ -2403,7 +2426,7 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 		for _, v2 := range val {
 			val2 = append(val2, v2.MarshalStringMap())
 		}
-		v["project"] = val2
+		v["milestones"] = val2
 	}
 
 	if val := o.ChildrenAsParent(); val != nil {
@@ -2447,7 +2470,7 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 
 //   "num" - int
 
-//   "statusTypeID" - uint
+//   "statusID" - int
 
 //   "managerID" - string, nullable
 
@@ -2490,28 +2513,28 @@ func (o *projectBase) UnmarshalStringMap(m map[string]interface{}) (err error) {
 					return fmt.Errorf("json field %s must be a number", k)
 				}
 			}
-		case "statusTypeID":
+		case "statusID":
 			{
 				if v == nil {
 					return fmt.Errorf("json field %s cannot be null", k)
 				}
 				if n, ok := v.(int); ok {
-					o.SetStatusType(ProjectStatusType(n))
+					o.SetStatus(ProjectStatus(n))
 				} else if n, ok := v.(float64); ok {
-					o.SetStatusType(ProjectStatusType(int(n)))
+					o.SetStatus(ProjectStatus(int(n)))
 				} else {
 					return fmt.Errorf("json field %s must be a number", k)
 				}
 			}
-		case "statusType":
+		case "status":
 			if s, ok := v.(string); !ok {
 				return fmt.Errorf("json field %s must be a string", k)
 			} else {
-				t := ProjectStatusTypeFromName(s)
+				t := ProjectStatusFromName(s)
 				if int(t) == 0 {
 					return fmt.Errorf("invalid value for field %s", k)
 				}
-				o.SetStatusType(t)
+				o.SetStatus(t)
 			}
 
 		case "managerID":

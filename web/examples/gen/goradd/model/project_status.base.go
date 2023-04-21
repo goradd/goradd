@@ -9,21 +9,21 @@ import (
 )
 
 const (
-	ProjectStatusTypeOpen ProjectStatusType = 1
+	ProjectStatusOpen ProjectStatus = 1
 
-	ProjectStatusTypeCancelled ProjectStatusType = 2
+	ProjectStatusCancelled ProjectStatus = 2
 
-	ProjectStatusTypeCompleted ProjectStatusType = 3
+	ProjectStatusCompleted ProjectStatus = 3
 
-	ProjectStatusTypePlanned ProjectStatusType = 4
+	ProjectStatusPlanned ProjectStatus = 4
 )
 
-const ProjectStatusTypeMaxValue = 4
+const ProjectStatusMaxValue = 4
 
-type ProjectStatusType int
+type ProjectStatus int
 
 // String returns the name value of the type and satisfies the fmt.Stringer interface
-func (p ProjectStatusType) String() string {
+func (p ProjectStatus) String() string {
 	switch p {
 	case 0:
 		return ""
@@ -42,42 +42,42 @@ func (p ProjectStatusType) String() string {
 }
 
 // ID returns a string representation of the id and satisfies the IDer interface
-func (p ProjectStatusType) ID() string {
+func (p ProjectStatus) ID() string {
 	return strconv.Itoa(int(p))
 }
 
-// ProjectStatusTypeFromID converts a ProjectStatusType ID to a ProjectStatusType
-func ProjectStatusTypeFromID(id string) ProjectStatusType {
+// ProjectStatusFromID converts a ProjectStatus ID to a ProjectStatus
+func ProjectStatusFromID(id string) ProjectStatus {
 	switch id {
 	case "1":
-		return ProjectStatusType(1)
+		return ProjectStatus(1)
 	case "2":
-		return ProjectStatusType(2)
+		return ProjectStatus(2)
 	case "3":
-		return ProjectStatusType(3)
+		return ProjectStatus(3)
 	case "4":
-		return ProjectStatusType(4)
+		return ProjectStatus(4)
 	}
-	return ProjectStatusType(0)
+	return ProjectStatus(0)
 }
 
-// ProjectStatusTypeFromName converts a ProjectStatusType name to a ProjectStatusType
-func ProjectStatusTypeFromName(name string) ProjectStatusType {
+// ProjectStatusFromName converts a ProjectStatus name to a ProjectStatus
+func ProjectStatusFromName(name string) ProjectStatus {
 	switch name {
 	case "Open":
-		return ProjectStatusType(1)
+		return ProjectStatus(1)
 	case "Cancelled":
-		return ProjectStatusType(2)
+		return ProjectStatus(2)
 	case "Completed":
-		return ProjectStatusType(3)
+		return ProjectStatus(3)
 	case "Planned":
-		return ProjectStatusType(4)
+		return ProjectStatus(4)
 	}
-	return ProjectStatusType(0)
+	return ProjectStatus(0)
 }
 
-// AllProjectStatusTypes returns a slice of all the ProjectStatusType items
-func AllProjectStatusTypes() (values []ProjectStatusType) {
+// AllProjectStatuses returns a slice of all the ProjectStatus items
+func AllProjectStatuses() (values []ProjectStatus) {
 	values = append(values, 1)
 	values = append(values, 2)
 	values = append(values, 3)
@@ -85,30 +85,30 @@ func AllProjectStatusTypes() (values []ProjectStatusType) {
 	return
 }
 
-// AllProjectStatusTypesI returns a slice of interfaces that contains all the ProjectStatusType items
-func AllProjectStatusTypesI() (values []interface{}) {
+// AllProjectStatusesI returns a slice of interfaces that contains all the ProjectStatus items
+func AllProjectStatusesI() (values []interface{}) {
 	values = make([]interface{}, 4, 4)
-	values[0] = ProjectStatusType(1)
-	values[1] = ProjectStatusType(2)
-	values[2] = ProjectStatusType(3)
-	values[3] = ProjectStatusType(4)
+	values[0] = ProjectStatus(1)
+	values[1] = ProjectStatus(2)
+	values[2] = ProjectStatus(3)
+	values[3] = ProjectStatus(4)
 	return
 }
 
 // Label returns the string that will be displayed to a user for this item. Together with
 // the Value function, it satisfies the ItemLister interface that makes it easy
 // to create a dropdown list of items.
-func (p ProjectStatusType) Label() string {
+func (p ProjectStatus) Label() string {
 	return p.String()
 }
 
 // Value returns the value that will be used in dropdown lists and satisfies the
 // Valuer and ItemLister interfaces.
-func (p ProjectStatusType) Value() interface{} {
+func (p ProjectStatus) Value() interface{} {
 	return p.ID()
 }
 
-func (p ProjectStatusType) Name() string {
+func (p ProjectStatus) Name() string {
 	switch p {
 	case 0:
 		return ""
@@ -126,7 +126,7 @@ func (p ProjectStatusType) Name() string {
 	return "" // prevent warning
 }
 
-func (p ProjectStatusType) Description() string {
+func (p ProjectStatus) Description() string {
 	switch p {
 	case 0:
 		return ""
@@ -144,7 +144,7 @@ func (p ProjectStatusType) Description() string {
 	return "" // prevent warning
 }
 
-func (p ProjectStatusType) Guidelines() string {
+func (p ProjectStatus) Guidelines() string {
 	switch p {
 	case 0:
 		return ""
@@ -162,7 +162,7 @@ func (p ProjectStatusType) Guidelines() string {
 	return "" // prevent warning
 }
 
-func (p ProjectStatusType) IsActive() bool {
+func (p ProjectStatus) IsActive() bool {
 	switch p {
 	case 0:
 		return false
@@ -180,7 +180,7 @@ func (p ProjectStatusType) IsActive() bool {
 	return false // prevent warning
 }
 
-func ProjectStatusTypeNames() []string {
+func ProjectStatusNames() []string {
 	names := make([]string, 5)
 	// 0 item will be a blank
 	names[1] = "Open"
@@ -190,7 +190,7 @@ func ProjectStatusTypeNames() []string {
 	return names
 }
 
-func ProjectStatusTypeDescriptions() []string {
+func ProjectStatusDescriptions() []string {
 	descriptions := make([]string, 5)
 	// 0 item will be a blank
 	descriptions[1] = "The project is currently active"
@@ -200,7 +200,7 @@ func ProjectStatusTypeDescriptions() []string {
 	return descriptions
 }
 
-func ProjectStatusTypeGuidelines() []string {
+func ProjectStatusGuidelines() []string {
 	guidelines := make([]string, 5)
 	// 0 item will be a blank
 	guidelines[1] = "All projects that we are working on should be in this state"
@@ -210,7 +210,7 @@ func ProjectStatusTypeGuidelines() []string {
 	return guidelines
 }
 
-func ProjectStatusTypeIsActives() []bool {
+func ProjectStatusIsActives() []bool {
 	is_actives := make([]bool, 5)
 	// 0 item will be a blank
 	is_actives[1] = true
@@ -220,7 +220,7 @@ func ProjectStatusTypeIsActives() []bool {
 	return is_actives
 }
 
-func (p ProjectStatusType) Get(key string) interface{} {
+func (p ProjectStatus) Get(key string) interface{} {
 
 	switch key {
 	case "Name":

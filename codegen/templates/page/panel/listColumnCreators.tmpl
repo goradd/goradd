@@ -8,7 +8,7 @@ func (p *{{= panelName }}) ColumnCreators(_ context.Context) []table.ColumnCreat
 {{for _,col := range t.Columns }}
         column.NodeColumnCreator{
             ID: {{= lcPanelName }}{{= col.GoName }}ColID,
-{{if col.IsReference() || col.IsType() }}
+{{if col.IsReference() || col.IsEnum() }}
             Node: node.{{= t.GoName }}().{{= col.ReferenceFunction() }}(),
 {{else}}
             Node: node.{{= t.GoName }}().{{= col.GoName }}(),

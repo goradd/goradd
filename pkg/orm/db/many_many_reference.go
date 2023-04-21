@@ -27,8 +27,8 @@ type ManyManyReference struct {
 	// GoPlural is the name used to refer to the group of objects on the other end of the reference.
 	GoPlural string
 
-	// IsTypeAssociation is true if this is a many-many relationship with a type table
-	IsTypeAssociation bool
+	// IsEnumAssociation is true if this is a many-many relationship with a enum table
+	IsEnumAssociation bool
 
 	// MM is the many-many reference on the other end of the relationship that points back to this one.
 	MM *ManyManyReference

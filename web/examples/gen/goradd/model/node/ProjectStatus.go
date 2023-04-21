@@ -8,11 +8,11 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type projectStatusTypeNode struct {
+type projectStatusNode struct {
 	query.ReferenceNodeI
 }
 
-func (n *projectStatusTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
+func (n *projectStatusNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.Name())
 	nodes = append(nodes, n.Description())
@@ -21,36 +21,36 @@ func (n *projectStatusTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	return nodes
 }
 
-func (n *projectStatusTypeNode) PrimaryKeyNode() *query.ColumnNode {
+func (n *projectStatusNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 
-func (n *projectStatusTypeNode) EmbeddedNode_() query.NodeI {
+func (n *projectStatusNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
 
-func (n *projectStatusTypeNode) Copy_() query.NodeI {
-	return &projectStatusTypeNode{query.CopyNode(n.ReferenceNodeI)}
+func (n *projectStatusNode) Copy_() query.NodeI {
+	return &projectStatusNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
-func (n *projectStatusTypeNode) ID() *query.ColumnNode {
+func (n *projectStatusNode) ID() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_enum",
 		"id",
 		"ID",
-		query.ColTypeUnsigned,
+		query.ColTypeInteger,
 		true,
 	)
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *projectStatusTypeNode) Name() *query.ColumnNode {
+func (n *projectStatusNode) Name() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_enum",
 		"name",
 		"Name",
 		query.ColTypeString,
@@ -59,11 +59,11 @@ func (n *projectStatusTypeNode) Name() *query.ColumnNode {
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *projectStatusTypeNode) Description() *query.ColumnNode {
+func (n *projectStatusNode) Description() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_enum",
 		"description",
 		"Description",
 		query.ColTypeString,
@@ -72,11 +72,11 @@ func (n *projectStatusTypeNode) Description() *query.ColumnNode {
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *projectStatusTypeNode) Guidelines() *query.ColumnNode {
+func (n *projectStatusNode) Guidelines() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_enum",
 		"guidelines",
 		"Guidelines",
 		query.ColTypeString,
@@ -85,11 +85,11 @@ func (n *projectStatusTypeNode) Guidelines() *query.ColumnNode {
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *projectStatusTypeNode) IsActive() *query.ColumnNode {
+func (n *projectStatusNode) IsActive() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
-		"project_status_type",
+		"public.project_status_enum",
 		"is_active",
 		"IsActive",
 		query.ColTypeBool,
@@ -99,5 +99,5 @@ func (n *projectStatusTypeNode) IsActive() *query.ColumnNode {
 	return cn
 }
 func init() {
-	gob.RegisterName("projectStatusTypeNode2", &projectStatusTypeNode{})
+	gob.RegisterName("projectStatusNode2", &projectStatusNode{})
 }

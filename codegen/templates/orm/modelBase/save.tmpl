@@ -124,7 +124,7 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
 {{g
     oName := oRef(ref)
 }}
-    {{if ref.IsTypeAssociation}}
+    {{if ref.IsEnumAssociation}}
         if o.{{= oName }}IsDirty {
             d.Associate(ctx,
                 "{{= ref.AssnTableName }}",
@@ -228,7 +228,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 {{g
     oName := oRef(ref)
 }}
-{{if ref.IsTypeAssociation}}
+{{if ref.IsEnumAssociation}}
     if len(o.{{= oName }}) != 0 {
         d.Associate(ctx,
             "{{= ref.AssnTableName }}",

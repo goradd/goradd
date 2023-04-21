@@ -1,9 +1,9 @@
 package mysql
 
 type Options struct {
-	// TypeTableSuffix is the suffix in the name of a table that tells GoRADD to treat
-	// the table as a type table. Defaults to "_type" if not set.
-	TypeTableSuffix string
+	// EnumTableSuffix is the suffix in the name of a table that tells GoRADD to treat
+	// the table as a enum table. Defaults to "_enum" if not set.
+	EnumTableSuffix string
 	// AssociationTableSuffix is the suffix in the name of a table that tells GoRADD to
 	// treat the table as an association table. Defaults to "_assn".
 	AssociationTableSuffix string
@@ -17,11 +17,10 @@ type Options struct {
 	ForeignKeySuffix string
 }
 
-
 // DefaultOptions returns default database analysis options for MySQL databases.
 func DefaultOptions() Options {
 	return Options{
-		TypeTableSuffix:        "_type",
+		EnumTableSuffix:        "_enum",
 		AssociationTableSuffix: "_assn",
 		ForeignKeySuffix:       "_id",
 	}

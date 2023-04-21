@@ -71,8 +71,8 @@ const (
 func (o *addressBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = false
-	o.idIsDirty = false
+	o.idIsValid = true
+	o.idIsDirty = true
 
 	o.personID = ""
 	o.personIDIsValid = false
@@ -262,7 +262,7 @@ func LoadAddress(ctx context.Context, primaryKey string, joinOrSelectNodes ...qu
 	return queryAddresses(ctx).Where(Equal(node.Address().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasAddress returns true if a Address with the give key exists database.
+// HasAddress returns true if a Address with the given key exists database.
 func HasAddress(ctx context.Context, primaryKey string) bool {
 	q := queryAddresses(ctx)
 	q = q.Where(Equal(node.Address().ID(), primaryKey))
@@ -448,7 +448,7 @@ func (b *AddressesBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *AddressesBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "address")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.address")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -471,20 +471,20 @@ func (b *AddressesBuilder) joinOrSelect(nodes ...query.NodeI) *AddressesBuilder 
 	return b
 }
 
-func CountAddressByID(ctx context.Context, id string) uint {
-	return queryAddresses(ctx).Where(Equal(node.Address().ID(), id)).Count(false)
+func CountAddressByID(ctx context.Context, id string) int {
+	return int(queryAddresses(ctx).Where(Equal(node.Address().ID(), id)).Count(false))
 }
 
-func CountAddressByPersonID(ctx context.Context, personID string) uint {
-	return queryAddresses(ctx).Where(Equal(node.Address().PersonID(), personID)).Count(false)
+func CountAddressByPersonID(ctx context.Context, personID string) int {
+	return int(queryAddresses(ctx).Where(Equal(node.Address().PersonID(), personID)).Count(false))
 }
 
-func CountAddressByStreet(ctx context.Context, street string) uint {
-	return queryAddresses(ctx).Where(Equal(node.Address().Street(), street)).Count(false)
+func CountAddressByStreet(ctx context.Context, street string) int {
+	return int(queryAddresses(ctx).Where(Equal(node.Address().Street(), street)).Count(false))
 }
 
-func CountAddressByCity(ctx context.Context, city string) uint {
-	return queryAddresses(ctx).Where(Equal(node.Address().City(), city)).Count(false)
+func CountAddressByCity(ctx context.Context, city string) int {
+	return int(queryAddresses(ctx).Where(Equal(node.Address().City(), city)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -594,13 +594,13 @@ func (o *addressBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "address", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "public.address", modifiedFields, "id", o._originalPK)
 		}
 
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "address", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.address", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -623,14 +623,14 @@ func (o *addressBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "address", m)
+		id := d.Insert(ctx, "public.address", m)
 		o.id = id
 		o._originalPK = id
 
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "address", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.address", o.PrimaryKey())
 }
 
 func (o *addressBase) getModifiedFields() (fields map[string]interface{}) {
@@ -692,15 +692,15 @@ func (o *addressBase) Delete(ctx context.Context) {
 		panic("Cannot delete a record that has no primary key value.")
 	}
 	d := Database()
-	d.Delete(ctx, "address", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "address", fmt.Sprint(o.id))
+	d.Delete(ctx, "public.address", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "public.address", fmt.Sprint(o.id))
 }
 
 // deleteAddress deletes the associated record from the database.
 func deleteAddress(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "address", "id", pk)
-	broadcast.Delete(ctx, "goradd", "address", fmt.Sprint(pk))
+	d.Delete(ctx, "public.address", "id", pk)
+	broadcast.Delete(ctx, "goradd", "public.address", fmt.Sprint(pk))
 }
 
 func (o *addressBase) resetDirtyStatus() {

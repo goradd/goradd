@@ -61,7 +61,11 @@ func (p *{{= panelName }}) Load(ctx context.Context, pk {{= t.PrimaryKeyGoType()
 {{for}}
     )
     if p.{{= t.GoName }} == nil {
-        d := dialog.Alert(p, p.ParentForm().GT("The record was not found. Perhaps it was recently deleted by someone else."), "OK")
+        d := dialog.Alert(p,
+            p.ParentForm().GT("Error"),
+            p.ParentForm().GT("The record was not found. Perhaps it was recently deleted by someone else."),
+            true,
+            "OK")
         d.SetTitle(p.ParentForm().GT("Error"))
         return page.NewFrameworkError(page.FrameworkErrRecordNotFound)
     }

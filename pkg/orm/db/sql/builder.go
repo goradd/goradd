@@ -786,7 +786,7 @@ func (b *Builder) expandNode(j *JoinTreeItem, nodeObject db2.ValueMap) (outArray
 				}
 
 			case ManyManyNodeType:
-				if ManyManyNodeIsTypeTable(childItem.Node.(TableNodeI).EmbeddedNode_().(*ManyManyNode)) {
+				if ManyManyNodeIsEnumTable(childItem.Node.(TableNodeI).EmbeddedNode_().(*ManyManyNode)) {
 					var intArray []uint
 					nodeObject[tableGoName].(*objectMapType).Range(func(key string, value interface{}) bool {
 						innerNodeObject = value.(db2.ValueMap)

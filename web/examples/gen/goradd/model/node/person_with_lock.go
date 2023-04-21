@@ -15,7 +15,7 @@ type personWithLockNode struct {
 
 func PersonWithLock() *personWithLockNode {
 	n := personWithLockNode{
-		query.NewTableNode("goradd", "person_with_lock", "PersonWithLock"),
+		query.NewTableNode("goradd", "public.person_with_lock", "PersonWithLock"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
@@ -42,7 +42,7 @@ func (n *personWithLockNode) Copy_() query.NodeI {
 func (n *personWithLockNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"person_with_lock",
+		"public.person_with_lock",
 		"id",
 		"ID",
 		query.ColTypeString,
@@ -56,7 +56,7 @@ func (n *personWithLockNode) ID() *query.ColumnNode {
 func (n *personWithLockNode) FirstName() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"person_with_lock",
+		"public.person_with_lock",
 		"first_name",
 		"FirstName",
 		query.ColTypeString,
@@ -70,7 +70,7 @@ func (n *personWithLockNode) FirstName() *query.ColumnNode {
 func (n *personWithLockNode) LastName() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"person_with_lock",
+		"public.person_with_lock",
 		"last_name",
 		"LastName",
 		query.ColTypeString,
@@ -84,7 +84,7 @@ func (n *personWithLockNode) LastName() *query.ColumnNode {
 func (n *personWithLockNode) SysTimestamp() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"person_with_lock",
+		"public.person_with_lock",
 		"sys_timestamp",
 		"SysTimestamp",
 		query.ColTypeTime,

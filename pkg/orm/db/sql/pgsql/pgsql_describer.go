@@ -69,7 +69,7 @@ type pgForeignKey struct {
 func (m *DB) Analyze(options Options) {
 	rawTables := m.getRawTables(options)
 	description := m.descriptionFromRawTables(rawTables, options)
-	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, !options.UseQualifiedNames, description)
+	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, options.EnumTableSuffix, !options.UseQualifiedNames, description)
 }
 
 func (m *DB) getRawTables(options Options) map[string]pgTable {
@@ -466,11 +466,11 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]pgTable, options Opti
 			continue
 		}
 
-		if strings2.EndsWith(tableName, options.TypeTableSuffix) {
-			t := m.getTypeTableDescription(table)
+		if strings2.EndsWith(tableName, options.EnumTableSuffix) {
+			t := m.getEnumTableDescription(table)
 			dd.Tables = append(dd.Tables, t)
 		} else if strings2.EndsWith(tableName, options.AssociationTableSuffix) {
-			if mm, ok := m.getManyManyDescription(table, options.TypeTableSuffix); ok {
+			if mm, ok := m.getManyManyDescription(table, options.EnumTableSuffix); ok {
 				dd.MM = append(dd.MM, mm)
 			}
 		} else {
@@ -560,7 +560,7 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 	return td
 }
 
-func (m *DB) getTypeTableDescription(t pgTable) db.TableDescription {
+func (m *DB) getEnumTableDescription(t pgTable) db.TableDescription {
 	td := m.getTableDescription(t)
 
 	var columnNames []string
@@ -596,7 +596,7 @@ ORDER BY
 	}
 
 	values := sql2.SqlReceiveRows(result, columnTypes, columnNames, nil)
-	td.TypeData = values
+	td.EnumData = values
 	return td
 }
 
@@ -632,7 +632,7 @@ func (m *DB) getColumnDescription(table pgTable, column pgColumn, isPk bool, isU
 	return cd
 }
 
-func (m *DB) getManyManyDescription(t pgTable, typeTableSuffix string) (mm db.ManyManyDescription, ok bool) {
+func (m *DB) getManyManyDescription(t pgTable, enumTableSuffix string) (mm db.ManyManyDescription, ok bool) {
 	td := m.getTableDescription(t)
 	if len(td.Columns) != 2 {
 		log.Print("Error: table " + td.Name + " must have only 2 primary key columns.")
@@ -659,9 +659,9 @@ func (m *DB) getManyManyDescription(t pgTable, typeTableSuffix string) (mm db.Ma
 			return
 		}
 
-		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, typeTableSuffix) {
+		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, enumTableSuffix) {
 			if typeIndex != -1 {
-				log.Print("Error: table " + td.Name + ":" + " cannot have two foreign keys to type tables.")
+				log.Print("Error: table " + td.Name + ":" + " cannot have two foreign keys to enum tables.")
 				return
 			}
 			typeIndex = i

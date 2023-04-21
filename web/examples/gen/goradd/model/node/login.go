@@ -15,7 +15,7 @@ type loginNode struct {
 
 func Login() *loginNode {
 	n := loginNode{
-		query.NewTableNode("goradd", "login", "Login"),
+		query.NewTableNode("goradd", "public.login", "Login"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
@@ -43,7 +43,7 @@ func (n *loginNode) Copy_() query.NodeI {
 func (n *loginNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
+		"public.login",
 		"id",
 		"ID",
 		query.ColTypeString,
@@ -57,7 +57,7 @@ func (n *loginNode) ID() *query.ColumnNode {
 func (n *loginNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
+		"public.login",
 		"person_id",
 		"PersonID",
 		query.ColTypeString,
@@ -72,11 +72,11 @@ func (n *loginNode) Person() *personNode {
 	cn := &personNode{
 		query.NewReferenceNode(
 			"goradd",
-			"login",
+			"public.login",
 			"person_id",
 			"PersonID",
 			"Person",
-			"person",
+			"public.person",
 			"id",
 			false,
 			query.ColTypeString,
@@ -90,7 +90,7 @@ func (n *loginNode) Person() *personNode {
 func (n *loginNode) Username() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
+		"public.login",
 		"username",
 		"Username",
 		query.ColTypeString,
@@ -104,7 +104,7 @@ func (n *loginNode) Username() *query.ColumnNode {
 func (n *loginNode) Password() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
+		"public.login",
 		"password",
 		"Password",
 		query.ColTypeString,
@@ -118,7 +118,7 @@ func (n *loginNode) Password() *query.ColumnNode {
 func (n *loginNode) IsEnabled() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"login",
+		"public.login",
 		"is_enabled",
 		"IsEnabled",
 		query.ColTypeBool,

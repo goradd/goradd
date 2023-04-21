@@ -70,8 +70,8 @@ const (
 func (o *personWithLockBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = false
-	o.idIsDirty = false
+	o.idIsValid = true
+	o.idIsDirty = true
 
 	o.firstName = ""
 	o.firstNameIsValid = false
@@ -227,7 +227,7 @@ func LoadPersonWithLock(ctx context.Context, primaryKey string, joinOrSelectNode
 	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasPersonWithLock returns true if a PersonWithLock with the give key exists database.
+// HasPersonWithLock returns true if a PersonWithLock with the given key exists database.
 func HasPersonWithLock(ctx context.Context, primaryKey string) bool {
 	q := queryPersonWithLocks(ctx)
 	q = q.Where(Equal(node.PersonWithLock().ID(), primaryKey))
@@ -413,7 +413,7 @@ func (b *PersonWithLocksBuilder) Count(distinct bool, nodes ...query.NodeI) uint
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *PersonWithLocksBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "person_with_lock")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.person_with_lock")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -436,20 +436,20 @@ func (b *PersonWithLocksBuilder) joinOrSelect(nodes ...query.NodeI) *PersonWithL
 	return b
 }
 
-func CountPersonWithLockByID(ctx context.Context, id string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), id)).Count(false)
+func CountPersonWithLockByID(ctx context.Context, id string) int {
+	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), id)).Count(false))
 }
 
-func CountPersonWithLockByFirstName(ctx context.Context, firstName string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(false)
+func CountPersonWithLockByFirstName(ctx context.Context, firstName string) int {
+	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(false))
 }
 
-func CountPersonWithLockByLastName(ctx context.Context, lastName string) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(false)
+func CountPersonWithLockByLastName(ctx context.Context, lastName string) int {
+	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(false))
 }
 
-func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp time.Time) uint {
-	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(false)
+func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp time.Time) int {
+	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -540,13 +540,13 @@ func (o *personWithLockBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "person_with_lock", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "public.person_with_lock", modifiedFields, "id", o._originalPK)
 		}
 
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "person_with_lock", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.person_with_lock", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -565,14 +565,14 @@ func (o *personWithLockBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "person_with_lock", m)
+		id := d.Insert(ctx, "public.person_with_lock", m)
 		o.id = id
 		o._originalPK = id
 
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "person_with_lock", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.person_with_lock", o.PrimaryKey())
 }
 
 func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{}) {
@@ -634,15 +634,15 @@ func (o *personWithLockBase) Delete(ctx context.Context) {
 		panic("Cannot delete a record that has no primary key value.")
 	}
 	d := Database()
-	d.Delete(ctx, "person_with_lock", "id", o.id)
-	broadcast.Delete(ctx, "goradd", "person_with_lock", fmt.Sprint(o.id))
+	d.Delete(ctx, "public.person_with_lock", "id", o.id)
+	broadcast.Delete(ctx, "goradd", "public.person_with_lock", fmt.Sprint(o.id))
 }
 
 // deletePersonWithLock deletes the associated record from the database.
 func deletePersonWithLock(ctx context.Context, pk string) {
 	d := db.GetDatabase("goradd")
-	d.Delete(ctx, "person_with_lock", "id", pk)
-	broadcast.Delete(ctx, "goradd", "person_with_lock", fmt.Sprint(pk))
+	d.Delete(ctx, "public.person_with_lock", "id", pk)
+	broadcast.Delete(ctx, "goradd", "public.person_with_lock", fmt.Sprint(pk))
 }
 
 func (o *personWithLockBase) resetDirtyStatus() {

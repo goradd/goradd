@@ -15,7 +15,7 @@ type milestoneNode struct {
 
 func Milestone() *milestoneNode {
 	n := milestoneNode{
-		query.NewTableNode("goradd", "milestone", "Milestone"),
+		query.NewTableNode("goradd", "public.milestone", "Milestone"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
@@ -41,7 +41,7 @@ func (n *milestoneNode) Copy_() query.NodeI {
 func (n *milestoneNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"milestone",
+		"public.milestone",
 		"id",
 		"ID",
 		query.ColTypeString,
@@ -55,7 +55,7 @@ func (n *milestoneNode) ID() *query.ColumnNode {
 func (n *milestoneNode) ProjectID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"milestone",
+		"public.milestone",
 		"project_id",
 		"ProjectID",
 		query.ColTypeString,
@@ -70,11 +70,11 @@ func (n *milestoneNode) Project() *projectNode {
 	cn := &projectNode{
 		query.NewReferenceNode(
 			"goradd",
-			"milestone",
+			"public.milestone",
 			"project_id",
 			"ProjectID",
 			"Project",
-			"project",
+			"public.project",
 			"id",
 			false,
 			query.ColTypeString,
@@ -88,7 +88,7 @@ func (n *milestoneNode) Project() *projectNode {
 func (n *milestoneNode) Name() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
-		"milestone",
+		"public.milestone",
 		"name",
 		"Name",
 		query.ColTypeString,

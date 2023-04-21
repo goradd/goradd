@@ -90,8 +90,8 @@ const (
 func (o *personBase) Initialize() {
 
 	o.id = ""
-	o.idIsValid = false
-	o.idIsDirty = false
+	o.idIsValid = true
+	o.idIsDirty = true
 
 	o.firstName = ""
 	o.firstNameIsValid = false
@@ -233,6 +233,14 @@ func (o *personBase) LoadProjectsAsTeamMember(ctx context.Context) {
 	}
 }
 
+// CountProjectsAsTeamMember counts the number of associated ProjectAsTeamMember objects in the database.
+func (o *personBase) CountProjectsAsTeamMember(ctx context.Context) int {
+	return int(QueryProjects(ctx).
+		Where(op.Equal(node.Project().TeamMembers(), o.PrimaryKey())).
+		Count(false))
+
+}
+
 // Address returns a single Address object by primary key, if one was loaded.
 // Otherwise, it will return nil. It will not return Address objects that are not saved.
 func (o *personBase) Address(pk string) *Address {
@@ -253,6 +261,9 @@ func (o *personBase) Addresses() []*Address {
 
 // LoadAddresses loads a new slice of Address objects and returns it.
 func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{}) []*Address {
+	if o.IsNew() {
+		return nil
+	}
 	for _, obj := range o.oAddresses {
 		if obj.IsDirty() {
 			panic("You cannot load over items that have changed but have not been saved.")
@@ -279,9 +290,7 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 
 // CountAddresses returns the number of Address objects in the database connected to this object.
 func (o *personBase) CountAddresses(ctx context.Context) int {
-	return int(QueryAddresses(ctx).
-		Where(Equal(node.Address().PersonID(), o.PrimaryKey())).
-		Count(false))
+	return CountAddressByPersonID(ctx, o.PrimaryKey())
 }
 
 // SetAddresses associates the given objects with the Person.
@@ -389,6 +398,9 @@ func (o *personBase) ProjectsAsManager() []*Project {
 
 // LoadProjectsAsManager loads a new slice of Project objects and returns it.
 func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...interface{}) []*Project {
+	if o.IsNew() {
+		return nil
+	}
 	for _, obj := range o.oProjectsAsManager {
 		if obj.IsDirty() {
 			panic("You cannot load over items that have changed but have not been saved.")
@@ -415,9 +427,7 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 
 // CountProjectsAsManager returns the number of Project objects in the database connected to this object.
 func (o *personBase) CountProjectsAsManager(ctx context.Context) int {
-	return int(QueryProjects(ctx).
-		Where(Equal(node.Project().ManagerID(), o.PrimaryKey())).
-		Count(false))
+	return CountProjectByManagerID(ctx, o.PrimaryKey())
 }
 
 // SetProjectsAsManager associates the given objects with the Person.
@@ -451,7 +461,7 @@ func LoadPerson(ctx context.Context, primaryKey string, joinOrSelectNodes ...que
 	return queryPeople(ctx).Where(Equal(node.Person().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasPerson returns true if a Person with the give key exists database.
+// HasPerson returns true if a Person with the given key exists database.
 func HasPerson(ctx context.Context, primaryKey string) bool {
 	q := queryPeople(ctx)
 	q = q.Where(Equal(node.Person().ID(), primaryKey))
@@ -637,7 +647,7 @@ func (b *PeopleBuilder) Count(distinct bool, nodes ...query.NodeI) uint {
 // Delete uses the query builder to delete a group of records that match the criteria
 func (b *PeopleBuilder) Delete() {
 	b.builder.Delete()
-	broadcast.BulkChange(b.builder.Context(), "goradd", "person")
+	broadcast.BulkChange(b.builder.Context(), "goradd", "public.person")
 }
 
 // Subquery uses the query builder to define a subquery within a larger query. You MUST include what
@@ -660,16 +670,16 @@ func (b *PeopleBuilder) joinOrSelect(nodes ...query.NodeI) *PeopleBuilder {
 	return b
 }
 
-func CountPersonByID(ctx context.Context, id string) uint {
-	return queryPeople(ctx).Where(Equal(node.Person().ID(), id)).Count(false)
+func CountPersonByID(ctx context.Context, id string) int {
+	return int(queryPeople(ctx).Where(Equal(node.Person().ID(), id)).Count(false))
 }
 
-func CountPersonByFirstName(ctx context.Context, firstName string) uint {
-	return queryPeople(ctx).Where(Equal(node.Person().FirstName(), firstName)).Count(false)
+func CountPersonByFirstName(ctx context.Context, firstName string) int {
+	return int(queryPeople(ctx).Where(Equal(node.Person().FirstName(), firstName)).Count(false))
 }
 
-func CountPersonByLastName(ctx context.Context, lastName string) uint {
-	return queryPeople(ctx).Where(Equal(node.Person().LastName(), lastName)).Count(false)
+func CountPersonByLastName(ctx context.Context, lastName string) int {
+	return int(queryPeople(ctx).Where(Equal(node.Person().LastName(), lastName)).Count(false))
 }
 
 // load is the private loader that transforms data coming from the database into a tree structure reflecting the relationships
@@ -848,7 +858,7 @@ func (o *personBase) update(ctx context.Context) {
 
 		modifiedFields = o.getModifiedFields()
 		if len(modifiedFields) != 0 {
-			d.Update(ctx, "person", modifiedFields, "id", o._originalPK)
+			d.Update(ctx, "public.person", modifiedFields, "id", o._originalPK)
 		}
 
 		if o.oAddressesIsDirty {
@@ -949,7 +959,7 @@ func (o *personBase) update(ctx context.Context) {
 				"person_persontype_assn",
 				"person_id",
 				o.PrimaryKey(),
-				"person_type",
+				"public.person_type_enum",
 				"person_type_id",
 				o.oPersonTypes)
 		}
@@ -968,7 +978,7 @@ func (o *personBase) update(ctx context.Context) {
 					"team_member_project_assn",
 					"team_member_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"project_id",
 					pks)
 			}
@@ -977,7 +987,7 @@ func (o *personBase) update(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	if len(modifiedFields) != 0 {
-		broadcast.Update(ctx, "goradd", "person", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
+		broadcast.Update(ctx, "goradd", "public.person", o._originalPK, stringmap.SortedKeys(modifiedFields)...)
 	}
 }
 
@@ -996,7 +1006,7 @@ func (o *personBase) insert(ctx context.Context) {
 
 		m := o.getValidFields()
 
-		id := d.Insert(ctx, "person", m)
+		id := d.Insert(ctx, "public.person", m)
 		o.id = id
 		o._originalPK = id
 
@@ -1032,7 +1042,7 @@ func (o *personBase) insert(ctx context.Context) {
 				"person_persontype_assn",
 				"person_id",
 				o.PrimaryKey(),
-				"person_type",
+				"public.person_type_enum",
 				"person_type_id",
 				o.oPersonTypes)
 		}
@@ -1049,7 +1059,7 @@ func (o *personBase) insert(ctx context.Context) {
 					"team_member_project_assn",
 					"team_member_id",
 					o.PrimaryKey(),
-					"project",
+					"public.project",
 					"project_id",
 					pks)
 			}
@@ -1058,7 +1068,7 @@ func (o *personBase) insert(ctx context.Context) {
 	}) // transaction
 	o.resetDirtyStatus()
 	o._restored = true
-	broadcast.Insert(ctx, "goradd", "person", o.PrimaryKey())
+	broadcast.Insert(ctx, "goradd", "public.person", o.PrimaryKey())
 }
 
 func (o *personBase) getModifiedFields() (fields map[string]interface{}) {
@@ -1150,7 +1160,7 @@ func (o *personBase) Delete(ctx context.Context) {
 			"person_persontype_assn",
 			"person_id",
 			o.PrimaryKey(),
-			"person_type",
+			"public.person_type_enum",
 			"person_type_id",
 			nil)
 
@@ -1158,13 +1168,13 @@ func (o *personBase) Delete(ctx context.Context) {
 			"team_member_project_assn",
 			"team_member_id",
 			o.PrimaryKey(),
-			"project",
+			"public.project",
 			"project_id",
 			nil)
 
-		d.Delete(ctx, "person", "id", o.id)
+		d.Delete(ctx, "public.person", "id", o.id)
 	})
-	broadcast.Delete(ctx, "goradd", "person", fmt.Sprint(o.id))
+	broadcast.Delete(ctx, "goradd", "public.person", fmt.Sprint(o.id))
 }
 
 // deletePerson deletes the associated record from the database.
@@ -1535,15 +1545,15 @@ func (o *personBase) MarshalStringMap() map[string]interface{} {
 		for _, v2 := range val {
 			val2 = append(val2, v2.MarshalStringMap())
 		}
-		v["person"] = val2
+		v["addresses"] = val2
 	}
 
 	if val := o.EmployeeInfo(); val != nil {
-		v["person"] = val.MarshalStringMap()
+		v["employeeInfos"] = val.MarshalStringMap()
 	}
 
 	if val := o.Login(); val != nil {
-		v["person"] = val.MarshalStringMap()
+		v["logins"] = val.MarshalStringMap()
 	}
 
 	if val := o.ProjectsAsManager(); val != nil {
@@ -1551,7 +1561,7 @@ func (o *personBase) MarshalStringMap() map[string]interface{} {
 		for _, v2 := range val {
 			val2 = append(val2, v2.MarshalStringMap())
 		}
-		v["manager"] = val2
+		v["projectsAsManager"] = val2
 	}
 
 	if val := o.PersonTypes(); val != nil {
