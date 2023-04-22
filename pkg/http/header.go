@@ -1,6 +1,8 @@
 package http
 
-import "strings"
+import (
+	"strings"
+)
 
 // ParseValueAndParams returns the value and param map for Content-Type and Content-Disposition header values
 func ParseValueAndParams(in string) (value string, params map[string]string) {
@@ -19,6 +21,18 @@ func ParseValueAndParams(in string) (value string, params map[string]string) {
 				}
 			}
 		}
+	}
+	return
+}
+
+// ParseAuthorizationHeader will parse an authorization header into its
+// scheme and params
+func ParseAuthorizationHeader(auth string) (scheme, params string) {
+	var found bool
+	before, after, found := strings.Cut(auth, " ")
+	scheme = before
+	if found {
+		params = strings.TrimSpace(after)
 	}
 	return
 }

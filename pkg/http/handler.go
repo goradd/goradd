@@ -5,25 +5,9 @@ import (
 	"io"
 	"mime"
 	"net/http"
-	"net/url"
 	"path"
 	"path/filepath"
 )
-
-// Muxer represents the typical functions available in a mux and allows you to replace the default
-// Golang muxer here with a 3rd party mux, like the Gorilla mux.
-type Muxer interface {
-	// Handle associates a handler with the given pattern in the url path
-	Handle(pattern string, handler http.Handler)
-
-	// Handler returns the handler associate with the request, if one exists. It
-	// also returns the actual path registered to the handler
-	Handler(r *http.Request) (h http.Handler, pattern string)
-
-	// ServeHTTP sends a request to the MUX, to be forwarded on to the registered handler,
-	// or responded with an unknown resource error.
-	ServeHTTP(w http.ResponseWriter, r *http.Request)
-}
 
 // The following two maps collect handler registration during Go's init process. These are
 // then registered to the application muxers when the application starts up. This makes it
@@ -195,18 +179,18 @@ func registerHandler(pattern string, handler http.Handler, m handlerMap, mux Mux
 func registerPrefixHandler(prefix string, handler http.Handler, m handlerMap, mux Muxer) {
 	if prefix == "" {
 		prefix = "/"
-	} else {
+	}
+
+	if prefix != "/" {
 		if prefix[0] != '/' {
 			prefix = "/" + prefix
 		}
-		// Make sure the registered prefix ends with a /
+		// Add a trailing slash if its not there
 		if prefix[len(prefix)-1] != '/' {
 			prefix = prefix + "/"
 		}
 	}
-	// Here we register the handler with a closing / so that the same name without slash will not be confused,
-	// but we do not strip the first / from the file name passed on.
-	registerHandler(prefix, http.StripPrefix(prefix[0:len(prefix)-1], handler), m, mux)
+	registerHandler(prefix, http.StripPrefix(prefix[:len(prefix)-1], handler), m, mux)
 }
 
 func useMuxer(mux Muxer, next http.Handler, m *handlerMap) http.Handler {
@@ -215,38 +199,4 @@ func useMuxer(mux Muxer, next http.Handler, m *handlerMap) http.Handler {
 	}
 	*m = nil
 	return UseMuxer(mux, next)
-}
-
-// UseMuxer serves a muxer such that if a handler cannot be found, or the found handler does not respond,
-// control is past to the next handler.
-func UseMuxer(mux Muxer, next http.Handler) http.Handler {
-	if next == nil {
-		panic("next may not be nil. Pass a http.NotFoundHandler if this is the end of the handler chain")
-	}
-	if mux == nil {
-		panic("mux may not be nil")
-	}
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		var h http.Handler
-		var p string
-		if len(r.URL.Path) > 0 && r.URL.Path[len(r.URL.Path)-1] == '/' {
-			// First check for index.html
-			r2 := new(http.Request)
-			*r2 = *r
-			r2.URL = new(url.URL)
-			*r2.URL = *r.URL
-			r2.URL.Path = r.URL.Path + "index.html"
-			h, p = mux.Handler(r2)
-		}
-
-		if p == "" {
-			h, p = mux.Handler(r)
-		}
-		if p != "" {
-			h.ServeHTTP(w, r)
-		} else {
-			next.ServeHTTP(w, r) // skip
-		}
-	}
-	return http.HandlerFunc(fn)
 }

@@ -301,7 +301,7 @@ func RegisterStaticPath(
 //
 // To use your own AppMuxer, override this function in app.go and create your own.
 func (a *Application) ServeAppMux(next http.Handler) http.Handler {
-	return http2.UseAppMuxer(http.NewServeMux(), next)
+	return http2.UseAppMuxer(http2.NewMux(), next)
 }
 
 // ServePatternMux serves up the http2.PatternMuxer.
@@ -311,7 +311,7 @@ func (a *Application) ServeAppMux(next http.Handler) http.Handler {
 //
 // The default version injects a standard http muxer. Override to use your own muxer.
 func (a *Application) ServePatternMux(next http.Handler) http.Handler {
-	return http2.UsePatternMuxer(http.NewServeMux(), next)
+	return http2.UsePatternMuxer(http2.NewMux(), next)
 }
 
 // ServeWebsocketMessengerHandler is the authorization handler for watcher requests.
