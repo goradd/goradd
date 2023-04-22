@@ -4,6 +4,11 @@ for _,col := range t.Columns {
 {{
 
 func Count{{t.GoName}}By{{col.GoName}}(ctx context.Context, {{= col.ModelName()}} {{= col.ColumnType.GoType() }}) int {
+{{if col.ForeignKey != nil}}
+    if {{= col.ModelName()}} == {{= col.ColumnType.DefaultValue() }} {
+        return 0
+    }
+{{if}}
 	return int(query{{t.GoPlural}}(ctx).Where(Equal(node.{{t.GoName}}().{{col.GoName}}(), {{= col.ModelName()}})).Count(false))
 }
 
