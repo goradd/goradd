@@ -51,15 +51,14 @@ const (
 	// the record was deleted by another user, we would return this error.
 	// In a REST environment, this is  404 error
 	FrameworkErrRecordNotFound
-
 )
 
 // FrameworkError is an expected error that is part of the framework. Usually you would respond to the error
 // by displaying a message to the user, but not always.
 type FrameworkError struct {
-	Err int
+	Err      int
 	Location string
-	Message string	// optional message
+	Message  string // optional message
 }
 
 // NewFrameworkError creates a new FrameworkError
@@ -90,7 +89,8 @@ func (e FrameworkError) Error() string {
 // HttpError returns the corresponding http error
 func (e FrameworkError) HttpError() int {
 	switch e.Err {
-	case FrameworkErrRecordNotFound: return 404
+	case FrameworkErrRecordNotFound:
+		return 404
 	}
 	return 500
 }
@@ -101,5 +101,7 @@ func (e *NoErr) Error() string {
 
 // WriteString is a utility function that will write a string and panic if an error occurs
 func WriteString(w io.Writer, s string) {
-	if _, err := io.WriteString(w, s); err != nil {panic(err)}
+	if _, err := io.WriteString(w, s); err != nil {
+		panic(err)
+	}
 }

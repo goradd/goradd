@@ -21,13 +21,41 @@ import (
 // The pattern will be behind the ApiPrefix path. The handler will be processed before
 // the regular app management, and so will not get access to session management. Use this
 // if you are using an authorization scheme like oAuth.
+//
+// The pattern is expected to be the beginning of a url that will end in slash.
+// Both the slash ending pattern and non-slash ending pattern will be registered.
+// Your handler should be able to handle "" and "/" paths as equivalent.
+//
+// The handler will have the pattern stripped out.
 func RegisterPattern(pattern string, handler http.HandlerFunc) {
-	http2.RegisterHandler(path.Join(config.ApiPrefix, pattern), http.StripPrefix(config.ApiPrefix, handler))
+	l := len(pattern)
+	if l > 0 && pattern[l-1] == '/' {
+		l -= 1
+	}
+	p := path.Join(config.ApiPrefix, pattern[:l])
+	http2.RegisterPrefixHandler(p, handler)
+
+	// For speed, register the same handler without a trailing slash.
+	http2.RegisterHandler(p, http.StripPrefix(p, handler))
 }
 
 // RegisterAppPattern associates the given URL path with the given handler.
 // The handler will be behind the App handler and so will benefit from Session management and the
 // rest of the handlers.
+//
+// The pattern is expected to be the beginning of a url that will end in slash.
+// Both the slash ending pattern and non-slash ending pattern will be registered.
+// Your handler should be able to handle "" and "/" paths as equivalent.
+//
+// The handler will have the pattern stripped out.
 func RegisterAppPattern(pattern string, handler http.HandlerFunc) {
-	http2.RegisterAppHandler(path.Join(config.ApiPrefix, pattern), http.StripPrefix(config.ApiPrefix, handler))
+	l := len(pattern)
+	if l > 0 && pattern[l-1] == '/' {
+		l -= 1
+	}
+	p := path.Join(config.ApiPrefix, pattern[:l])
+	http2.RegisterAppPrefixHandler(p, handler)
+
+	// For speed, register the same handler without a trailing slash.
+	http2.RegisterAppHandler(p, http.StripPrefix(p, handler))
 }

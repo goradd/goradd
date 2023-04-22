@@ -29,3 +29,25 @@ func TestParseValueAndParams(t *testing.T) {
 		})
 	}
 }
+
+func TestParseAuthorizationHeader(t *testing.T) {
+
+	tests := []struct {
+		name       string
+		arg        string
+		wantScheme string
+		wantParams string
+	}{
+		{"empty", "", "", ""},
+		{"one item", "abc", "abc", ""},
+		{"one item with whitespace", "abc  ", "abc", ""},
+		{"two items", "abc def", "abc", "def"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotScheme, gotParams := ParseAuthorizationHeader(tt.arg)
+			assert.Equalf(t, tt.wantScheme, gotScheme, "ParseAuthorizationHeader(%v)", tt.arg)
+			assert.Equalf(t, tt.wantParams, gotParams, "ParseAuthorizationHeader(%v)", tt.arg)
+		})
+	}
+}
