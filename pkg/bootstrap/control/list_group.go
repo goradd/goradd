@@ -10,8 +10,13 @@ import (
 	"github.com/goradd/goradd/pkg/page/event"
 )
 
+const (
+	refreshAction = iota + 100
+)
+
 type ListGroupI interface {
 	list.UnorderedListI
+	SetIsSelectable(bool)
 }
 
 // A ListGroup implements the Bootstrap ListGroup control.
@@ -24,6 +29,8 @@ type ListGroupI interface {
 // You can also use a proxy control to create the attributes.
 type ListGroup struct {
 	list.UnorderedList
+	isSelectable bool
+	selectedID   string
 }
 
 func NewListGroup(parent page.ControlI, id string) *ListGroup {
@@ -38,14 +45,67 @@ func (l *ListGroup) Init(parent page.ControlI, id string) {
 	l.Tag = "div"
 	l.SetItemTag("a") // default to anchor tags. Change it to something else if needed.
 	l.AddClass("list-group")
+
+	// Set the Control action value to the item clicked on
+	l.SetActionValue(javascript.JsCode("event.target.id"))
+}
+
+// SetIsSelectable sets whether the list group will remember and show the
+// most recently selected item as selected.
+// Do this AFTER you set the item tag.
+func (l *ListGroup) SetIsSelectable(canSelect bool) {
+	l.isSelectable = canSelect
+	l.Refresh()
+	l.PrivateOff()
+	if canSelect {
+		l.On(event.Click().Selector(l.ItemTag()).Private(), action.Ajax(l.ID(), refreshAction))
+	}
+}
+
+// SelectedID returns the id of the currently selected item.
+func (l *ListGroup) SelectedID() string {
+	return l.selectedID
 }
 
 func (l *ListGroup) GetItemsHtml(items []*list.Item) string {
 	// make sure the list items have the correct classes before drawing them
 	for _, item := range items {
 		item.Attributes().AddClass("list-group-item list-group-item-action")
+		if l.isSelectable && l.selectedID == item.ID() {
+			item.Attributes().AddClass(" active")
+			item.Attributes().AddValues("aria-current", "true")
+		}
 	}
 	return l.UnorderedList.GetItemsHtml(items)
+}
+
+func (l *ListGroup) DoPrivateAction(_ context.Context, a action.Params) {
+	switch a.ID {
+	case refreshAction:
+		l.selectedID = a.ControlValueString()
+		l.Refresh()
+	}
+}
+
+func (l *ListGroup) Serialize(e page.Encoder) {
+	l.UnorderedList.Serialize(e)
+	if err := e.Encode(l.isSelectable); err != nil {
+		panic(err)
+	}
+	if err := e.Encode(l.selectedID); err != nil {
+		panic(err)
+	}
+
+}
+
+func (l *ListGroup) Deserialize(dec page.Decoder) {
+	l.UnorderedList.Deserialize(dec)
+	if err := dec.Decode(&l.isSelectable); err != nil {
+		panic(err)
+	}
+	if err := dec.Decode(&l.selectedID); err != nil {
+		panic(err)
+	}
 }
 
 type ListGroupCreator struct {
@@ -59,6 +119,8 @@ type ListGroupCreator struct {
 	page.ControlOptions
 	// ItemTag is the tag of the items. It defaults to "a".
 	ItemTag string
+	// IsSelectable determines whether a clicked item will be shown as selected.
+	IsSelectable bool
 	// OnClick is the action to take when an item is clicked.
 	// The id of the item will appear as the action's ControlValue.
 	OnClick action.ActionI
@@ -90,6 +152,7 @@ func (c ListGroupCreator) Init(ctx context.Context, ctrl ListGroupI) {
 		// Set the Control action value to the item clicked on
 		ctrl.SetActionValue(javascript.JsCode("event.target.id"))
 	}
+	ctrl.SetIsSelectable(c.IsSelectable)
 }
 
 // GetListGroup is a convenience method to return the control with the given id from the page.
