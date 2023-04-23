@@ -1065,6 +1065,17 @@ func (c *ControlBase) Off() {
 	}
 }
 
+// PrivateOff removes all private event handlers from the control.
+// This is intended to only be used by control implementations. Do not
+// call this normally.
+func (c *ControlBase) PrivateOff() {
+	for id, e := range c.events {
+		if event.IsPrivate(e) {
+			delete(c.events, id)
+		}
+	}
+}
+
 // Event returns the event associated with the eventName, which corresponds to the javascript
 // trigger name.
 func (c *ControlBase) Event(eventName string) *event.Event {
