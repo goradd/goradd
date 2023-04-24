@@ -1,0 +1,19 @@
+// copy.tmpl
+
+{{
+
+// Copy returns a new {{= t.GoName}} object with all of its fields copied to
+// to the new object (except for the primary key). Forward reference ids will be copied, but reverse and many-many
+// references will not be copied. Call Save() on the new object to save it into the database.
+func (o *{{privateName}}Base) Copy() (newObject *{{= t.GoName}}) {
+    newObject = New{{= t.GoName }}()
+
+{{for _,col := range t.Columns}}
+{{if !col.IsPk}}
+    newObject.Set{{= col.GoName}}(o.{{= col.GoName}}())
+{{if}}
+{{for}}
+
+    return
+}
+}}
