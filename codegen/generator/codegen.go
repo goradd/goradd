@@ -169,7 +169,9 @@ func Generate() {
 				if err := os.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
 					log.Print(err)
 				} else {
-					log.Printf("Writing %s", fileName)
+					if Verbose {
+						log.Printf("Writing %s", fileName)
+					}
 				}
 				RunGoImports(fileName)
 			}
@@ -200,7 +202,9 @@ func Generate() {
 				if err := os.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
 					log.Print(err)
 				} else {
-					log.Printf("Writing %s", fileName)
+					if Verbose {
+						log.Printf("Writing %s", fileName)
+					}
 				}
 				RunGoImports(fileName)
 			}
@@ -226,11 +230,12 @@ func Generate() {
 			if err := os.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
 				log.Print(err)
 			} else {
-				log.Printf("Writing %s", fileName)
+				if Verbose {
+					log.Printf("Writing %s", fileName)
+				}
 			}
 			RunGoImports(fileName)
 		}
-
 	}
 
 }

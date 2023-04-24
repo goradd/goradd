@@ -22,6 +22,9 @@ var DefaultDataPagerCreator = "github.com/goradd/goradd/pkg/page/control/DataPag
 // DefaultStaticTextType is the type of control to create to display content as static text rather than something editable.
 var DefaultStaticTextType = "github.com/goradd/goradd/pkg/page/control/Panel"
 
+// Verbose controls whether to output the list of files being written
+var Verbose = false
+
 // DefaultControlType returns the default control type for the given database column
 // These types are module paths to the control, and the generator will resolve those to figure out the import paths
 // and package names
