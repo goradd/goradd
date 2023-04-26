@@ -100,6 +100,25 @@ func (o *addressBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
+// Copy copies all valid fields (except for the primary key) to a new Address object.
+// Forward reference ids will be copied, but reverse and many-many references will not.
+// Call Save() on the new object to save it into the database.
+func (o *addressBase) Copy() (newObject *Address) {
+	newObject = NewAddress()
+
+	if o.personIDIsValid {
+		newObject.SetPersonID(o.personID)
+	}
+	if o.streetIsValid {
+		newObject.SetStreet(o.street)
+	}
+	if o.cityIsValid {
+		newObject.SetCity(o.city)
+	}
+
+	return
+}
+
 // ID returns the loaded value of ID.
 func (o *addressBase) ID() string {
 	return fmt.Sprint(o.id)
@@ -476,6 +495,9 @@ func CountAddressByID(ctx context.Context, id string) int {
 }
 
 func CountAddressByPersonID(ctx context.Context, personID string) int {
+	if personID == "" {
+		return 0
+	}
 	return int(queryAddresses(ctx).Where(Equal(node.Address().PersonID(), personID)).Count(false))
 }
 

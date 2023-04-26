@@ -87,6 +87,22 @@ func (o *employeeInfoBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
+// Copy copies all valid fields (except for the primary key) to a new EmployeeInfo object.
+// Forward reference ids will be copied, but reverse and many-many references will not.
+// Call Save() on the new object to save it into the database.
+func (o *employeeInfoBase) Copy() (newObject *EmployeeInfo) {
+	newObject = NewEmployeeInfo()
+
+	if o.personIDIsValid {
+		newObject.SetPersonID(o.personID)
+	}
+	if o.employeeNumberIsValid {
+		newObject.SetEmployeeNumber(o.employeeNumber)
+	}
+
+	return
+}
+
 // ID returns the loaded value of ID.
 func (o *employeeInfoBase) ID() string {
 	return fmt.Sprint(o.id)
@@ -433,6 +449,9 @@ func CountEmployeeInfoByID(ctx context.Context, id string) int {
 }
 
 func CountEmployeeInfoByPersonID(ctx context.Context, personID string) int {
+	if personID == "" {
+		return 0
+	}
 	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().PersonID(), personID)).Count(false))
 }
 

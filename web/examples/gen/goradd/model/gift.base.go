@@ -73,6 +73,19 @@ func (o *giftBase) OriginalPrimaryKey() int {
 	return o._originalPK
 }
 
+// Copy copies all valid fields (except for the primary key) to a new Gift object.
+// Forward reference ids will be copied, but reverse and many-many references will not.
+// Call Save() on the new object to save it into the database.
+func (o *giftBase) Copy() (newObject *Gift) {
+	newObject = NewGift()
+
+	if o.nameIsValid {
+		newObject.SetName(o.name)
+	}
+
+	return
+}
+
 // Number returns the loaded value of Number.
 func (o *giftBase) Number() int {
 	if o._restored && !o.numberIsValid {

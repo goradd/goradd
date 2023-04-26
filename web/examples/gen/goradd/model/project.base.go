@@ -205,6 +205,43 @@ func (o *projectBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
+// Copy copies all valid fields (except for the primary key) to a new Project object.
+// Forward reference ids will be copied, but reverse and many-many references will not.
+// Call Save() on the new object to save it into the database.
+func (o *projectBase) Copy() (newObject *Project) {
+	newObject = NewProject()
+
+	if o.numIsValid {
+		newObject.SetNum(o.num)
+	}
+	if o.statusIDIsValid {
+		newObject.SetStatus(ProjectStatus(o.statusID))
+	}
+	if o.managerIDIsValid {
+		newObject.SetManagerID(o.managerID)
+	}
+	if o.nameIsValid {
+		newObject.SetName(o.name)
+	}
+	if o.descriptionIsValid {
+		newObject.SetDescription(o.description)
+	}
+	if o.startDateIsValid {
+		newObject.SetStartDate(o.startDate)
+	}
+	if o.endDateIsValid {
+		newObject.SetEndDate(o.endDate)
+	}
+	if o.budgetIsValid {
+		newObject.SetBudget(o.budget)
+	}
+	if o.spentIsValid {
+		newObject.SetSpent(o.spent)
+	}
+
+	return
+}
+
 // ID returns the loaded value of ID.
 func (o *projectBase) ID() string {
 	return fmt.Sprint(o.id)
@@ -1075,10 +1112,16 @@ func CountProjectByNum(ctx context.Context, num int) int {
 }
 
 func CountProjectByStatusID(ctx context.Context, statusID uint) int {
+	if statusID == 0 {
+		return 0
+	}
 	return int(queryProjects(ctx).Where(Equal(node.Project().StatusID(), statusID)).Count(false))
 }
 
 func CountProjectByManagerID(ctx context.Context, managerID string) int {
+	if managerID == "" {
+		return 0
+	}
 	return int(queryProjects(ctx).Where(Equal(node.Project().ManagerID(), managerID)).Count(false))
 }
 
