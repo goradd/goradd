@@ -205,6 +205,11 @@ func Name(e *Event) string {
 	return e.jsEvent
 }
 
+// ID returns the event id.
+func ID(e *Event) EventID {
+	return e.eventID
+}
+
 type getCallbackActioner interface {
 	GetCallbackAction() action.CallbackActionI
 }
