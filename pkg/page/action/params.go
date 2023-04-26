@@ -36,7 +36,7 @@ type RawActionValues struct {
 }
 
 // NewActionParams is used internally by the framework to create new action parameters.
-// You should not normally need to call this funtion.
+// You should not normally need to call this function.
 func NewActionParams(id int, action ActionI, controlId string, rawValues RawActionValues) Params {
 	return Params{
 		ID:        id,
