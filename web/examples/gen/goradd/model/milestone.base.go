@@ -87,6 +87,22 @@ func (o *milestoneBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
+// Copy copies all valid fields (except for the primary key) to a new Milestone object.
+// Forward reference ids will be copied, but reverse and many-many references will not.
+// Call Save() on the new object to save it into the database.
+func (o *milestoneBase) Copy() (newObject *Milestone) {
+	newObject = NewMilestone()
+
+	if o.projectIDIsValid {
+		newObject.SetProjectID(o.projectID)
+	}
+	if o.nameIsValid {
+		newObject.SetName(o.name)
+	}
+
+	return
+}
+
 // ID returns the loaded value of ID.
 func (o *milestoneBase) ID() string {
 	return fmt.Sprint(o.id)
@@ -413,6 +429,9 @@ func CountMilestoneByID(ctx context.Context, id string) int {
 }
 
 func CountMilestoneByProjectID(ctx context.Context, projectID string) int {
+	if projectID == "" {
+		return 0
+	}
 	return int(queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(false))
 }
 

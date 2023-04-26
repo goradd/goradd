@@ -99,6 +99,25 @@ func (o *personWithLockBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
+// Copy copies all valid fields (except for the primary key) to a new PersonWithLock object.
+// Forward reference ids will be copied, but reverse and many-many references will not.
+// Call Save() on the new object to save it into the database.
+func (o *personWithLockBase) Copy() (newObject *PersonWithLock) {
+	newObject = NewPersonWithLock()
+
+	if o.firstNameIsValid {
+		newObject.SetFirstName(o.firstName)
+	}
+	if o.lastNameIsValid {
+		newObject.SetLastName(o.lastName)
+	}
+	if o.sysTimestampIsValid {
+		newObject.SetSysTimestamp(o.sysTimestamp)
+	}
+
+	return
+}
+
 // ID returns the loaded value of ID.
 func (o *personWithLockBase) ID() string {
 	return fmt.Sprint(o.id)

@@ -113,6 +113,28 @@ func (o *loginBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
+// Copy copies all valid fields (except for the primary key) to a new Login object.
+// Forward reference ids will be copied, but reverse and many-many references will not.
+// Call Save() on the new object to save it into the database.
+func (o *loginBase) Copy() (newObject *Login) {
+	newObject = NewLogin()
+
+	if o.personIDIsValid {
+		newObject.SetPersonID(o.personID)
+	}
+	if o.usernameIsValid {
+		newObject.SetUsername(o.username)
+	}
+	if o.passwordIsValid {
+		newObject.SetPassword(o.password)
+	}
+	if o.isEnabledIsValid {
+		newObject.SetIsEnabled(o.isEnabled)
+	}
+
+	return
+}
+
 // ID returns the loaded value of ID.
 func (o *loginBase) ID() string {
 	return fmt.Sprint(o.id)
@@ -593,6 +615,9 @@ func CountLoginByID(ctx context.Context, id string) int {
 }
 
 func CountLoginByPersonID(ctx context.Context, personID string) int {
+	if personID == "" {
+		return 0
+	}
 	return int(queryLogins(ctx).Where(Equal(node.Login().PersonID(), personID)).Count(false))
 }
 

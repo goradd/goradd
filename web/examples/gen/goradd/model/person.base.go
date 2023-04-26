@@ -114,6 +114,22 @@ func (o *personBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
+// Copy copies all valid fields (except for the primary key) to a new Person object.
+// Forward reference ids will be copied, but reverse and many-many references will not.
+// Call Save() on the new object to save it into the database.
+func (o *personBase) Copy() (newObject *Person) {
+	newObject = NewPerson()
+
+	if o.firstNameIsValid {
+		newObject.SetFirstName(o.firstName)
+	}
+	if o.lastNameIsValid {
+		newObject.SetLastName(o.lastName)
+	}
+
+	return
+}
+
 // ID returns the loaded value of ID.
 func (o *personBase) ID() string {
 	return fmt.Sprint(o.id)

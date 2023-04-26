@@ -45,7 +45,7 @@ func (d *DataManager) HasDataProvider() bool {
 	return d.dataProviderID != ""
 }
 
-// Call SetData to set the data of a control that uses a data binder. You MUST call it with a slice
+// SetData sets the data of a control that uses a data binder. You MUST call it with a slice
 // of some kind of data.
 func (d *DataManager) SetData(data interface{}) {
 	kind := reflect.TypeOf(data).Kind()
@@ -56,7 +56,7 @@ func (d *DataManager) SetData(data interface{}) {
 	d.dataOffset = 0
 }
 
-// Use SetDataWithOffset with controls that show a window onto a bigger data set.
+// SetDataWithOffset is for  controls that show a window onto a bigger data set.
 //
 // offset is the first row number that is represented by the data.
 func (d *DataManager) SetDataWithOffset(data interface{}, offset int) {

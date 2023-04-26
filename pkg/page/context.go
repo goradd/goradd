@@ -11,7 +11,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/session"
-	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -42,8 +41,14 @@ const HtmlVarApistate = "__ApiState"
 const htmlVarParams = "Goradd__Params"
 const htmlCsrfToken = "Goradd__Csrf"
 
-// MultipartFormMax is the maximum size of a mult-part form that we will allow.
-var MultipartFormMax int64 = 10000000 // 10MB max in memory file
+// MultipartFormMax is the maximum size of a mult-part form that will be
+// stored in memory. This data is stored in the "Value" part of the multi-part form data.
+// Anything outside of this will be stored in temporary on-disk files. Note that the
+// built-in http handler will reserve an additional 10MB for in-memory storage of non-content
+// data as well.
+//
+// The default is to store all multi-part data in temporary files.
+var MultipartFormMax int64 = 0
 
 // String satisfies the Stringer interface and returns a description of the RequestMode
 func (m RequestMode) String() string {
@@ -95,9 +100,6 @@ type HttpContext struct {
 	Referrer string
 	// Cookies are the cookies coming from the client, mapped by name
 	Cookies map[string]*http.Cookie
-	// Files are the files being uploaded, if this is a file upload. This currently only works with Server calls
-	// in response to a file upload control.
-	Files map[string][]*multipart.FileHeader
 	// Header is the http header coming from the client.
 	Header http.Header
 }
@@ -153,10 +155,7 @@ func (ctx *Context) fillHttp(r *http.Request) (err error) {
 	if contentType := r.Header.Get("content-type"); contentType != "" {
 		// Per comments in the ResponseWriter, we need to read and process the entire request before attempting to write.
 		if strings.Contains(contentType, "multipart") {
-			// TODO: The Go doc is vague about how it handles file uploads larger than this value. Some doc suggests it
-			// will return an error, and other doc suggests it will just split it into multiple partial files.
-			// Nothing explains how to prevent malicious code from attempting to upload a gigantic file.
-			// Likely we need to check the header for a size before attempting to parse. We will need to experiment to try to prevent this.
+			// Get file info through ctx.Request.MultiPartForm
 			err = r.ParseMultipartForm(MultipartFormMax)
 		} else {
 			err = r.ParseForm()
@@ -176,10 +175,6 @@ func (ctx *Context) fillHttp(r *http.Request) (err error) {
 	ctx.Cookies = make(map[string]*http.Cookie)
 	for _, c := range r.Cookies() {
 		ctx.Cookies[c.Name] = c
-	}
-
-	if r.MultipartForm != nil {
-		ctx.Files = r.MultipartForm.File
 	}
 	return
 }
@@ -289,9 +284,16 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 					ctx.eventID = event.EventID(params.EventID)
 				}
 				ctx.actionValues = params.Values
-				ctx.clientTimezoneOffset = params.TimezoneInfo.TimezoneOffset
-				ctx.clientTimezone = params.TimezoneInfo.Timezone
-				ctx.hasTimezoneInfo = true
+				if params.TimezoneInfo.TimezoneOffset != 0 || params.TimezoneInfo.Timezone != "" {
+					ctx.clientTimezoneOffset = params.TimezoneInfo.TimezoneOffset
+					ctx.clientTimezone = params.TimezoneInfo.Timezone
+					ctx.hasTimezoneInfo = true
+				} else if session.Has(mainContext, goradd.SessionTimezoneOffset) {
+					// recover previously set timezone from this session
+					ctx.hasTimezoneInfo = true
+					ctx.clientTimezoneOffset = session.GetInt(mainContext, goradd.SessionTimezoneOffset)
+					ctx.clientTimezone = session.GetString(mainContext, goradd.SessionTimezone)
+				}
 
 				// Save in a session for recovery when we have a session but do not have client info
 				session.SetInt(mainContext, goradd.SessionTimezoneOffset, params.TimezoneInfo.TimezoneOffset)
