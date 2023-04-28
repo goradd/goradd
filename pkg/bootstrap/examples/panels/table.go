@@ -105,8 +105,8 @@ func (f *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 			},
 		},
 		DataPagerCreator{ // bootstrap puts its caption at the bottom of a table, so its not a good place for a pager
-			ID:           "pager",
-			PagedControl: "table1",
+			ID:             "pager",
+			PagedControlID: "table1",
 		},
 	)
 }

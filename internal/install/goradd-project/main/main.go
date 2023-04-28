@@ -18,7 +18,7 @@ import (
 	// _ "mysite"
 )
 
-var port = flag.Int("port", -1, "Serve as a webserver from the given port. Default = 8000.")
+var port = flag.Int("port", -1, "Serve as a webserver from the given port. Default = 80.")
 var tlsPort = flag.Int("tlsPort", -1, "Serve securely from the given port.")
 var tlsKeyFile = flag.String("keyFile", "", "Path to key file for tls.")
 var tlsCertFile = flag.String("certFile", "", "Path to cert file for tls.")

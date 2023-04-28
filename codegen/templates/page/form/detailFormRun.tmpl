@@ -7,7 +7,7 @@
 // like checking if the user is authorized to access the page.
 func (f *{{= formName }})Run(ctx context.Context) {
     if !session.Has(ctx, "{{= t.LcGoName }}DetailID") {
-        // Attempting to go the the detail panel without first going to the list panel
+        // Attempting to go the detail panel without first going to the list panel
         http2.SendBadRequest()
     }
 
