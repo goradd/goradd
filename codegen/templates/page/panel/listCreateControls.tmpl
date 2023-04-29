@@ -6,21 +6,16 @@
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 	if {{= t.LcGoName }}ListShowFilterBar {
         p.AddControls(ctx,
-            {{= ctrlPkg }}.PanelCreator{
-                ID: {{= t.LcGoName }}FilterPanelID,
-                Children: {{= ctrlPkg }}.Children(
-                    textbox.TextboxCreator{
-                        ID:          {{= t.LcGoName }}FilterTextID,
-                        Placeholder: p.GT("Search..."),
-                        Type:        textbox.SearchType,
-                        ControlOptions: page.ControlOptions{
-                            On: page.EventList{
-                                {event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
-                                {event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
-                            },
-                        },
+            textbox.TextboxCreator{
+                ID:          {{= t.LcGoName }}FilterTextID,
+                Placeholder: p.GT("Search..."),
+                Type:        textbox.SearchType,
+                ControlOptions: page.ControlOptions{
+                    On: page.EventList{
+                        {event.Input().Delay(300), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
+                        {event.EnterKey().Terminating(), action.Ajax(p.ID(), {{= lcPanelName }}Search)},
                     },
-                ),
+                },
             },
         )
     }
@@ -28,13 +23,13 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     if {{= t.LcGoName }}ListShowDataPager {
         caption = {{= codegen.ObjectType(generator.DefaultDataPagerCreator) }} {
                                   ID:            {{= t.LcGoName }}PagerID,
-                                  PagedControl:  {{= t.LcGoName }}ListID,
+                                  PagedControlID:{{= t.LcGoName }}ListID,
                               }
     }
 
 	p.AddControls(ctx,
         table.PagedTableCreator{
-            ID:  p.ID() + {{= t.LcGoName }}ListID,
+            ID:  {{= t.LcGoName }}ListID,
             HeaderRowCount: 0,
             DataProviderID: p.ID(),
             RowStylerID: p.ID(),
@@ -47,16 +42,11 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
             },
             Columns: p.ColumnCreators(ctx),
         },
-		{{= ctrlPkg }}.PanelCreator {
-			ID: {{= t.LcGoName }}ButtonPanelID,
-			Children:{{= ctrlPkg }}.Children(
-				{{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
-					ID: {{= t.LcGoName }}NewButtonID,
-					Text: p.GT("New"),
-					OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),
-				},
-			),
-		},
+        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+            ID: {{= t.LcGoName }}NewButtonID,
+            Text: p.GT("New"),
+            OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),
+        },
 	)
 }
 
