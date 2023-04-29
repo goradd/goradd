@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/goradd/goradd/pkg/config"
 	"net/http"
 	"path"
 )
@@ -111,6 +112,19 @@ func (mux *Mux) Handler(r *http.Request) (h http.Handler, pattern string) {
 	}
 	var ok bool
 
+	// If the given path is /tree/ find /tree/{{config.DefaultPage}}. As in /tree/index.html.
+	if path[len(path)-1] == '/' && config.DefaultPage != "" {
+		np := path + config.DefaultPage
+		if h, ok = mux.m[np]; ok {
+			if pathChanged {
+				pattern = path
+				h = http.RedirectHandler(MakeLocalPath(path), http.StatusMovedPermanently)
+			}
+			pattern = path
+			return
+		}
+	}
+
 	// find exact match
 	if h, ok = mux.m[path]; ok {
 		if pathChanged {
@@ -128,6 +142,19 @@ func (mux *Mux) Handler(r *http.Request) (h http.Handler, pattern string) {
 		if h, ok = mux.m[np]; ok {
 			pattern = np
 			h = http.RedirectHandler(MakeLocalPath(np), http.StatusMovedPermanently)
+			return
+		}
+	}
+
+	// If the given path is /tree/ find /tree/{{config.DefaultPage}}. As in /tree/index.html.
+	if path[len(path)-1] == '/' && config.DefaultPage != "" {
+		np := path + config.DefaultPage
+		if h, ok = mux.m[np]; ok {
+			if pathChanged {
+				pattern = path
+				h = http.RedirectHandler(MakeLocalPath(path), http.StatusMovedPermanently)
+			}
+			pattern = path
 			return
 		}
 	}
