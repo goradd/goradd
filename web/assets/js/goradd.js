@@ -149,7 +149,11 @@ var g$ = function(el) {
         _ajaxError = false;
         _formObjsModified = {};
         _controlValues = {};
-        return postData;
+        var fd = new FormData();
+        for (var k in postData) {
+            fd.append(k, postData[k]);
+        }
+        return fd;
     }
 
     /**
@@ -2194,7 +2198,7 @@ var g$ = function(el) {
                     default:
                         if ("value" in el) {
                             // This works for textboxes, textarea (possible problem losing newlines though), and single selects.
-                            // Custom controls can add a "value" getter or override the val() mehtod.
+                            // Custom controls can add a "value" getter or override the val() method.
                             return el.value;
                         }
                         break;
@@ -2626,7 +2630,6 @@ var g$ = function(el) {
 
             objRequest.open("POST", opts.url, true);
             objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
-            objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             objRequest.setRequestHeader("X-Requested-With", "xmlhttprequest");
             objRequest.timeout = goradd.ajaxTimeout;
 
@@ -2656,20 +2659,8 @@ var g$ = function(el) {
                 }
             };
             _currentRequests[ajaxID] = objRequest;
-            var encoded = self._encodeData(opts.data);
-            objRequest.send(encoded);
+            objRequest.send(opts.data);
         },
-        _encodeData: function (data) {
-            var a = [];
-            var key;
-            for (key in data) {
-                var value = data[key];
-                var s = encodeURIComponent(key) + "=" +
-                    encodeURIComponent(value == null ? "" : value);
-                a.push(s);
-            }
-            return a.join("&");
-        }
     };
 
 })();
