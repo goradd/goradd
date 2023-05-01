@@ -168,7 +168,7 @@ type ControlI interface {
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
 	On(e *event.Event, a action.ActionI) ControlI
-	Off()
+	Off(ids ...event.EventID)
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
 	Event(eventName string) *event.Event
 
@@ -1056,22 +1056,38 @@ func (c *ControlBase) On(e *event.Event, a action.ActionI) ControlI {
 	return c.this()
 }
 
-// Off removes all event handlers from the control
-func (c *ControlBase) Off() {
-	for id, e := range c.events {
-		if !event.IsPrivate(e) {
-			delete(c.events, id)
+// Off removes all event handlers from the control, or the events with the specified ids.
+func (c *ControlBase) Off(ids ...event.EventID) {
+	if ids == nil {
+		for id, e := range c.events {
+			if !event.IsPrivate(e) {
+				delete(c.events, id)
+			}
+		}
+	} else {
+		for _, id := range ids {
+			if !event.IsPrivate(c.events[id]) {
+				delete(c.events, id)
+			}
 		}
 	}
 }
 
-// PrivateOff removes all private event handlers from the control.
+// PrivateOff removes all private event handlers from the control, or the events with the specified id.
 // This is intended to only be used by control implementations. Do not
 // call this normally.
-func (c *ControlBase) PrivateOff() {
-	for id, e := range c.events {
-		if event.IsPrivate(e) {
-			delete(c.events, id)
+func (c *ControlBase) PrivateOff(ids ...event.EventID) {
+	if ids == nil {
+		for id, e := range c.events {
+			if event.IsPrivate(e) {
+				delete(c.events, id)
+			}
+		}
+	} else {
+		for _, id := range ids {
+			if event.IsPrivate(c.events[id]) {
+				delete(c.events, id)
+			}
 		}
 	}
 }
