@@ -31,3 +31,7 @@ var AjaxTimeout = 10000
 
 // CacheBusterPrefix is a fragment that is included with cache busted paths.
 var CacheBusterPrefix = "gr."
+
+// DefaultPage is the default path of a url that ends with "/". Specify an empty string
+// to have no default pages.
+var DefaultPage = "index.html"

@@ -149,7 +149,18 @@ var g$ = function(el) {
         _ajaxError = false;
         _formObjsModified = {};
         _controlValues = {};
-        return postData;
+        var fd = new FormData();
+        for (var k in postData) {
+            var obj = postData[k];
+            if (obj instanceof FileList) {
+                for (var i = 0; i < obj.length; i++) {
+                    fd.append(k, obj[i]);
+                }
+            } else {
+                fd.append(k, postData[k]);
+            }
+        }
+        return fd;
     }
 
     /**
@@ -159,7 +170,7 @@ var g$ = function(el) {
      * @param {object} params   option parameters
      * @private
      */
-    function _processAjax(json, params) {
+    function _processAjax(json) {
         if (json.alert) {
             goradd.each(json.alert, function (i, v) {
                 window.alert(v);
@@ -885,7 +896,6 @@ var g$ = function(el) {
             params.tz = {"o" : -(new Date()).getTimezoneOffset(), "z" : Intl ? Intl.DateTimeFormat().resolvedOptions().timeZone : null};
 
             // Notify custom controls that we are about to post
-
             gForm.trigger("posting", "Server");
 
             // Post custom javascript control values
@@ -949,7 +959,7 @@ var g$ = function(el) {
                      */
                     success: function (json) {
                         goradd.log("Ajax response received: ", json);
-                        _processAjax(json, params);
+                        _processAjax(json);
                         goradd.blockEvents = false;
                     }
                 };
@@ -2034,7 +2044,7 @@ var g$ = function(el) {
             if (eventName === "click") {
                 el.click();
             } else if (eventName === "change") {
-                if (typeof window.Event === "object") {
+                if (typeof window.Event !== "function") {
                     // Event for browsers which don't natively support the Constructor method
                     event = document.createEvent('HTMLEvents');
                     event.initEvent(eventName, true, true);
@@ -2045,7 +2055,7 @@ var g$ = function(el) {
                 // in a special area on the event, like in grDetail, and then unpack that in the on handler.
             } else {
                 // assume custom event
-                if (typeof window.CustomEvent === "object") {
+                if (typeof window.CustomEvent !== "function") {
                     // CustomEvent for browsers which don't natively support the Constructor method
                     event = document.createEvent('CustomEvent');
                     event.initCustomEvent(eventName, true, true, extra);
@@ -2194,7 +2204,7 @@ var g$ = function(el) {
                     default:
                         if ("value" in el) {
                             // This works for textboxes, textarea (possible problem losing newlines though), and single selects.
-                            // Custom controls can add a "value" getter or override the val() mehtod.
+                            // Custom controls can add a "value" getter or override the val() method.
                             return el.value;
                         }
                         break;
@@ -2572,8 +2582,6 @@ var g$ = function(el) {
 /**
  * Ajax Queue
  *
- * This used to be handled with a jquery plugin, but since we are trying to get away from jquery, and working
- * towards an OperaMini compatible version, we are rolling our own.
  */
 (function () {
     var _q = [],
@@ -2626,7 +2634,6 @@ var g$ = function(el) {
 
             objRequest.open("POST", opts.url, true);
             objRequest.setRequestHeader("Method", "POST " + opts.url + " HTTP/1.1");
-            objRequest.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             objRequest.setRequestHeader("X-Requested-With", "xmlhttprequest");
             objRequest.timeout = goradd.ajaxTimeout;
 
@@ -2655,21 +2662,20 @@ var g$ = function(el) {
                     self._dequeue(); // do the next ajax event in the queue
                 }
             };
+
+            objRequest.onprogress = function (event) {
+                // pass this on to the form to be intercepted there
+                var obj = {
+                    lengthComputable: event.lengthComputable,
+                    loaded: event.loaded,
+                    total: event.total
+                };
+                g$(goradd.form()).trigger("progress", obj);
+            };
+
             _currentRequests[ajaxID] = objRequest;
-            var encoded = self._encodeData(opts.data);
-            objRequest.send(encoded);
+            objRequest.send(opts.data);
         },
-        _encodeData: function (data) {
-            var a = [];
-            var key;
-            for (key in data) {
-                var value = data[key];
-                var s = encodeURIComponent(key) + "=" +
-                    encodeURIComponent(value == null ? "" : value);
-                a.push(s);
-            }
-            return a.join("&");
-        }
     };
 
 })();
