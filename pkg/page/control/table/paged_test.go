@@ -58,8 +58,8 @@ func TestPagedTable_Serialize(t *testing.T) {
 			Columns:          nil,   // testing columns here will cause circular import
 		},
 		control.DataPagerCreator{
-			ID:           "dp",
-			PagedControl: "table",
+			ID:             "dp",
+			PagedControlID: "table",
 		},
 	)
 
