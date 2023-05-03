@@ -105,15 +105,19 @@ func MakeNodeSlice(columns []table.ColumnI) []query.NodeI {
 	for _, c := range columns {
 		if getter, ok := c.(NodeGetter); ok {
 			node := getter.GetNode()
-			if nodeSorter, ok2 := node.(query.NodeSorter); ok2 {
-				switch c.SortDirection() {
-				case table.SortAscending:
-					nodeSorter.Ascending()
-				case table.SortDescending:
-					nodeSorter.Descending()
+			if node != nil {
+				if nodeSorter, ok2 := node.(query.NodeSorter); ok2 {
+					switch c.SortDirection() {
+					case table.SortAscending:
+						nodeSorter.Ascending()
+					case table.SortDescending:
+						nodeSorter.Descending()
+					}
 				}
+				nodes = append(nodes, node)
+			} else {
+				panic("Column does not have a sort node.")
 			}
-			nodes = append(nodes, node)
 		} else {
 			panic("Column is not a NodeGetter.")
 		}
