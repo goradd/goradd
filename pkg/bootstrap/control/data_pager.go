@@ -196,7 +196,7 @@ func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 		ObjectPluralName: c.ObjectPluralName,
 		LabelForNext:     c.LabelForNext,
 		LabelForPrevious: c.LabelForPrevious,
-		PagedControl:     c.PagedControlID,
+		PagedControlID:   c.PagedControlID,
 		ControlOptions:   c.ControlOptions,
 	}
 	sub.Init(ctx, ctrl)

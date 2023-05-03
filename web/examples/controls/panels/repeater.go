@@ -12,7 +12,6 @@ type RepeaterPanel struct {
 	Panel
 }
 
-
 func NewRepeaterPanel(ctx context.Context, parent page.ControlI) {
 	p := &RepeaterPanel{}
 	p.Self = p
@@ -30,8 +29,8 @@ func (p *RepeaterPanel) Init(ctx context.Context, parent page.ControlI, id strin
 		},
 		// A DataPager can be a standalone control, which you draw manually
 		DataPagerCreator{
-			ID:           "pager1",
-			PagedControl: "repeater1",
+			ID:             "pager1",
+			PagedControlID: "repeater1",
 		},
 	)
 }
@@ -48,13 +47,14 @@ func (p *RepeaterPanel) BindData(ctx context.Context, s DataManagerI) {
 	}
 }
 
-func (p *RepeaterPanel) RepeaterHtml(ctx context.Context, r RepeaterI, i int, data interface{}, w io.Writer)  {
+func (p *RepeaterPanel) RepeaterHtml(ctx context.Context, r RepeaterI, i int, data interface{}, w io.Writer) {
 	d := data.(TableMapData)
-	if _,err := fmt.Fprintf(w, `<div>ID: %s, Name: %s</div>`, d["id"], d["name"]); err != nil {panic(err)}
+	if _, err := fmt.Fprintf(w, `<div>ID: %s, Name: %s</div>`, d["id"], d["name"]); err != nil {
+		panic(err)
+	}
 	return
 }
 
 func init() {
 	page.RegisterControl(&RepeaterPanel{})
 }
-

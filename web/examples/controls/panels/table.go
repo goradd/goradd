@@ -97,8 +97,8 @@ func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 		},
 		// A DataPager can be a standalone control, which you draw manually
 		DataPagerCreator{
-			ID:           "pager1",
-			PagedControl: "table1",
+			ID:             "pager1",
+			PagedControlID: "table1",
 		},
 		PagedTableCreator{
 			ID:             "table2",
@@ -121,8 +121,8 @@ func (p *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) 
 			PageSize: 5,
 			// A DataPager can also be a caption, and will get drawn for you as part of the table
 			Caption: DataPagerCreator{
-				ID:           "pager2",
-				PagedControl: "table2",
+				ID:             "pager2",
+				PagedControlID: "table2",
 			},
 		},
 	)
