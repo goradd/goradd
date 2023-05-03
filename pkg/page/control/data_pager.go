@@ -588,18 +588,18 @@ type DataPagerCreator struct {
 	LabelForNext string
 	// LabelForPrevious is the text to use in the Previous button
 	LabelForPrevious string
-	// PagedControl is the id of the control that will be paged by the pager
-	PagedControl string
+	// PagedControlID is the id of the control that will be paged by the pager
+	PagedControlID string
 	page.ControlOptions
 }
 
 // Create is called by the framework to create a new control from the Creator. You
 // do not normally need to call this.
 func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	if !parent.Page().HasControl(c.PagedControl) {
+	if !parent.Page().HasControl(c.PagedControlID) {
 		panic("you must declare the paged control before the data pager")
 	}
-	p := parent.Page().GetControl(c.PagedControl).(PagedControlI)
+	p := parent.Page().GetControl(c.PagedControlID).(PagedControlI)
 	ctrl := NewDataPager(parent, c.ID, p)
 	c.Init(ctx, ctrl)
 	return ctrl

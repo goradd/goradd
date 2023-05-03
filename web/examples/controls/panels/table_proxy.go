@@ -50,7 +50,7 @@ func (p *TableProxyPanel) Init(ctx context.Context, parent page.ControlI, id str
 			},
 			SaveState: true,
 			Caption: DataPagerCreator{
-				PagedControl: "table1",
+				PagedControlID: "table1",
 			},
 			PageSize: 5,
 		},

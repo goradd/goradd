@@ -62,8 +62,8 @@ func (p *TableDbPanel) Init(ctx context.Context, parent page.ControlI, id string
 			PageSize:  5,
 			SaveState: true,
 			Caption: DataPagerCreator{
-				ID:           "pager",
-				PagedControl: "table1",
+				ID:             "pager",
+				PagedControlID: "table1",
 			},
 			SortHistoryLimit: 3,
 		},

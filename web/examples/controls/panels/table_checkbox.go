@@ -69,8 +69,8 @@ func (p *TableCheckboxPanel) Init(ctx context.Context, parent page.ControlI, id 
 		},
 		// A DataPager can be a standalone control, which you draw manually
 		DataPagerCreator{
-			ID:           "pager",
-			PagedControl: "table1",
+			ID:             "pager",
+			PagedControlID: "table1",
 		},
 		ButtonCreator{
 			ID:       "ajaxButton",
