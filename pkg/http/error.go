@@ -102,6 +102,13 @@ func SendForbidden() {
 	panic(e)
 }
 
+// SendForbiddenMessage will tell the user that he/she does not have authorization to access
+// the given resource. The user should be known.
+func SendForbiddenMessage(m string) {
+	e := Error{ErrCode: http.StatusForbidden, Message: m}
+	panic(e)
+}
+
 // SendMethodNotAllowed will tell the user that the server is not able
 // to perform the http method being asked. allowedMethods is a list of the allowed methods.
 func SendMethodNotAllowed(allowedMethods ...string) {

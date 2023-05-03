@@ -51,11 +51,15 @@ type FileSelectI interface {
 // However, to get to the files that are being uploaded, you must do one of the following:
 //   - create an Ajax action on the UploadEvent event, and then call the Upload function, or
 //   - create a Server action on a submit button.
+//
 // In your DoAction handler, call FileHeaders on the FileSelect to retrieve the file headers.
 // You then must immediately call Open on each FileHeader to retrieve the information in each file that was uploaded,
 // since Go will delete the files after the event is finished processing.
 //
 // If you would like to trigger an UploadEvent as soon as files are selected, call SetUploadOnChange.
+//
+// If your application is running behind a web server like apache or nginx, you probably will
+// need to set the maximum upload file size in that software.
 type FileSelect struct {
 	page.ControlBase
 	// path taken from the form value. Note that sometimes this has a fake path plus a file name, so likely just the last item is valuable.
