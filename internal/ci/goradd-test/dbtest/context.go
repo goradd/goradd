@@ -6,9 +6,5 @@ import (
 )
 
 func getContext() context.Context {
-	ctx := context.Background()
-	for _, d := range db.GetDatabases() {
-		ctx = d.PutBlankContext(ctx)
-	}
-	return ctx
+	return db.PutContext(nil)
 }

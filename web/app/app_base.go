@@ -257,10 +257,7 @@ func (a *Application) PutAppContextHandler(next http.Handler) http.Handler {
 func (a *Application) PutDbContextHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-
-		for _, d := range db.GetDatabases() {
-			ctx = d.PutBlankContext(ctx)
-		}
+		ctx = db.PutContext(ctx)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)
