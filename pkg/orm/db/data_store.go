@@ -80,3 +80,21 @@ func GetDatabase(key string) DatabaseI {
 func GetDatabases() []DatabaseI {
 	return datastore.databases.Values()
 }
+
+// PutContext returns a new context with the database contexts inserted into the given
+// context. Pass nil to return a BackgroundContext with the database contexts.
+//
+// A database context is required by the various database calls to track results
+// and transactions.
+// Normally you would use the Goradd context passed to you by the Web server, but
+// in situations where you do not have that, like in independent go routines or unit
+// tests, you can call this so that you can access the databases.
+func PutContext(ctx context.Context) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	for _, d := range GetDatabases() {
+		ctx = d.PutBlankContext(ctx)
+	}
+	return ctx
+}
