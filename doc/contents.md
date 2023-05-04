@@ -6,7 +6,8 @@
 
 ## Development
 
-- [How Goradd handles Dates and Times](datetime.md)
+- [How Goradd Handles Dates and Times](datetime.md)
+- [Go Routine Gotchas](goroutines.md)
 
 ## Deployment
 
