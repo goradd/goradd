@@ -100,8 +100,12 @@ func (f *FormBase) AddRelatedFiles() {
 func (f *FormBase) AddGoraddFiles() {
 	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "goradd.js"), false, nil)
 	if !config.Release {
-		f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-debug.js"), false, nil)
+		f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-test.js"), false, nil)
 	}
+	if config.Debug {
+		f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "goradd-debug.js"), false, nil)
+	}
+
 	f.AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "css", "goradd.css"), nil)
 }
 
@@ -267,7 +271,11 @@ func (f *FormBase) renderAjax(ctx context.Context, w io.Writer) {
 	if err != nil {
 		panic(err)
 	}
-	log.FrameworkDebug("renderAjax - ", string(buf2))
+	if len(buf2) > 100 {
+		log.FrameworkDebug("renderAjax - ", string(buf2[:100]), " ...")
+	} else {
+		log.FrameworkDebug("renderAjax - ", string(buf2))
+	}
 }
 
 // DrawingAttributes returns the attributes to add to the form tag.
