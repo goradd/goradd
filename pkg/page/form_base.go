@@ -278,7 +278,7 @@ func (f *FormBase) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	return a
 }
 
-// PreRender performs setup operations just before drawing.
+// DrawPreRender performs setup operations just before drawing.
 func (f *FormBase) DrawPreRender(ctx context.Context, w io.Writer) {
 	f.ControlBase.DrawPreRender(ctx, w)
 

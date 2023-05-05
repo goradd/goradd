@@ -116,3 +116,30 @@ func HasCharType(s string, wantUpper, wantLower, wantDigit, wantPunc, wantSymbol
 	}
 	return false
 }
+
+// ReplaceStrings is a memory efficient string replacer, replacing every string
+// in the searchList with the matching string in the replaceList.
+func ReplaceStrings(s string, searchList []string, replaceList []string) string {
+	var b strings.Builder
+	lastIndex := 0
+	for i := 0; i < len(s); {
+		found := false
+		for j, searchStr := range searchList {
+			if strings.HasPrefix(s[i:], searchStr) {
+				found = true
+				b.WriteString(s[lastIndex:i])
+				b.WriteString(replaceList[j])
+				i += len(searchStr)
+				lastIndex = i
+				break
+			}
+		}
+		if !found {
+			i++
+		}
+	}
+	if lastIndex < len(s) {
+		b.WriteString(s[lastIndex:])
+	}
+	return b.String()
+}

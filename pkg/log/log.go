@@ -143,13 +143,13 @@ func Printf(logType int, format string, v ...interface{}) {
 }
 
 func _print(logType int, v ...interface{}) {
-	if l, ok := Loggers[logType]; ok {
+	if l, ok := Loggers[logType]; ok && l != nil {
 		l.Log(fmt.Sprint(v...))
 	}
 }
 
 func _printf(logType int, format string, v ...interface{}) {
-	if l, ok := Loggers[logType]; ok {
+	if l, ok := Loggers[logType]; ok && l != nil {
 		l.Log(fmt.Sprintf(format, v...))
 	}
 }
