@@ -14,21 +14,21 @@ import (
 // ParseJsonBody will look for json in the request, parse it into the given dest, and handle errors.
 //
 // The dest should be a pointer to a structure or some other value you want filled with the data.
-// Errors will result in an appropriate error response through the panic mechanism.
+// Errors will result in an appropriate error response written to the response writer, and an error response.
 // If maxBytes is reached, it will close the connection and error.
-func ParseJsonBody(w http.ResponseWriter, r *http.Request, maxBytes int64, dest any) {
-
+func ParseJsonBody(w http.ResponseWriter, r *http.Request, maxBytes int64, dest any) error {
 	v, _ := ParseValueAndParams(r.Header.Get("Content-Type"))
 
 	if v != "application/json" {
-		SendBadRequestMessage("Content-Type must be application/json")
-		return
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(w, "Content-Type must be application/json")
+		return fmt.Errorf("content-type must be application/json")
 	}
 
 	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxBytes))
 	dec := json.NewDecoder(bytes.NewReader(body))
 
-	if err != nil {
+	if err == nil {
 		err = dec.Decode(dest)
 	}
 
@@ -41,24 +41,30 @@ func ParseJsonBody(w http.ResponseWriter, r *http.Request, maxBytes int64, dest 
 		// which interpolates the location of the problem to make it
 		// easier for the client to fix.
 		case errors.As(err, &syntaxError):
-			msg := fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
-			SendBadRequestMessage(msg)
+			msg := fmt.Sprintf("request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = io.WriteString(w, msg)
+			return fmt.Errorf(msg)
 
 		// In some circumstances Decode() may also return an
 		// io.ErrUnexpectedEOF error for syntax errors in the JSON. There
 		// is an open issue regarding this at
 		// https://github.com/golang/go/issues/25956.
 		case errors.Is(err, io.ErrUnexpectedEOF):
-			msg := fmt.Sprintf("Request body contains badly-formed JSON")
-			SendBadRequestMessage(msg)
+			msg := fmt.Sprintf("request body contains badly-formed JSON")
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = io.WriteString(w, msg)
+			return fmt.Errorf(msg)
 
 		// Catch any type errors, like trying to assign a string in the
 		// JSON request body to a int field in our Person struct. We can
 		// interpolate the relevant field name and position into the error
 		// message to make it easier for the client to fix.
 		case errors.As(err, &unmarshalTypeError):
-			msg := fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
-			SendBadRequestMessage(msg)
+			msg := fmt.Sprintf("request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = io.WriteString(w, msg)
+			return fmt.Errorf(msg)
 
 		// Catch the error caused by extra unexpected fields in the request
 		// body. We extract the field name from the error message and
@@ -68,28 +74,36 @@ func ParseJsonBody(w http.ResponseWriter, r *http.Request, maxBytes int64, dest 
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
 			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 			msg := fmt.Sprintf("Request body contains unknown field %s", fieldName)
-			SendBadRequestMessage(msg)
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = io.WriteString(w, msg)
+			return fmt.Errorf(msg)
 
 		// An io.EOF error is returned by Decode() if the request body is
 		// empty.
 		case errors.Is(err, io.EOF):
-			msg := "Request body must not be empty"
-			SendBadRequestMessage(msg)
+			msg := "request body must not be empty"
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = io.WriteString(w, msg)
+			return fmt.Errorf(msg)
 
 		// Catch the error caused by the request body being too large. Again
 		// there is an open issue regarding turning this into a sentinel
 		// error at https://github.com/golang/go/issues/30715.
 		case err.Error() == "http: request body too large":
-			msg := fmt.Sprintf("Request body must not be larger than %d bytes", maxBytes)
-			SendErrorMessage(msg, http.StatusRequestEntityTooLarge)
+			msg := fmt.Sprintf("request body must not be larger than %d bytes", maxBytes)
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			_, _ = io.WriteString(w, msg)
+			return fmt.Errorf(msg)
 
 		// Otherwise default to logging the error and sending a 500 Internal
 		// Server Error response.
 		default:
 			log.Debug(err.Error())
-			SendErrorMessage(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			msg := http.StatusText(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = io.WriteString(w, msg)
+			return fmt.Errorf(msg)
 		}
-		return
 	}
 
 	// Call decode again, using a pointer to an empty anonymous struct as
@@ -98,8 +112,10 @@ func ParseJsonBody(w http.ResponseWriter, r *http.Request, maxBytes int64, dest 
 	// we know that there is additional data in the request body.
 	err = dec.Decode(&struct{}{})
 	if err != io.EOF {
-		msg := "Request body must only contain a single JSON object"
-		SendBadRequestMessage(msg)
-		return
+		msg := "request body must only contain a single JSON object"
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = io.WriteString(w, msg)
+		return fmt.Errorf(msg)
 	}
+	return nil
 }
