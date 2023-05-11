@@ -100,7 +100,7 @@ func (d CheckboxList) GenerateProvider(ref interface{}, desc *generator.ControlD
 	case *db.ReverseReference:
 		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.AssociatedTable.GoPlural)
 	case *db.ManyManyReference:
-		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.AssociatedTableName)
+		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.GoPlural)
 	}
 	return ``
 }

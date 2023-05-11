@@ -4,9 +4,9 @@ import "github.com/goradd/goradd/pkg/strings"
 
 // The ManyManyReference structure is used by the templates during the codegen process to describe a many-to-many relationship.
 type ManyManyReference struct {
-	// AssnTableName is the database table creating the association. NoSQL: The originating table. SQL: The association table
+	// AssnTableName is the database table creating the association.
 	AssnTableName string
-	// AssnColumnName is the column creating the association. NoSQL: The table storing the array of ids on the other end. SQL: the column in the association table pointing towards us.
+	// AssnColumnName is the column creating the association.
 	AssnColumnName string
 	// SupportsForeignKeys indicates that updates and deletes are automatically handled by the database engine.
 	// If this is false, the code generator will need to manually update these items.
