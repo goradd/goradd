@@ -26,6 +26,28 @@ for _,col := range t.Columns {
 }
 }}
 
+{{g
+for _,rr := range t.ReverseReferences {
+    cd := t.ControlDescription(rr)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+{{begin *drawCodeRR*}}{{drawChild -{{end *drawCodeRR*}}{{= cd.ControlID }}{{begin *drawCodeRR2*}}-ff }}
+{{end *drawCodeRR2*}}
+    }
+}
+}}
+
+{{g
+for _,mm := range t.ManyManyReferences {
+    cd := t.ControlDescription(mm)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+{{begin *drawCodeMM*}}{{drawChild -{{end *drawCodeMM*}}{{= cd.ControlID }}{{begin *drawCodeMM2*}}-ff }}
+{{end *drawCodeMM2*}}
+    }
+}
+}}
+
 {{begin *gotCode3*}}
 {{end template}}
 

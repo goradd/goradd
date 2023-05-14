@@ -104,7 +104,7 @@ func Generate() {
 		dd := database.Model()
 
 		// Create wrappers for the tables with extra analysis required for form generation
-		for _, enumTable := range dd.EnumTables {
+		stringmap.Range(dd.EnumTables, func(k string, enumTable *db.EnumTable) bool {
 			if _, ok := codegen.EnumTables[key][enumTable.GoName]; ok {
 				log.Println("Error: enum table " + enumTable.GoName + " is defined more than once.")
 			} else {
@@ -113,8 +113,10 @@ func Generate() {
 				}
 				codegen.EnumTables[key][enumTable.GoName] = tt
 			}
-		}
-		for _, table := range dd.Tables {
+			return true
+		})
+
+		stringmap.Range(dd.Tables, func(k string, table *db.Table) bool {
 			if _, ok := codegen.Tables[key][table.GoName]; ok {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
 			} else {
@@ -136,8 +138,8 @@ func Generate() {
 				}
 				codegen.Tables[key][table.GoName] = t
 			}
-		}
-
+			return true
+		})
 	}
 
 	buf := new(bytes.Buffer)

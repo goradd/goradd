@@ -80,15 +80,16 @@ for _, col := range t.Columns {
 // Many-Many references
 for _,ref := range t.ManyManyReferences {
 	oName := oRef(ref)
+	oType := ref.ObjectType()
 
 	if ref.IsEnumAssociation {
 
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {
 		if {{oName}}, ok2 := v.([]uint); ok2 {
-			o.{{oName}} = []{{= ref.AssociatedObjectType }}{}
+			o.{{oName}} = []{{= oType }}{}
 			for _,m := range {{oName}} {
-				o.{{oName}} = append(o.{{oName}}, {{= ref.AssociatedObjectType }}(m))
+				o.{{oName}} = append(o.{{oName}}, {{= oType }}(m))
 			}
 		} else {
 			panic("Wrong type found for {{oName}} object.")
@@ -104,12 +105,12 @@ for _,ref := range t.ManyManyReferences {
 {{
 	if v, ok := m["{{= ref.GoPlural }}"]; ok {
 		if {{oName}}, ok2 := v.([]db.ValueMap); ok2 {
-			o.{{oName}} = []*{{= ref.AssociatedObjectType }}{}
-			o.{{mName}} = map[{{= ref.AssociatedTablePkType }}]*{{= ref.AssociatedObjectType }}{}
+			o.{{oName}} = []*{{= oType }}{}
+			o.{{mName}} = map[{{= ref.PrimaryKeyType() }}]*{{= oType }}{}
 
 			for _,v2 := range {{oName}} {
-				obj := new({{= ref.AssociatedObjectType }})
-				obj.load(v2, obj, objThis, "{{ref.MM.GoPlural}}")
+				obj := new({{= oType }})
+				obj.load(v2, obj, objThis, "{{= ref.MM.GoPlural }}")
 				o.{{oName}} = append(o.{{oName}}, obj)
 				o.{{mName}}[obj.PrimaryKey()] = obj
 			}

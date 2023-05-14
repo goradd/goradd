@@ -13,7 +13,7 @@ for _,col := range t.Columns {
     if cd.Generator != nil {
         if _, ok := cd.Generator.(generator.ProviderGenerator); ok {
 {{
-    case "{{= cd.ControlID }}":
+    case {{= t.GoName }}{{= cd.ControlIDConst() }}:
         var items []interface{}
 {{if col.IsNullable}}
         items = list.NoSelectionItemList()
@@ -38,7 +38,20 @@ for _,rr := range t.ReverseReferences {
     if cd == nil || cd.Generator == nil {continue}
     if _, ok := cd.Generator.(generator.ProviderGenerator); ok {
 {{
-    case "{{= cd.ControlID }}":
+    case {{= t.GoName }}{{= cd.ControlIDConst() }}:
+        var items []interface{}
+        items = append(items, s.DataConnector().(page.DataLoader).Load(ctx)...)
+        s.SetData(items)
+}}
+    }
+}
+
+for _,mm := range t.ManyManyReferences {
+    cd := t.ControlDescription(mm)
+    if cd == nil || cd.Generator == nil {continue}
+    if _, ok := cd.Generator.(generator.ProviderGenerator); ok {
+{{
+    case {{= t.GoName }}{{= cd.ControlIDConst() }}:
         var items []interface{}
         items = append(items, s.DataConnector().(page.DataLoader).Load(ctx)...)
         s.SetData(items)

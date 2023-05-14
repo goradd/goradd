@@ -357,8 +357,7 @@ func (m *DB) getForeignKeys() (foreignKeys map[string][]mysqlForeignKey, err err
 	}
 
 	foreignKeys = make(map[string][]mysqlForeignKey)
-	stringmap.Range(fkMap, func(_ string, val interface{}) bool {
-		fk := val.(mysqlForeignKey)
+	stringmap.Range(fkMap, func(_ string, fk mysqlForeignKey) bool {
 		tableKeys := foreignKeys[fk.tableName]
 		tableKeys = append(tableKeys, fk)
 		foreignKeys[fk.tableName] = tableKeys
@@ -613,8 +612,8 @@ func (m *DB) getTableDescription(t mysqlTable) db.TableDescription {
 	td.Options = t.options
 
 	// Create the indexes array in index name order so its predictable
-	stringmap.Range(indexes, func(key string, val interface{}) bool {
-		td.Indexes = append(td.Indexes, *(val.(*db.IndexDescription)))
+	stringmap.Range(indexes, func(key string, val *db.IndexDescription) bool {
+		td.Indexes = append(td.Indexes, *val)
 		return true
 	})
 	return td

@@ -7,14 +7,29 @@ func (o *{{privateName}}Base) resetDirtyStatus() {
 {{for _,ref := range t.ReverseReferences }}
 	o.{{= oRef(ref) }}IsDirty = false
 {{for}}
+{{for _,ref := range t.ManyManyReferences }}
+	o.{{= oRef(ref) }}IsDirty = false
+{{for}}
 
 }
 
-func (o *{{privateName}}Base) IsDirty() bool {
-    return {{join t.Columns, "|| \n"}}o.{{= _j.ModelName() }}IsDirty {{if _j.ReferenceFunction() != "" && !_j.IsEnum() }} ||
-	    (o.{{= oRef(_j) }} != nil && o.{{= oRef(_j) }}.IsDirty()) {{if}}{{join}}{{if len(t.ReverseReferences) > 0}} || {{if}}
-	    {{join t.ReverseReferences, "|| \n"}}o.{{= oRef(_j) }}IsDirty{{join}}
+func (o *{{privateName}}Base) IsDirty() (dirty bool) {
+    dirty = {{join t.Columns, "|| \n"}}o.{{= _j.ModelName() }}IsDirty {{if _j.ReferenceFunction() != "" && !_j.IsEnum() }} ||
+	    (o.{{= oRef(_j) }} != nil && o.{{= oRef(_j) }}.IsDirty()) {{if}}{{join}}
 
+{{if len(t.ReverseReferences) > 0}}
+	dirty = dirty ||
+	    {{join t.ReverseReferences, "|| \n"}}o.{{= oRef(_j) }}IsDirty{{join}}
+	    // TODO: check loaded objects
+{{if}}
+
+{{if len(t.ManyManyReferences) > 0}}
+	dirty = dirty ||
+	    {{join t.ManyManyReferences, "|| \n"}}o.{{= oRef(_j) }}IsDirty{{join}}
+	    // TODO: check loaded objects
+{{if}}
+
+    return
 }
 
 }}

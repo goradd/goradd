@@ -184,7 +184,7 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
         }
 {{if !ref.IsEnumAssociation}}
         if len(o.{{= objectPrefix}}{{= ref.GoPlural }}) > 0 {
-            o.m{{= ref.GoPlural }} = make(map[{{= ref.AssociatedTablePkType }}] *{{= ref.AssociatedObjectType }})
+            o.m{{= ref.GoPlural }} = make(map[{{= ref.PrimaryKeyType() }}] *{{= ref.ObjectType() }})
 
             for _,p := range o.{{= objectPrefix }}{{= ref.GoPlural }} {
                 o.m{{= ref.GoPlural }}[p.PrimaryKey()] = p

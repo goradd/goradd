@@ -128,30 +128,43 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
         if o.{{= oName }}IsDirty {
             d.Associate(ctx,
                 "{{= ref.AssnTableName }}",
-                "{{= ref.AssnColumnName }}",
+                "{{= ref.AssnSourceColumnName }}",
                 o.PrimaryKey(),
-                "{{= ref.AssociatedTableName }}",
-                "{{= ref.AssociatedColumnName }}",
+                "{{= ref.DestinationTableName }}",
+                "{{= ref.AssnDestColumnName }}",
                 o.{{= oName }})
         }
     {{else}}
-        {
-            var pks []{{= ref.AssociatedTablePkType }}
-            o.m{{= ref.GoPlural }} = make(map[{{= ref.AssociatedTablePkType }}] *{{ref.AssociatedObjectType}})
+        if o.{{= oName }}IsDirty {
+            var pks []{{= ref.PrimaryKeyType() }}
+            o.m{{= ref.GoPlural }} = make(map[{{= ref.PrimaryKeyType() }}] *{{= ref.ObjectType() }})
 
             for _,obj := range o.{{= oName }} {
                 obj.Save(ctx)
                 o.m{{= ref.GoPlural }}[obj.PrimaryKey()] = obj
                 pks = append(pks, obj.PrimaryKey())
             }
+            var added bool
+            for _, pk := range o.s{{= ref.GoPlural }}PKs {
+                if _,found := o.m{{= ref.GoPlural }}[pk]; !found {
+                    added = true
+                    pks = append(pks, pk)
+                }
+            }
             if len(pks) != 0 {
                 d.Associate(ctx,
                     "{{= ref.AssnTableName }}",
-                    "{{= ref.AssnColumnName }}",
+                    "{{= ref.AssnSourceColumnName }}",
                     o.PrimaryKey(),
-                    "{{= ref.AssociatedTableName }}",
-                    "{{= ref.AssociatedColumnName }}",
+                    "{{= ref.DestinationTableName }}",
+                    "{{= ref.AssnDestColumnName }}",
                     pks)
+            }
+            if added {
+                // unload since we have lost track of the associations
+                o.{{= oName }} = nil
+                o.m{{= ref.GoPlural }} = nil
+                o.s{{= ref.GoPlural }}PKs = nil
             }
         }
     {{if}}
@@ -232,16 +245,16 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
     if len(o.{{= oName }}) != 0 {
         d.Associate(ctx,
             "{{= ref.AssnTableName }}",
-            "{{= ref.AssnColumnName }}",
+            "{{= ref.AssnSourceColumnName }}",
             o.PrimaryKey(),
-            "{{= ref.AssociatedTableName }}",
-            "{{= ref.AssociatedColumnName }}",
+            "{{= ref.DestinationTableName }}",
+            "{{= ref.AssnDestColumnName }}",
             o.{{= oName }})
     }
 {{else}}
     {
-        var pks []{{= ref.AssociatedTablePkType }}
-        o.m{{= ref.GoPlural }} = make(map[{{= ref.AssociatedTablePkType }}] *{{ref.AssociatedObjectType}})
+        var pks []{{= ref.PrimaryKeyType() }}
+        o.m{{= ref.GoPlural }} = make(map[{{= ref.PrimaryKeyType() }}] *{{= ref.ObjectType() }})
         for _,obj := range o.{{= oName }} {
             obj.Save(ctx)
             o.m{{= ref.GoPlural }}[obj.PrimaryKey()] = obj
@@ -250,10 +263,10 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
         if len(pks) != 0 {
             d.Associate(ctx,
                 "{{= ref.AssnTableName }}",
-                "{{= ref.AssnColumnName }}",
+                "{{= ref.AssnSourceColumnName }}",
                 o.PrimaryKey(),
-                "{{= ref.AssociatedTableName }}",
-                "{{= ref.AssociatedColumnName }}",
+                "{{= ref.DestinationTableName }}",
+                "{{= ref.AssnDestColumnName }}",
                 pks)
         }
     }

@@ -182,6 +182,7 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
         {{= sUpdate }}
+        data.(*model.{{= t.GoName }}).Set{{= mm.GoPlural }}(val)
    }
 {{if}}
 }
@@ -190,7 +191,8 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) (modifies bool) {
 {{if sModifies != ""}}
    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
-        modifies = {{= sModifies }}
+        val := data.(*model.{{= t.GoName }}).{{= mm.GoPlural }}()
+        {{= sModifies }}
    }
 {{if}}
     return
