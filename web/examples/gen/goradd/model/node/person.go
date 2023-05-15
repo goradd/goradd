@@ -98,14 +98,14 @@ func (n *personNode) PersonTypes() *personTypeNode {
 
 }
 
-// ProjectsAsTeamMember represents the many-to-many relationship formed by the team_member_project_assn table.
-func (n *personNode) ProjectsAsTeamMember() *projectNode {
+// Projects represents the many-to-many relationship formed by the team_member_project_assn table.
+func (n *personNode) Projects() *projectNode {
 	cn := &projectNode{
 		query.NewManyManyNode(
 			"goradd",
 			"team_member_project_assn",
 			"team_member_id",
-			"ProjectsAsTeamMember",
+			"Projects",
 			"project",
 			"project_id",
 			"id",

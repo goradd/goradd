@@ -222,14 +222,14 @@ func (n *projectNode) Spent() *query.ColumnNode {
 	return cn
 }
 
-// ChildrenAsParent represents the many-to-many relationship formed by the related_project_assn table.
-func (n *projectNode) ChildrenAsParent() *projectNode {
+// Children represents the many-to-many relationship formed by the related_project_assn table.
+func (n *projectNode) Children() *projectNode {
 	cn := &projectNode{
 		query.NewManyManyNode(
 			"goradd",
 			"related_project_assn",
 			"parent_id",
-			"ChildrenAsParent",
+			"Children",
 			"project",
 			"child_id",
 			"id",
@@ -241,14 +241,14 @@ func (n *projectNode) ChildrenAsParent() *projectNode {
 
 }
 
-// ParentsAsChild represents the many-to-many relationship formed by the related_project_assn table.
-func (n *projectNode) ParentsAsChild() *projectNode {
+// Parents represents the many-to-many relationship formed by the related_project_assn table.
+func (n *projectNode) Parents() *projectNode {
 	cn := &projectNode{
 		query.NewManyManyNode(
 			"goradd",
 			"related_project_assn",
 			"child_id",
-			"ParentsAsChild",
+			"Parents",
 			"project",
 			"parent_id",
 			"id",

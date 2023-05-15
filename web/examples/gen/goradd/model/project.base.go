@@ -76,16 +76,19 @@ type projectBase struct {
 	oMilestonesIsDirty bool
 
 	// Many-Many reference objects.
-	oChildrenAsParent        []*Project
-	mChildrenAsParent        map[string]*Project // Objects by PK
-	oChildrenAsParentIsDirty bool
+	oChildren        []*Project
+	mChildren        map[string]*Project // Objects by PK
+	sChildrenPKs     []string            // Primary keys to be associated at Save time
+	oChildrenIsDirty bool
 
-	oParentsAsChild        []*Project
-	mParentsAsChild        map[string]*Project // Objects by PK
-	oParentsAsChildIsDirty bool
+	oParents        []*Project
+	mParents        map[string]*Project // Objects by PK
+	sParentsPKs     []string            // Primary keys to be associated at Save time
+	oParentsIsDirty bool
 
 	oTeamMembers        []*Person
 	mTeamMembers        map[string]*Person // Objects by PK
+	sTeamMembersPKs     []string           // Primary keys to be associated at Save time
 	oTeamMembersIsDirty bool
 
 	// Custom aliases, if specified
@@ -134,13 +137,13 @@ const (
 
 	Project_Spent = `Spent`
 
-	ProjectMilestones       = `Milestones`
-	ProjectChildAsParent    = `ChildAsParent`
-	ProjectChildrenAsParent = `ChildrenAsParent`
-	ProjectParentAsChild    = `ParentAsChild`
-	ProjectParentsAsChild   = `ParentsAsChild`
-	ProjectTeamMember       = `TeamMember`
-	ProjectTeamMembers      = `TeamMembers`
+	ProjectMilestones  = `Milestones`
+	ProjectChild       = `Child`
+	ProjectChildren    = `Children`
+	ProjectParent      = `Parent`
+	ProjectParents     = `Parents`
+	ProjectTeamMember  = `TeamMember`
+	ProjectTeamMembers = `TeamMembers`
 )
 
 // Initialize or re-initialize a Project database object to default values.
@@ -668,84 +671,154 @@ func (o *projectBase) SetStatus(v ProjectStatus) {
 	}
 }
 
-// ChildAsParent returns a single Project object by primary key, if one was loaded
+// Child returns a single Project object by primary key, if one was loaded
 // otherwise, it will return nil.
-func (o *projectBase) ChildAsParent(pk string) *Project {
-	if o.mChildrenAsParent == nil {
+func (o *projectBase) Child(pk string) *Project {
+	if o.mChildren == nil {
 		return nil
 	}
-	return o.mChildrenAsParent[pk]
+	return o.mChildren[pk]
 }
 
-// ChildrenAsParent returns a slice of Project objects if loaded. If not loaded, will return nil.
-func (o *projectBase) ChildrenAsParent() []*Project {
-	return o.oChildrenAsParent
+// Children returns a slice of Project objects if loaded. If not loaded, will return nil.
+func (o *projectBase) Children() []*Project {
+	return o.oChildren
 }
 
-// SetChildrenAsParent sets the associated objects to the given slice of Project objects.
-// It will disassociate from all previously associated objects after saving.
-func (o *projectBase) SetChildrenAsParent(objs []*Project) {
-	o.oChildrenAsParent = objs
-	o.oChildrenAsParentIsDirty = true
-}
-
-// LoadChildrenAsParent loads the associated ChildAsParent objects.
-func (o *projectBase) LoadChildrenAsParent(ctx context.Context) {
-	o.oChildrenAsParent = QueryProjects(ctx).
-		Where(op.Equal(node.Project().ParentsAsChild(), o.PrimaryKey())).
-		Load()
-
-	o.mChildrenAsParent = map[string]*Project{}
-	for _, i := range o.oChildrenAsParent {
-		o.mChildrenAsParent[i.PrimaryKey()] = i
+// SetChildren sets the associated objects to the given slice of Project objects
+// in preparation for saving. The associations will not be updated until Save() is called.
+// Objects that are modified or are new will be saved before completing the association.
+func (o *projectBase) SetChildren(objs []*Project) {
+	o.oChildren = objs
+	o.oChildrenIsDirty = true
+	o.sChildrenPKs = nil
+	o.mChildren = map[string]*Project{}
+	for _, obj := range objs {
+		if !obj.IsNew() {
+			o.mChildren[obj.PrimaryKey()] = obj
+		}
 	}
 }
 
-// CountChildrenAsParent counts the number of associated ChildAsParent objects in the database.
-func (o *projectBase) CountChildrenAsParent(ctx context.Context) int {
+// SetChildPrimaryKeys prepares for setting the associated Project objects to the
+// given slice of primary keys.
+// If objects are currently loaded, they will be unloaded.
+// The association does not take place until Save() is called. Calling Load before calling
+// Save will load the items that will be associated in the database after the Save call.
+// After calling Save, the objects will be unloaded, and you must call Load again if you want
+// them loaded.
+func (o *projectBase) SetChildPrimaryKeys(objs []string) {
+	o.oChildren = nil
+	o.mChildren = nil
+	o.sChildrenPKs = objs
+	o.oChildrenIsDirty = true
+}
+
+// LoadChildren loads the associated Project objects.
+func (o *projectBase) LoadChildren(ctx context.Context) {
+	if o.oChildrenIsDirty && o.sChildrenPKs == nil {
+		panic("dirty many-many relationships cannot be loaded; call Save() first")
+	}
+
+	if o.sChildrenPKs != nil {
+		// Load the objects that will be associated after a Save
+		o.oChildren = QueryProjects(ctx).
+			Where(op.In(node.Project().PrimaryKeyNode(), o.sChildrenPKs...)).
+			Load()
+	} else {
+		o.oChildren = QueryProjects(ctx).
+			Where(op.Equal(node.Project().Parents(), o.PrimaryKey())).
+			Load()
+	}
+
+	o.mChildren = map[string]*Project{}
+	for _, obj := range o.oChildren {
+		o.mChildren[obj.PrimaryKey()] = obj
+	}
+}
+
+// CountChildren counts the number of associated Child objects in the database.
+// Note that this returns what is reflected by the database at that instant, and not what
+// is the count of the loaded objects.
+func (o *projectBase) CountChildren(ctx context.Context) int {
 	return int(QueryProjects(ctx).
-		Where(op.Equal(node.Project().ParentsAsChild(), o.PrimaryKey())).
+		Where(op.Equal(node.Project().Parents(), o.PrimaryKey())).
 		Count(false))
 
 }
 
-// ParentAsChild returns a single Project object by primary key, if one was loaded
+// Parent returns a single Project object by primary key, if one was loaded
 // otherwise, it will return nil.
-func (o *projectBase) ParentAsChild(pk string) *Project {
-	if o.mParentsAsChild == nil {
+func (o *projectBase) Parent(pk string) *Project {
+	if o.mParents == nil {
 		return nil
 	}
-	return o.mParentsAsChild[pk]
+	return o.mParents[pk]
 }
 
-// ParentsAsChild returns a slice of Project objects if loaded. If not loaded, will return nil.
-func (o *projectBase) ParentsAsChild() []*Project {
-	return o.oParentsAsChild
+// Parents returns a slice of Project objects if loaded. If not loaded, will return nil.
+func (o *projectBase) Parents() []*Project {
+	return o.oParents
 }
 
-// SetParentsAsChild sets the associated objects to the given slice of Project objects.
-// It will disassociate from all previously associated objects after saving.
-func (o *projectBase) SetParentsAsChild(objs []*Project) {
-	o.oParentsAsChild = objs
-	o.oParentsAsChildIsDirty = true
-}
-
-// LoadParentsAsChild loads the associated ParentAsChild objects.
-func (o *projectBase) LoadParentsAsChild(ctx context.Context) {
-	o.oParentsAsChild = QueryProjects(ctx).
-		Where(op.Equal(node.Project().ChildrenAsParent(), o.PrimaryKey())).
-		Load()
-
-	o.mParentsAsChild = map[string]*Project{}
-	for _, i := range o.oParentsAsChild {
-		o.mParentsAsChild[i.PrimaryKey()] = i
+// SetParents sets the associated objects to the given slice of Project objects
+// in preparation for saving. The associations will not be updated until Save() is called.
+// Objects that are modified or are new will be saved before completing the association.
+func (o *projectBase) SetParents(objs []*Project) {
+	o.oParents = objs
+	o.oParentsIsDirty = true
+	o.sParentsPKs = nil
+	o.mParents = map[string]*Project{}
+	for _, obj := range objs {
+		if !obj.IsNew() {
+			o.mParents[obj.PrimaryKey()] = obj
+		}
 	}
 }
 
-// CountParentsAsChild counts the number of associated ParentAsChild objects in the database.
-func (o *projectBase) CountParentsAsChild(ctx context.Context) int {
+// SetParentPrimaryKeys prepares for setting the associated Project objects to the
+// given slice of primary keys.
+// If objects are currently loaded, they will be unloaded.
+// The association does not take place until Save() is called. Calling Load before calling
+// Save will load the items that will be associated in the database after the Save call.
+// After calling Save, the objects will be unloaded, and you must call Load again if you want
+// them loaded.
+func (o *projectBase) SetParentPrimaryKeys(objs []string) {
+	o.oParents = nil
+	o.mParents = nil
+	o.sParentsPKs = objs
+	o.oParentsIsDirty = true
+}
+
+// LoadParents loads the associated Project objects.
+func (o *projectBase) LoadParents(ctx context.Context) {
+	if o.oParentsIsDirty && o.sParentsPKs == nil {
+		panic("dirty many-many relationships cannot be loaded; call Save() first")
+	}
+
+	if o.sParentsPKs != nil {
+		// Load the objects that will be associated after a Save
+		o.oParents = QueryProjects(ctx).
+			Where(op.In(node.Project().PrimaryKeyNode(), o.sParentsPKs...)).
+			Load()
+	} else {
+		o.oParents = QueryProjects(ctx).
+			Where(op.Equal(node.Project().Children(), o.PrimaryKey())).
+			Load()
+	}
+
+	o.mParents = map[string]*Project{}
+	for _, obj := range o.oParents {
+		o.mParents[obj.PrimaryKey()] = obj
+	}
+}
+
+// CountParents counts the number of associated Parent objects in the database.
+// Note that this returns what is reflected by the database at that instant, and not what
+// is the count of the loaded objects.
+func (o *projectBase) CountParents(ctx context.Context) int {
 	return int(QueryProjects(ctx).
-		Where(op.Equal(node.Project().ChildrenAsParent(), o.PrimaryKey())).
+		Where(op.Equal(node.Project().Children(), o.PrimaryKey())).
 		Count(false))
 
 }
@@ -764,29 +837,64 @@ func (o *projectBase) TeamMembers() []*Person {
 	return o.oTeamMembers
 }
 
-// SetTeamMembers sets the associated objects to the given slice of Person objects.
-// It will disassociate from all previously associated objects after saving.
+// SetTeamMembers sets the associated objects to the given slice of Person objects
+// in preparation for saving. The associations will not be updated until Save() is called.
+// Objects that are modified or are new will be saved before completing the association.
 func (o *projectBase) SetTeamMembers(objs []*Person) {
 	o.oTeamMembers = objs
 	o.oTeamMembersIsDirty = true
+	o.sTeamMembersPKs = nil
+	o.mTeamMembers = map[string]*Person{}
+	for _, obj := range objs {
+		if !obj.IsNew() {
+			o.mTeamMembers[obj.PrimaryKey()] = obj
+		}
+	}
 }
 
-// LoadTeamMembers loads the associated TeamMember objects.
+// SetTeamMemberPrimaryKeys prepares for setting the associated Person objects to the
+// given slice of primary keys.
+// If objects are currently loaded, they will be unloaded.
+// The association does not take place until Save() is called. Calling Load before calling
+// Save will load the items that will be associated in the database after the Save call.
+// After calling Save, the objects will be unloaded, and you must call Load again if you want
+// them loaded.
+func (o *projectBase) SetTeamMemberPrimaryKeys(objs []string) {
+	o.oTeamMembers = nil
+	o.mTeamMembers = nil
+	o.sTeamMembersPKs = objs
+	o.oTeamMembersIsDirty = true
+}
+
+// LoadTeamMembers loads the associated Person objects.
 func (o *projectBase) LoadTeamMembers(ctx context.Context) {
-	o.oTeamMembers = QueryPeople(ctx).
-		Where(op.Equal(node.Person().ProjectsAsTeamMember(), o.PrimaryKey())).
-		Load()
+	if o.oTeamMembersIsDirty && o.sTeamMembersPKs == nil {
+		panic("dirty many-many relationships cannot be loaded; call Save() first")
+	}
+
+	if o.sTeamMembersPKs != nil {
+		// Load the objects that will be associated after a Save
+		o.oTeamMembers = QueryPeople(ctx).
+			Where(op.In(node.Person().PrimaryKeyNode(), o.sTeamMembersPKs...)).
+			Load()
+	} else {
+		o.oTeamMembers = QueryPeople(ctx).
+			Where(op.Equal(node.Person().Projects(), o.PrimaryKey())).
+			Load()
+	}
 
 	o.mTeamMembers = map[string]*Person{}
-	for _, i := range o.oTeamMembers {
-		o.mTeamMembers[i.PrimaryKey()] = i
+	for _, obj := range o.oTeamMembers {
+		o.mTeamMembers[obj.PrimaryKey()] = obj
 	}
 }
 
 // CountTeamMembers counts the number of associated TeamMember objects in the database.
+// Note that this returns what is reflected by the database at that instant, and not what
+// is the count of the loaded objects.
 func (o *projectBase) CountTeamMembers(ctx context.Context) int {
 	return int(QueryPeople(ctx).
-		Where(op.Equal(node.Person().ProjectsAsTeamMember(), o.PrimaryKey())).
+		Where(op.Equal(node.Person().Projects(), o.PrimaryKey())).
 		Count(false))
 
 }
@@ -1323,40 +1431,40 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 		o.spentIsNull = true
 		o.spent = ""
 	}
-	if v, ok := m["ChildrenAsParent"]; ok {
-		if oChildrenAsParent, ok2 := v.([]db.ValueMap); ok2 {
-			o.oChildrenAsParent = []*Project{}
-			o.mChildrenAsParent = map[string]*Project{}
+	if v, ok := m["Children"]; ok {
+		if oChildren, ok2 := v.([]db.ValueMap); ok2 {
+			o.oChildren = []*Project{}
+			o.mChildren = map[string]*Project{}
 
-			for _, v2 := range oChildrenAsParent {
+			for _, v2 := range oChildren {
 				obj := new(Project)
-				obj.load(v2, obj, objThis, "ParentsAsChild")
-				o.oChildrenAsParent = append(o.oChildrenAsParent, obj)
-				o.mChildrenAsParent[obj.PrimaryKey()] = obj
+				obj.load(v2, obj, objThis, "Parents")
+				o.oChildren = append(o.oChildren, obj)
+				o.mChildren[obj.PrimaryKey()] = obj
 			}
 		} else {
-			panic("Wrong type found for oChildrenAsParent object.")
+			panic("Wrong type found for oChildren object.")
 		}
 	} else {
-		o.oChildrenAsParent = nil
+		o.oChildren = nil
 	}
 
-	if v, ok := m["ParentsAsChild"]; ok {
-		if oParentsAsChild, ok2 := v.([]db.ValueMap); ok2 {
-			o.oParentsAsChild = []*Project{}
-			o.mParentsAsChild = map[string]*Project{}
+	if v, ok := m["Parents"]; ok {
+		if oParents, ok2 := v.([]db.ValueMap); ok2 {
+			o.oParents = []*Project{}
+			o.mParents = map[string]*Project{}
 
-			for _, v2 := range oParentsAsChild {
+			for _, v2 := range oParents {
 				obj := new(Project)
-				obj.load(v2, obj, objThis, "ChildrenAsParent")
-				o.oParentsAsChild = append(o.oParentsAsChild, obj)
-				o.mParentsAsChild[obj.PrimaryKey()] = obj
+				obj.load(v2, obj, objThis, "Children")
+				o.oParents = append(o.oParents, obj)
+				o.mParents[obj.PrimaryKey()] = obj
 			}
 		} else {
-			panic("Wrong type found for oParentsAsChild object.")
+			panic("Wrong type found for oParents object.")
 		}
 	} else {
-		o.oParentsAsChild = nil
+		o.oParents = nil
 	}
 
 	if v, ok := m["TeamMembers"]; ok {
@@ -1366,7 +1474,7 @@ func (o *projectBase) load(m map[string]interface{}, objThis *Project, objParent
 
 			for _, v2 := range oTeamMembers {
 				obj := new(Person)
-				obj.load(v2, obj, objThis, "ProjectsAsTeamMember")
+				obj.load(v2, obj, objThis, "Projects")
 				o.oTeamMembers = append(o.oTeamMembers, obj)
 				o.mTeamMembers[obj.PrimaryKey()] = obj
 			}
@@ -1445,8 +1553,8 @@ func (o *projectBase) update(ctx context.Context) {
 			// We take care to only delete objects that are not being reattached
 			objs := QueryMilestones(ctx).
 				Where(Equal(node.Milestone().ProjectID(), o.PrimaryKey())).
+				Select(node.Milestone().ProjectID()).
 				Load()
-			// TODO: select only the required fields
 			for _, obj := range objs {
 				if _, ok := o.mMilestones[obj.PrimaryKey()]; !ok {
 					// The old object is not in the group of new objects
@@ -1454,6 +1562,7 @@ func (o *projectBase) update(ctx context.Context) {
 				}
 			}
 			for _, obj := range o.oMilestones {
+				obj.projectIDIsDirty = true // force a change in case data is stale
 				obj.SetProjectID(o.PrimaryKey())
 				obj.Save(ctx)
 			}
@@ -1466,14 +1575,21 @@ func (o *projectBase) update(ctx context.Context) {
 
 		}
 
-		{
+		if o.oChildrenIsDirty {
 			var pks []string
-			o.mChildrenAsParent = make(map[string]*Project)
+			o.mChildren = make(map[string]*Project)
 
-			for _, obj := range o.oChildrenAsParent {
+			for _, obj := range o.oChildren {
 				obj.Save(ctx)
-				o.mChildrenAsParent[obj.PrimaryKey()] = obj
+				o.mChildren[obj.PrimaryKey()] = obj
 				pks = append(pks, obj.PrimaryKey())
+			}
+			var added bool
+			for _, pk := range o.sChildrenPKs {
+				if _, found := o.mChildren[pk]; !found {
+					added = true
+					pks = append(pks, pk)
+				}
 			}
 			if len(pks) != 0 {
 				d.Associate(ctx,
@@ -1484,16 +1600,29 @@ func (o *projectBase) update(ctx context.Context) {
 					"child_id",
 					pks)
 			}
+			if added {
+				// unload since we have lost track of the associations
+				o.oChildren = nil
+				o.mChildren = nil
+				o.sChildrenPKs = nil
+			}
 		}
 
-		{
+		if o.oParentsIsDirty {
 			var pks []string
-			o.mParentsAsChild = make(map[string]*Project)
+			o.mParents = make(map[string]*Project)
 
-			for _, obj := range o.oParentsAsChild {
+			for _, obj := range o.oParents {
 				obj.Save(ctx)
-				o.mParentsAsChild[obj.PrimaryKey()] = obj
+				o.mParents[obj.PrimaryKey()] = obj
 				pks = append(pks, obj.PrimaryKey())
+			}
+			var added bool
+			for _, pk := range o.sParentsPKs {
+				if _, found := o.mParents[pk]; !found {
+					added = true
+					pks = append(pks, pk)
+				}
 			}
 			if len(pks) != 0 {
 				d.Associate(ctx,
@@ -1504,9 +1633,15 @@ func (o *projectBase) update(ctx context.Context) {
 					"parent_id",
 					pks)
 			}
+			if added {
+				// unload since we have lost track of the associations
+				o.oParents = nil
+				o.mParents = nil
+				o.sParentsPKs = nil
+			}
 		}
 
-		{
+		if o.oTeamMembersIsDirty {
 			var pks []string
 			o.mTeamMembers = make(map[string]*Person)
 
@@ -1514,6 +1649,13 @@ func (o *projectBase) update(ctx context.Context) {
 				obj.Save(ctx)
 				o.mTeamMembers[obj.PrimaryKey()] = obj
 				pks = append(pks, obj.PrimaryKey())
+			}
+			var added bool
+			for _, pk := range o.sTeamMembersPKs {
+				if _, found := o.mTeamMembers[pk]; !found {
+					added = true
+					pks = append(pks, pk)
+				}
 			}
 			if len(pks) != 0 {
 				d.Associate(ctx,
@@ -1523,6 +1665,12 @@ func (o *projectBase) update(ctx context.Context) {
 					"person",
 					"team_member_id",
 					pks)
+			}
+			if added {
+				// unload since we have lost track of the associations
+				o.oTeamMembers = nil
+				o.mTeamMembers = nil
+				o.sTeamMembersPKs = nil
 			}
 		}
 
@@ -1570,11 +1718,18 @@ func (o *projectBase) insert(ctx context.Context) {
 		}
 		{
 			var pks []string
-			o.mChildrenAsParent = make(map[string]*Project)
-			for _, obj := range o.oChildrenAsParent {
+			o.mChildren = make(map[string]*Project)
+			for _, obj := range o.oChildren {
 				obj.Save(ctx)
-				o.mChildrenAsParent[obj.PrimaryKey()] = obj
+				o.mChildren[obj.PrimaryKey()] = obj
 				pks = append(pks, obj.PrimaryKey())
+			}
+			var added bool
+			for _, pk := range o.sChildrenPKs {
+				if _, found := o.mChildren[pk]; !found {
+					added = true
+					pks = append(pks, pk)
+				}
 			}
 			if len(pks) != 0 {
 				d.Associate(ctx,
@@ -1584,15 +1739,28 @@ func (o *projectBase) insert(ctx context.Context) {
 					"project",
 					"child_id",
 					pks)
+			}
+			if added {
+				// unload since we have lost track of the associations
+				o.oChildren = nil
+				o.mChildren = nil
+				o.sChildrenPKs = nil
 			}
 		}
 		{
 			var pks []string
-			o.mParentsAsChild = make(map[string]*Project)
-			for _, obj := range o.oParentsAsChild {
+			o.mParents = make(map[string]*Project)
+			for _, obj := range o.oParents {
 				obj.Save(ctx)
-				o.mParentsAsChild[obj.PrimaryKey()] = obj
+				o.mParents[obj.PrimaryKey()] = obj
 				pks = append(pks, obj.PrimaryKey())
+			}
+			var added bool
+			for _, pk := range o.sParentsPKs {
+				if _, found := o.mParents[pk]; !found {
+					added = true
+					pks = append(pks, pk)
+				}
 			}
 			if len(pks) != 0 {
 				d.Associate(ctx,
@@ -1602,6 +1770,12 @@ func (o *projectBase) insert(ctx context.Context) {
 					"project",
 					"parent_id",
 					pks)
+			}
+			if added {
+				// unload since we have lost track of the associations
+				o.oParents = nil
+				o.mParents = nil
+				o.sParentsPKs = nil
 			}
 		}
 		{
@@ -1612,6 +1786,13 @@ func (o *projectBase) insert(ctx context.Context) {
 				o.mTeamMembers[obj.PrimaryKey()] = obj
 				pks = append(pks, obj.PrimaryKey())
 			}
+			var added bool
+			for _, pk := range o.sTeamMembersPKs {
+				if _, found := o.mTeamMembers[pk]; !found {
+					added = true
+					pks = append(pks, pk)
+				}
+			}
 			if len(pks) != 0 {
 				d.Associate(ctx,
 					"team_member_project_assn",
@@ -1620,6 +1801,12 @@ func (o *projectBase) insert(ctx context.Context) {
 					"person",
 					"team_member_id",
 					pks)
+			}
+			if added {
+				// unload since we have lost track of the associations
+				o.oTeamMembers = nil
+				o.mTeamMembers = nil
+				o.sTeamMembersPKs = nil
 			}
 		}
 
@@ -1849,11 +2036,14 @@ func (o *projectBase) resetDirtyStatus() {
 	o.budgetIsDirty = false
 	o.spentIsDirty = false
 	o.oMilestonesIsDirty = false
+	o.oChildrenIsDirty = false
+	o.oParentsIsDirty = false
+	o.oTeamMembersIsDirty = false
 
 }
 
-func (o *projectBase) IsDirty() bool {
-	return o.idIsDirty ||
+func (o *projectBase) IsDirty() (dirty bool) {
+	dirty = o.idIsDirty ||
 		o.numIsDirty ||
 		o.statusIDIsDirty ||
 		o.managerIDIsDirty ||
@@ -1863,9 +2053,31 @@ func (o *projectBase) IsDirty() bool {
 		o.startDateIsDirty ||
 		o.endDateIsDirty ||
 		o.budgetIsDirty ||
-		o.spentIsDirty ||
+		o.spentIsDirty
+
+	dirty = dirty ||
 		o.oMilestonesIsDirty
 
+	for _, obj := range o.oMilestones {
+		dirty = dirty || obj.IsDirty()
+	}
+
+	dirty = dirty ||
+		o.oChildrenIsDirty ||
+		o.oParentsIsDirty ||
+		o.oTeamMembersIsDirty
+
+	for _, obj := range o.oChildren {
+		dirty = dirty || obj.IsDirty()
+	}
+	for _, obj := range o.oParents {
+		dirty = dirty || obj.IsDirty()
+	}
+	for _, obj := range o.oTeamMembers {
+		dirty = dirty || obj.IsDirty()
+	}
+
+	return
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -1943,11 +2155,11 @@ func (o *projectBase) Get(key string) interface{} {
 	case "Milestones":
 		return o.Milestones()
 
-	case "ChildrenAsParent":
-		return o.ChildrenAsParent()
+	case "Children":
+		return o.Children()
 
-	case "ParentsAsChild":
-		return o.ParentsAsChild()
+	case "Parents":
+		return o.Parents()
 
 	case "TeamMembers":
 		return o.TeamMembers()
@@ -2107,7 +2319,7 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		}
 	}
 
-	if o.oChildrenAsParent == nil {
+	if o.oChildren == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -2115,11 +2327,11 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oChildrenAsParent); err != nil {
+		if err := encoder.Encode(o.oChildren); err != nil {
 			return nil, err
 		}
 	}
-	if o.oParentsAsChild == nil {
+	if o.oParents == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -2127,7 +2339,7 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oParentsAsChild); err != nil {
+		if err := encoder.Encode(o.oParents); err != nil {
 			return nil, err
 		}
 	}
@@ -2320,14 +2532,14 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oChildrenAsParent); err != nil {
+		if err = dec.Decode(&o.oChildren); err != nil {
 			return
 		}
-		if len(o.oChildrenAsParent) > 0 {
-			o.mChildrenAsParent = make(map[string]*Project)
+		if len(o.oChildren) > 0 {
+			o.mChildren = make(map[string]*Project)
 
-			for _, p := range o.oChildrenAsParent {
-				o.mChildrenAsParent[p.PrimaryKey()] = p
+			for _, p := range o.oChildren {
+				o.mChildren[p.PrimaryKey()] = p
 			}
 		}
 	}
@@ -2335,14 +2547,14 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oParentsAsChild); err != nil {
+		if err = dec.Decode(&o.oParents); err != nil {
 			return
 		}
-		if len(o.oParentsAsChild) > 0 {
-			o.mParentsAsChild = make(map[string]*Project)
+		if len(o.oParents) > 0 {
+			o.mParents = make(map[string]*Project)
 
-			for _, p := range o.oParentsAsChild {
-				o.mParentsAsChild[p.PrimaryKey()] = p
+			for _, p := range o.oParents {
+				o.mParents[p.PrimaryKey()] = p
 			}
 		}
 	}
@@ -2474,19 +2686,19 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 		v["milestones"] = val2
 	}
 
-	if val := o.ChildrenAsParent(); val != nil {
+	if val := o.Children(); val != nil {
 		var val2 []map[string]interface{}
 		for _, v2 := range val {
 			val2 = append(val2, v2.MarshalStringMap())
 		}
-		v["childrenAsParent"] = val2
+		v["children"] = val2
 	}
-	if val := o.ParentsAsChild(); val != nil {
+	if val := o.Parents(); val != nil {
 		var val2 []map[string]interface{}
 		for _, v2 := range val {
 			val2 = append(val2, v2.MarshalStringMap())
 		}
-		v["parentsAsChild"] = val2
+		v["parents"] = val2
 	}
 	if val := o.TeamMembers(); val != nil {
 		var val2 []map[string]interface{}

@@ -20,13 +20,29 @@ func (o *{{privateName}}Base) IsDirty() (dirty bool) {
 {{if len(t.ReverseReferences) > 0}}
 	dirty = dirty ||
 	    {{join t.ReverseReferences, "|| \n"}}o.{{= oRef(_j) }}IsDirty{{join}}
-	    // TODO: check loaded objects
+
+{{for _,ref := range t.ReverseReferences}}
+{{if ref.IsUnique()}}
+    dirty = dirty || (o.{{= oRef(ref) }} != nil && o.{{= oRef(ref) }}.IsDirty())
+{{else}}
+    for _, obj := range o.{{= oRef(ref) }} {
+        dirty = dirty || obj.IsDirty()
+    }
+{{if}}
+{{for}}
 {{if}}
 
 {{if len(t.ManyManyReferences) > 0}}
 	dirty = dirty ||
 	    {{join t.ManyManyReferences, "|| \n"}}o.{{= oRef(_j) }}IsDirty{{join}}
-	    // TODO: check loaded objects
+
+{{for _,ref := range t.ManyManyReferences}}
+{{if !ref.IsEnumAssociation }}
+    for _, obj := range o.{{= oRef(ref) }} {
+        dirty = dirty || obj.IsDirty()
+    }
+{{if}}
+{{for}}
 {{if}}
 
     return

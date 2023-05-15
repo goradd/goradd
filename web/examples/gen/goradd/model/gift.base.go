@@ -516,10 +516,11 @@ func (o *giftBase) resetDirtyStatus() {
 
 }
 
-func (o *giftBase) IsDirty() bool {
-	return o.numberIsDirty ||
+func (o *giftBase) IsDirty() (dirty bool) {
+	dirty = o.numberIsDirty ||
 		o.nameIsDirty
 
+	return
 }
 
 // Get returns the value of a field in the object based on the field's name.

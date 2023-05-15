@@ -49,9 +49,10 @@ type personBase struct {
 	oPersonTypes        []PersonType
 	oPersonTypesIsDirty bool
 
-	oProjectsAsTeamMember        []*Project
-	mProjectsAsTeamMember        map[string]*Project // Objects by PK
-	oProjectsAsTeamMemberIsDirty bool
+	oProjects        []*Project
+	mProjects        map[string]*Project // Objects by PK
+	sProjectsPKs     []string            // Primary keys to be associated at Save time
+	oProjectsIsDirty bool
 
 	// Custom aliases, if specified
 	_aliases map[string]interface{}
@@ -76,14 +77,14 @@ const (
 
 	Person_LastName = `LastName`
 
-	PersonAddresses            = `Addresses`
-	PersonEmployeeInfo         = `EmployeeInfo`
-	PersonLogin                = `Login`
-	PersonProjectsAsManager    = `ProjectsAsManager`
-	PersonPersonType           = `PersonType`
-	PersonPersonTypes          = `PersonTypes`
-	PersonProjectAsTeamMember  = `ProjectAsTeamMember`
-	PersonProjectsAsTeamMember = `ProjectsAsTeamMember`
+	PersonAddresses         = `Addresses`
+	PersonEmployeeInfo      = `EmployeeInfo`
+	PersonLogin             = `Login`
+	PersonProjectsAsManager = `ProjectsAsManager`
+	PersonPersonType        = `PersonType`
+	PersonPersonTypes       = `PersonTypes`
+	PersonProject           = `Project`
+	PersonProjects          = `Projects`
 )
 
 // Initialize or re-initialize a Person database object to default values.
@@ -216,41 +217,76 @@ func (o *personBase) SetPersonTypes(objs []PersonType) {
 	o.oPersonTypesIsDirty = true
 }
 
-// ProjectAsTeamMember returns a single Project object by primary key, if one was loaded
+// Project returns a single Project object by primary key, if one was loaded
 // otherwise, it will return nil.
-func (o *personBase) ProjectAsTeamMember(pk string) *Project {
-	if o.mProjectsAsTeamMember == nil {
+func (o *personBase) Project(pk string) *Project {
+	if o.mProjects == nil {
 		return nil
 	}
-	return o.mProjectsAsTeamMember[pk]
+	return o.mProjects[pk]
 }
 
-// ProjectsAsTeamMember returns a slice of Project objects if loaded. If not loaded, will return nil.
-func (o *personBase) ProjectsAsTeamMember() []*Project {
-	return o.oProjectsAsTeamMember
+// Projects returns a slice of Project objects if loaded. If not loaded, will return nil.
+func (o *personBase) Projects() []*Project {
+	return o.oProjects
 }
 
-// SetProjectsAsTeamMember sets the associated objects to the given slice of Project objects.
-// It will disassociate from all previously associated objects after saving.
-func (o *personBase) SetProjectsAsTeamMember(objs []*Project) {
-	o.oProjectsAsTeamMember = objs
-	o.oProjectsAsTeamMemberIsDirty = true
-}
-
-// LoadProjectsAsTeamMember loads the associated ProjectAsTeamMember objects.
-func (o *personBase) LoadProjectsAsTeamMember(ctx context.Context) {
-	o.oProjectsAsTeamMember = QueryProjects(ctx).
-		Where(op.Equal(node.Project().TeamMembers(), o.PrimaryKey())).
-		Load()
-
-	o.mProjectsAsTeamMember = map[string]*Project{}
-	for _, i := range o.oProjectsAsTeamMember {
-		o.mProjectsAsTeamMember[i.PrimaryKey()] = i
+// SetProjects sets the associated objects to the given slice of Project objects
+// in preparation for saving. The associations will not be updated until Save() is called.
+// Objects that are modified or are new will be saved before completing the association.
+func (o *personBase) SetProjects(objs []*Project) {
+	o.oProjects = objs
+	o.oProjectsIsDirty = true
+	o.sProjectsPKs = nil
+	o.mProjects = map[string]*Project{}
+	for _, obj := range objs {
+		if !obj.IsNew() {
+			o.mProjects[obj.PrimaryKey()] = obj
+		}
 	}
 }
 
-// CountProjectsAsTeamMember counts the number of associated ProjectAsTeamMember objects in the database.
-func (o *personBase) CountProjectsAsTeamMember(ctx context.Context) int {
+// SetProjectPrimaryKeys prepares for setting the associated Project objects to the
+// given slice of primary keys.
+// If objects are currently loaded, they will be unloaded.
+// The association does not take place until Save() is called. Calling Load before calling
+// Save will load the items that will be associated in the database after the Save call.
+// After calling Save, the objects will be unloaded, and you must call Load again if you want
+// them loaded.
+func (o *personBase) SetProjectPrimaryKeys(objs []string) {
+	o.oProjects = nil
+	o.mProjects = nil
+	o.sProjectsPKs = objs
+	o.oProjectsIsDirty = true
+}
+
+// LoadProjects loads the associated Project objects.
+func (o *personBase) LoadProjects(ctx context.Context) {
+	if o.oProjectsIsDirty && o.sProjectsPKs == nil {
+		panic("dirty many-many relationships cannot be loaded; call Save() first")
+	}
+
+	if o.sProjectsPKs != nil {
+		// Load the objects that will be associated after a Save
+		o.oProjects = QueryProjects(ctx).
+			Where(op.In(node.Project().PrimaryKeyNode(), o.sProjectsPKs...)).
+			Load()
+	} else {
+		o.oProjects = QueryProjects(ctx).
+			Where(op.Equal(node.Project().TeamMembers(), o.PrimaryKey())).
+			Load()
+	}
+
+	o.mProjects = map[string]*Project{}
+	for _, obj := range o.oProjects {
+		o.mProjects[obj.PrimaryKey()] = obj
+	}
+}
+
+// CountProjects counts the number of associated Project objects in the database.
+// Note that this returns what is reflected by the database at that instant, and not what
+// is the count of the loaded objects.
+func (o *personBase) CountProjects(ctx context.Context) int {
 	return int(QueryProjects(ctx).
 		Where(op.Equal(node.Project().TeamMembers(), o.PrimaryKey())).
 		Count(false))
@@ -752,22 +788,22 @@ func (o *personBase) load(m map[string]interface{}, objThis *Person, objParent i
 		o.oPersonTypes = nil
 	}
 
-	if v, ok := m["ProjectsAsTeamMember"]; ok {
-		if oProjectsAsTeamMember, ok2 := v.([]db.ValueMap); ok2 {
-			o.oProjectsAsTeamMember = []*Project{}
-			o.mProjectsAsTeamMember = map[string]*Project{}
+	if v, ok := m["Projects"]; ok {
+		if oProjects, ok2 := v.([]db.ValueMap); ok2 {
+			o.oProjects = []*Project{}
+			o.mProjects = map[string]*Project{}
 
-			for _, v2 := range oProjectsAsTeamMember {
+			for _, v2 := range oProjects {
 				obj := new(Project)
 				obj.load(v2, obj, objThis, "TeamMembers")
-				o.oProjectsAsTeamMember = append(o.oProjectsAsTeamMember, obj)
-				o.mProjectsAsTeamMember[obj.PrimaryKey()] = obj
+				o.oProjects = append(o.oProjects, obj)
+				o.mProjects[obj.PrimaryKey()] = obj
 			}
 		} else {
-			panic("Wrong type found for oProjectsAsTeamMember object.")
+			panic("Wrong type found for oProjects object.")
 		}
 	} else {
-		o.oProjectsAsTeamMember = nil
+		o.oProjects = nil
 	}
 
 	if v, ok := m["Addresses"]; ok {
@@ -883,8 +919,8 @@ func (o *personBase) update(ctx context.Context) {
 			// We take care to only delete objects that are not being reattached
 			objs := QueryAddresses(ctx).
 				Where(Equal(node.Address().PersonID(), o.PrimaryKey())).
+				Select(node.Address().PersonID()).
 				Load()
-			// TODO: select only the required fields
 			for _, obj := range objs {
 				if _, ok := o.mAddresses[obj.PrimaryKey()]; !ok {
 					// The old object is not in the group of new objects
@@ -892,6 +928,7 @@ func (o *personBase) update(ctx context.Context) {
 				}
 			}
 			for _, obj := range o.oAddresses {
+				obj.personIDIsDirty = true // force a change in case data is stale
 				obj.SetPersonID(o.PrimaryKey())
 				obj.Save(ctx)
 			}
@@ -913,6 +950,7 @@ func (o *personBase) update(ctx context.Context) {
 			if obj != nil && obj.PrimaryKey() != o.oEmployeeInfo.PrimaryKey() {
 				obj.Delete(ctx)
 			}
+			o.oEmployeeInfo.personIDIsDirty = true // force a change in case data is stale
 			o.oEmployeeInfo.SetPersonID(o.PrimaryKey())
 			o.oEmployeeInfo.Save(ctx)
 
@@ -933,6 +971,7 @@ func (o *personBase) update(ctx context.Context) {
 			if obj != nil && obj.PrimaryKey() != o.oLogin.PrimaryKey() {
 				obj.Delete(ctx)
 			}
+			o.oLogin.personIDIsDirty = true // force a change in case data is stale
 			o.oLogin.SetPersonID(o.PrimaryKey())
 			o.oLogin.Save(ctx)
 
@@ -948,8 +987,8 @@ func (o *personBase) update(ctx context.Context) {
 
 			objs := QueryProjects(ctx).
 				Where(Equal(node.Project().ManagerID(), o.PrimaryKey())).
+				Select(node.Project().ManagerID()).
 				Load()
-			// TODO:select only the required fields
 			for _, obj := range objs {
 				if _, ok := o.mProjectsAsManager[obj.PrimaryKey()]; !ok {
 					// The old object is not in the group of new objects
@@ -958,6 +997,7 @@ func (o *personBase) update(ctx context.Context) {
 				}
 			}
 			for _, obj := range o.oProjectsAsManager {
+				obj.managerIDIsDirty = true // force a change in case data is stale
 				obj.SetManagerID(o.PrimaryKey())
 				obj.Save(ctx)
 			}
@@ -980,14 +1020,21 @@ func (o *personBase) update(ctx context.Context) {
 				o.oPersonTypes)
 		}
 
-		{
+		if o.oProjectsIsDirty {
 			var pks []string
-			o.mProjectsAsTeamMember = make(map[string]*Project)
+			o.mProjects = make(map[string]*Project)
 
-			for _, obj := range o.oProjectsAsTeamMember {
+			for _, obj := range o.oProjects {
 				obj.Save(ctx)
-				o.mProjectsAsTeamMember[obj.PrimaryKey()] = obj
+				o.mProjects[obj.PrimaryKey()] = obj
 				pks = append(pks, obj.PrimaryKey())
+			}
+			var added bool
+			for _, pk := range o.sProjectsPKs {
+				if _, found := o.mProjects[pk]; !found {
+					added = true
+					pks = append(pks, pk)
+				}
 			}
 			if len(pks) != 0 {
 				d.Associate(ctx,
@@ -997,6 +1044,12 @@ func (o *personBase) update(ctx context.Context) {
 					"project",
 					"project_id",
 					pks)
+			}
+			if added {
+				// unload since we have lost track of the associations
+				o.oProjects = nil
+				o.mProjects = nil
+				o.sProjectsPKs = nil
 			}
 		}
 
@@ -1064,11 +1117,18 @@ func (o *personBase) insert(ctx context.Context) {
 		}
 		{
 			var pks []string
-			o.mProjectsAsTeamMember = make(map[string]*Project)
-			for _, obj := range o.oProjectsAsTeamMember {
+			o.mProjects = make(map[string]*Project)
+			for _, obj := range o.oProjects {
 				obj.Save(ctx)
-				o.mProjectsAsTeamMember[obj.PrimaryKey()] = obj
+				o.mProjects[obj.PrimaryKey()] = obj
 				pks = append(pks, obj.PrimaryKey())
+			}
+			var added bool
+			for _, pk := range o.sProjectsPKs {
+				if _, found := o.mProjects[pk]; !found {
+					added = true
+					pks = append(pks, pk)
+				}
 			}
 			if len(pks) != 0 {
 				d.Associate(ctx,
@@ -1078,6 +1138,12 @@ func (o *personBase) insert(ctx context.Context) {
 					"project",
 					"project_id",
 					pks)
+			}
+			if added {
+				// unload since we have lost track of the associations
+				o.oProjects = nil
+				o.mProjects = nil
+				o.sProjectsPKs = nil
 			}
 		}
 
@@ -1208,18 +1274,40 @@ func (o *personBase) resetDirtyStatus() {
 	o.oEmployeeInfoIsDirty = false
 	o.oLoginIsDirty = false
 	o.oProjectsAsManagerIsDirty = false
+	o.oPersonTypesIsDirty = false
+	o.oProjectsIsDirty = false
 
 }
 
-func (o *personBase) IsDirty() bool {
-	return o.idIsDirty ||
+func (o *personBase) IsDirty() (dirty bool) {
+	dirty = o.idIsDirty ||
 		o.firstNameIsDirty ||
-		o.lastNameIsDirty ||
+		o.lastNameIsDirty
+
+	dirty = dirty ||
 		o.oAddressesIsDirty ||
 		o.oEmployeeInfoIsDirty ||
 		o.oLoginIsDirty ||
 		o.oProjectsAsManagerIsDirty
 
+	for _, obj := range o.oAddresses {
+		dirty = dirty || obj.IsDirty()
+	}
+	dirty = dirty || (o.oEmployeeInfo != nil && o.oEmployeeInfo.IsDirty())
+	dirty = dirty || (o.oLogin != nil && o.oLogin.IsDirty())
+	for _, obj := range o.oProjectsAsManager {
+		dirty = dirty || obj.IsDirty()
+	}
+
+	dirty = dirty ||
+		o.oPersonTypesIsDirty ||
+		o.oProjectsIsDirty
+
+	for _, obj := range o.oProjects {
+		dirty = dirty || obj.IsDirty()
+	}
+
+	return
 }
 
 // Get returns the value of a field in the object based on the field's name.
@@ -1261,8 +1349,8 @@ func (o *personBase) Get(key string) interface{} {
 	case "PersonTypes":
 		return o.PersonTypes()
 
-	case "ProjectsAsTeamMember":
-		return o.ProjectsAsTeamMember()
+	case "Projects":
+		return o.Projects()
 
 	}
 	return nil
@@ -1367,7 +1455,7 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
-	if o.oProjectsAsTeamMember == nil {
+	if o.oProjects == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
 		}
@@ -1375,7 +1463,7 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(true); err != nil {
 			return nil, err
 		}
-		if err := encoder.Encode(o.oProjectsAsTeamMember); err != nil {
+		if err := encoder.Encode(o.oProjects); err != nil {
 			return nil, err
 		}
 	}
@@ -1498,14 +1586,14 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
-		if err = dec.Decode(&o.oProjectsAsTeamMember); err != nil {
+		if err = dec.Decode(&o.oProjects); err != nil {
 			return
 		}
-		if len(o.oProjectsAsTeamMember) > 0 {
-			o.mProjectsAsTeamMember = make(map[string]*Project)
+		if len(o.oProjects) > 0 {
+			o.mProjects = make(map[string]*Project)
 
-			for _, p := range o.oProjectsAsTeamMember {
-				o.mProjectsAsTeamMember[p.PrimaryKey()] = p
+			for _, p := range o.oProjects {
+				o.mProjects[p.PrimaryKey()] = p
 			}
 		}
 	}
@@ -1587,12 +1675,12 @@ func (o *personBase) MarshalStringMap() map[string]interface{} {
 		}
 		v["personTypes"] = val2
 	}
-	if val := o.ProjectsAsTeamMember(); val != nil {
+	if val := o.Projects(); val != nil {
 		var val2 []map[string]interface{}
 		for _, v2 := range val {
 			val2 = append(val2, v2.MarshalStringMap())
 		}
-		v["projectsAsTeamMember"] = val2
+		v["projects"] = val2
 	}
 
 	for _k, _v := range o._aliases {

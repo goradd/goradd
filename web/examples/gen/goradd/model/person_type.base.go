@@ -67,6 +67,15 @@ func PersonTypeFromID(id string) PersonType {
 	return PersonType(0)
 }
 
+// PersonTypesFromIDs converts a slice of PersonType IDs to a slice of PersonType
+func PersonTypesFromIDs(ids []string) (values []PersonType) {
+	values = make([]PersonType, len(ids), len(ids))
+	for _, id := range ids {
+		values = append(values, PersonTypeFromID(id))
+	}
+	return
+}
+
 // PersonTypeFromName converts a PersonType name to a PersonType
 func PersonTypeFromName(name string) PersonType {
 	switch name {

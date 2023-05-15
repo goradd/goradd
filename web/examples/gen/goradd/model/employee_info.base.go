@@ -645,12 +645,13 @@ func (o *employeeInfoBase) resetDirtyStatus() {
 
 }
 
-func (o *employeeInfoBase) IsDirty() bool {
-	return o.idIsDirty ||
+func (o *employeeInfoBase) IsDirty() (dirty bool) {
+	dirty = o.idIsDirty ||
 		o.personIDIsDirty ||
 		(o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.employeeNumberIsDirty
 
+	return
 }
 
 // Get returns the value of a field in the object based on the field's name.

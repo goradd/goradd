@@ -59,11 +59,14 @@ func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{= oType }}) {
     }
 }
 
-// Set{{= ref.GoName }}PKs prepares for setting the associated {{= oType }} objects to the
-// given slice of primary keys. If objects are currently loaded, they will be unloaded.
+// Set{{= ref.GoName }}PrimaryKeys prepares for setting the associated {{= oType }} objects to the
+// given slice of primary keys.
+// If objects are currently loaded, they will be unloaded.
 // The association does not take place until Save() is called. Calling Load before calling
 // Save will load the items that will be associated in the database after the Save call.
-func (o *{{privateName}}Base) Set{{= ref.GoName }}PKs(objs []{{= ref.PrimaryKeyType() }}) {
+// After calling Save, the objects will be unloaded, and you must call Load again if you want
+// them loaded.
+func (o *{{privateName}}Base) Set{{= ref.GoName }}PrimaryKeys(objs []{{= ref.PrimaryKeyType() }}) {
 	o.{{oName}} = nil
 	o.m{{=  ref.GoPlural }} = nil
 	o.s{{= ref.GoPlural }}PKs = objs
