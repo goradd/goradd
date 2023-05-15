@@ -27,7 +27,7 @@ func TestNodeEquality(t *testing.T) {
 		t.Error("Reverse Reference node not equal to self")
 	}
 
-	n3 := node.Person().ProjectsAsTeamMember()
+	n3 := node.Person().Projects()
 	if !n3.Equals(n3) {
 		t.Error("Many-Many node not equal to self")
 	}

@@ -8,3 +8,9 @@ import (
 func getContext() context.Context {
 	return db.PutContext(nil)
 }
+
+// tearDown will delete all data records possibly inserted
+// by a f
+func tearDown() {
+
+}

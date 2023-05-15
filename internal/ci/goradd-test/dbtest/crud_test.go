@@ -1,6 +1,7 @@
 package dbtest
 
 import (
+	"github.com/goradd/goradd/pkg/orm/op"
 	"github.com/stretchr/testify/assert"
 	"goradd-project/gen/goradd/model"
 	"goradd-project/gen/goradd/model/node"
@@ -24,6 +25,22 @@ func TestInsertNotInitialized(t *testing.T) {
 
 func TestCrudForwardOneManyNull(t *testing.T) {
 	ctx := getContext()
+
+	defer func() {
+		model.QueryAddresses(ctx).
+			Where(op.Equal(node.Address().City(), "Mendenhall")).
+			Delete()
+
+		model.QueryPeople(ctx).
+			Where(op.Equal(node.Person().LastName(), "Perkins")).
+			Delete()
+
+		model.QueryPeople(ctx).
+			Where(op.Equal(node.Person().LastName(), "Gordon")).
+			Delete()
+
+	}()
+
 	address := model.NewAddress()
 	address.SetStreet("1 Center St")
 	address.SetCity("Mendenhall")
@@ -45,8 +62,6 @@ func TestCrudForwardOneManyNull(t *testing.T) {
 	address3 := model.LoadAddress(ctx, address2.ID(), node.Address().Person())
 	assert.Equal(t, "Derek", address3.Person().FirstName())
 
-	detachedPersonID := address3.PersonID()
-
 	person2 := model.NewPerson()
 	person2.SetFirstName("Jim")
 	person2.SetLastName("Gordon")
@@ -57,12 +72,9 @@ func TestCrudForwardOneManyNull(t *testing.T) {
 	assert.Equal(t, "Gordon", address4.Person().LastName())
 
 	address4.Person().Delete(ctx) // should delete address too
-
+	// confirm address was deleted
 	address5 := model.LoadAddress(ctx, address.ID(), node.Address().Person())
 	assert.Nil(t, address5)
-
-	person3 := model.LoadPerson(ctx, detachedPersonID)
-	person3.Delete(ctx)
 }
 
 func TestCrudReverseOneManyCascade(t *testing.T) {
