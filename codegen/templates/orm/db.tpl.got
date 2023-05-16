@@ -1,6 +1,6 @@
 package template
 
-// This template generates a got template for the build.go file in the forms directory
+// This template generates a got template for the db.go file in the orm directory
 
 import (
 	"github.com/goradd/goradd/codegen/generator"

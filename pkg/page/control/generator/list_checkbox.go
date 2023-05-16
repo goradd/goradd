@@ -45,7 +45,7 @@ func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDe
 }
 
 func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) string {
-	return `ctrl.SetData(objects)`
+	return `ctrl.SetValue(objects)`
 }
 
 func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) string {
@@ -61,6 +61,8 @@ func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDes
 		if col.IsEnumAssociation {
 			return fmt.Sprintf(`val := model.%sFromIDs(ctrl.SelectedValues())`,
 				col.GoPlural)
+		} else {
+			return fmt.Sprintf(`val := ctrl.SelectedValues()`)
 		}
 		return ""
 	}

@@ -40,7 +40,7 @@ func DefaultControlType(ref interface{}) string {
 	case *db.ManyManyReference:
 		return "github.com/goradd/goradd/pkg/page/control/list/CheckboxList"
 	case *db.Column:
-		if col.IsPk {
+		if col.IsPk && col.IsId {
 			return "github.com/goradd/goradd/pkg/page/control/Span" // primary keys are not editable
 		}
 

@@ -7,12 +7,12 @@
 func (f *{{= formName }}) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case {{= title }}SaveAction:
-	    panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Save(ctx)
+	    Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Save(ctx)
 	    f.returnToPrevious(ctx)
     case {{= title }}CancelAction:
         f.returnToPrevious(ctx)
     case {{= title }}DeleteAction:
-        panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Delete(ctx)
+        Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Delete(ctx)
         f.returnToPrevious(ctx)
     default:
         f.FormBase.DoAction(ctx, a)

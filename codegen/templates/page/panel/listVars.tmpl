@@ -4,8 +4,6 @@ var objectType = "List"
 var panelName = t.GoName + "ListPanel"
 var lcPanelName = t.LcGoName + objectType + "Panel"
 var kebabPanelName = strings2.CamelToKebab(t.GoName)
-var editFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Edit")
-var detailFormPath = path.Join("/goradd/form/",dd.DbKey,t.GoName + "Detail")
 var forwardJoins []*db.Column
 
 // columns for default forward joins
@@ -16,6 +14,5 @@ for _,col := range t.Columns {
 }
 
 _ = lcPanelName
-_ = editFormPath
-_ = detailFormPath
+
 

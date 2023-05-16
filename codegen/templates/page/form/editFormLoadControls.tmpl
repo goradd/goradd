@@ -6,10 +6,10 @@
 // It is the place to load up the form controls with data after the form has been created.
 func (f *{{= formName }}) LoadControls(ctx context.Context) {
     f.FormBase.LoadControls(ctx) // Load site-wide controls
-    id := session.GetString(ctx, panel.{{= t.GoName }}ListPanelEditSessionID)
+    id := session.GetString(ctx, {{= t.GoName }}EditSessionID)
 
     if id != "" {
- 	    err := panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, {{= t.PrimaryKeyColumn().ConvertFromString("id") }})
+ 	    err := Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, id)
  	    if err == nil {
             f.Page().GetControl({{= title }}DeleteButtonID).SetVisible(true)
             f.Page().SetTitle(f.GT("Edit"))
@@ -17,7 +17,7 @@ func (f *{{= formName }}) LoadControls(ctx context.Context) {
  	    }
  	    // drop through on failure
     }
-    _ = panel.Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx, {{= t.PrimaryKeyColumn().DefaultValueAsConstant() }})
+    _ = Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Load(ctx,"")
     f.Page().GetControl({{= title }}DeleteButtonID).SetVisible(false)
     f.Page().SetTitle(f.GT("Create"))
 }

@@ -8,7 +8,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     for _,col := range t.Columns {
         cd := t.ControlDescription(col)
         if cd == nil {continue}
-        if cd.Generator != nil && !col.IsPk {
+        if cd.Generator != nil && !(col.IsPk && col.IsId) {
 {{
         p.{{= cd.ControlName }}Creator(),
 }}

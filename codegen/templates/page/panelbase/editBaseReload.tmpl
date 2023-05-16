@@ -4,7 +4,7 @@
 
 // Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
 func (p *{{= panelName }}) Reload(ctx context.Context) error {
-    return p.this().Load(ctx, p.{{= t.GoName }}.OriginalPrimaryKey())
+    return p.this().Load(ctx, fmt.Sprint(p.{{= t.GoName }}.OriginalPrimaryKey()))
 }
 
 }}

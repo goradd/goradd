@@ -18,7 +18,7 @@ var panelName = t.GoName + "EditPanel"
 for _,col := range t.Columns {
     cd := t.ControlDescription(col)
     if cd == nil {continue}
-    if col.IsPk {continue}
+    if col.IsPk && col.IsId {continue}
     if cd.Generator != nil {
 {{begin *drawCode*}}{{drawChild -{{end *drawCode*}}{{= cd.ControlID }}{{begin *drawCode2*}}-ff }}
 {{end *drawCode2*}}

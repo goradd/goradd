@@ -38,12 +38,12 @@ func (p *{{= panelName }}) EditItem(ctx context.Context, pk string) {
 // EditItemWithForm will go to the corresponding edit form to edit the item
 func (p *{{= panelName }}) EditItemWithForm(ctx context.Context, pk string) {
     if pk == "" {
-        session.Remove(ctx, {{= panelName }}EditSessionID)
+        session.Remove(ctx, {{= t.GoName }}EditSessionID)
     } else {
-        session.SetString(ctx, {{= panelName }}EditSessionID, pk)
+        session.SetString(ctx, {{= t.GoName }}EditSessionID, pk)
     }
     // This points to the default edit form path created by the templates. If you change the URL there, also change this.
-	p.ParentForm().ChangeLocation("{{= editFormPath }}")
+	p.ParentForm().ChangeLocation({{= t.GoName }}EditFormPath)
 }
 
 // EditItemWithDialog will popup a dialog to edit the item
@@ -66,8 +66,8 @@ func (p *{{= panelName }}) EditItemWithDialog(ctx context.Context, pk string) {
 func (p *{{= panelName }}) ZoomItem(ctx context.Context, id string) {
     // This points to the default detail form path created by the templates. If you change the URL there, also change this.
     if id != "" {
-        session.SetString(ctx, {{= panelName }}DetailSessionID, id)
+        session.SetString(ctx, {{= t.GoName }}DetailSessionID, id)
     }
-	p.ParentForm().ChangeLocation("{{= detailFormPath }}")
+	p.ParentForm().ChangeLocation({{= t.GoName }}DetailFormPath)
 }
 }}

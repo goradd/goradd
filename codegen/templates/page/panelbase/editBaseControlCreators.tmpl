@@ -5,7 +5,7 @@
 {{g
 
     for _,col := range t.Columns {
-        if col.IsPk {continue}
+        if col.IsPk && col.IsId {continue}
         cd := t.ControlDescription(col)
         if cd == nil || cd.Generator == nil {continue}
         cd.Package = codegen.ObjectPackage(cd.Path)

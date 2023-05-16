@@ -182,7 +182,11 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
         {{= sUpdate }}
+{{if mm.IsEnumAssociation}}
         data.(*model.{{= t.GoName }}).Set{{= mm.GoPlural }}(val)
+{{else}}
+        data.(*model.{{= t.GoName }}).Set{{= mm.GoName }}PrimaryKeys(val)
+{{if}}
    }
 {{if}}
 }

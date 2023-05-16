@@ -1,0 +1,23 @@
+{{
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+</head>
+<body>
+<h1>{{dd.DbKey}}</h1>
+<ul>
+{{for _,t := range dd.Tables }}
+{{g
+    path := strings.SnakeToKebab(t.DbName)
+}}
+  <li>
+    <a href="{{= path }}-list">{{= t.GoName }} List</a>
+  </li>
+{{for}}
+</ul>
+</body>
+</html>
+
+
+}}

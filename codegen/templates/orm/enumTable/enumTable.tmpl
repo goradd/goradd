@@ -62,7 +62,7 @@ func {{= propName }}FromID (id string) {{= propName }} {
 
 // {{= propPlural }}FromIDs converts a slice of {{= propName }} IDs to a slice of {{= propName }}
 func {{= propPlural }}FromIDs (ids []string) (values []{{= propName }}) {
-    values = make([]{{= propName }}, len(ids), len(ids))
+    values = make([]{{= propName }}, 0, len(ids))
     for _,id := range ids {
         values = append(values, {{= propName }}FromID(id))
     }
