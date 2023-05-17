@@ -15,10 +15,12 @@ type Options struct {
 	// without the suffix the two values will have the same name.
 	// The default is "_id".
 	ForeignKeySuffix string
-	// UseQualifiedNames will force goradd to prepend schema names in front of table names.
-	// This is required to clear up ambiguity when different schemas have the same table name.
+	// UseQualifiedNames will force goradd to prepend schema names in front of the generated object names.
+	// This is required to clear up ambiguity when different schemas have the same table name, and
+	// so will generate the same object name without the schema.
 	// Postgres documentation discourages the use of repeated table names in different schemas.
-	// If you know you do not have repeats, you can leave this option false.
+	// If you know you have repeats, or you just want to force the schema names to appear in
+	// the object names, you can leave this option false.
 	UseQualifiedNames bool
 	// Schemas lets you specify which specific schemas you want to select.
 	// If no schemas are specified, then all available schemas will be used.

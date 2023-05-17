@@ -705,7 +705,7 @@ func (m *DB) getManyManyDescription(t pgTable, enumTableSuffix string) (mm db.Ma
 		}
 	}
 
-	mm.AssnTableName = t.name
+	mm.AssnTableName = td.Name
 	mm.SupportsForeignKeys = true
 	ok = true
 	return

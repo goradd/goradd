@@ -4,7 +4,7 @@
 
 // Variables used below
 var title  = t.GoName
-var tableKebab = strings2.SnakeToKebab(t.DbName)
+var tableKebab = strings2.CamelToKebab(t.GoName)
 var formName = title + "ListForm"
 
 {{: listFormImport.tmpl }}

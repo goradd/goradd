@@ -117,13 +117,7 @@ func (m *Model) importDescription(desc DatabaseDescription) {
 
 // importEnumTable will import the enum table provided by the database description
 func (m *Model) importEnumTable(desc TableDescription) *EnumTable {
-	typeName := desc.Name
-	if m.ignoreSchemas {
-		parts := strings.Split(typeName, ".")
-		if len(parts) == 2 {
-			typeName = parts[1]
-		}
-	}
+	typeName := m.cleanTableName(desc.Name)
 	typeName = strings.TrimSuffix(typeName, m.EnumTableSuffix)
 
 	t := &EnumTable{
@@ -199,13 +193,7 @@ func (m *Model) importEnumTable(desc TableDescription) *EnumTable {
 
 // importTable will import the table provided by the description
 func (m *Model) importTable(desc TableDescription) *Table {
-	tableName := desc.Name
-	if m.ignoreSchemas {
-		parts := strings.Split(tableName, ".")
-		if len(parts) == 2 {
-			tableName = parts[1]
-		}
-	}
+	tableName := m.cleanTableName(desc.Name)
 
 	t := &Table{
 		DbKey:         m.DbKey,
@@ -368,13 +356,6 @@ func (m *Model) makeManyManyRef(
 	sourceTableName, column1, destTableName, column2, goName, goPlural, assnTable string,
 	isEnum, supportsForeignKeys bool,
 ) *ManyManyReference {
-	if m.ignoreSchemas {
-		parts := strings.Split(sourceTableName, ".")
-		if len(parts) == 2 {
-			sourceTableName = parts[1]
-		}
-	}
-
 	sourceTable := m.Table(sourceTableName)
 	destGetterName := strings.TrimSuffix(column2, m.ForeignKeySuffix)
 
@@ -559,6 +540,18 @@ func (m *Model) importForeignKey(t *Table, cd ColumnDescription) {
 		}
 		c.ForeignKey = f
 	}
+}
+
+// cleanTableName converts the database name to a snake case name that is
+// suitable for converting to equivalent descriptions.
+func (m *Model) cleanTableName(n string) string {
+	if m.ignoreSchemas {
+		parts := strings.Split(n, ".")
+		if len(parts) == 2 {
+			n = parts[1]
+		}
+	}
+	return strings.ReplaceAll(n, ".", "_")
 }
 
 func (m *Model) dbNameToEnglishName(name string) string {

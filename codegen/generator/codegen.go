@@ -98,26 +98,26 @@ func Generate() {
 		if database.Model() == nil {
 			panic("Missing model. Did you forget to call Analyze on the database?")
 		}
-		key := database.Model().DbKey
-		codegen.Tables[key] = make(map[string]TableType)
-		codegen.EnumTables[key] = make(map[string]EnumTableType)
+		dbKey := database.Model().DbKey
+		codegen.Tables[dbKey] = make(map[string]TableType)
+		codegen.EnumTables[dbKey] = make(map[string]EnumTableType)
 		dd := database.Model()
 
 		// Create wrappers for the tables with extra analysis required for form generation
 		stringmap.Range(dd.EnumTables, func(k string, enumTable *db.EnumTable) bool {
-			if _, ok := codegen.EnumTables[key][enumTable.GoName]; ok {
+			if _, ok := codegen.EnumTables[dbKey][enumTable.GoName]; ok {
 				log.Println("Error: enum table " + enumTable.GoName + " is defined more than once.")
 			} else {
 				tt := EnumTableType{
 					enumTable,
 				}
-				codegen.EnumTables[key][enumTable.GoName] = tt
+				codegen.EnumTables[dbKey][enumTable.GoName] = tt
 			}
 			return true
 		})
 
 		stringmap.Range(dd.Tables, func(k string, table *db.Table) bool {
-			if _, ok := codegen.Tables[key][table.GoName]; ok {
+			if _, ok := codegen.Tables[dbKey][table.GoName]; ok {
 				log.Println("Error:  table " + table.GoName + " is defined more than once.")
 			} else {
 				descriptions := make(map[interface{}]*ControlDescription)
@@ -136,7 +136,7 @@ func Generate() {
 					descriptions,
 					i,
 				}
-				codegen.Tables[key][table.GoName] = t
+				codegen.Tables[dbKey][table.GoName] = t
 			}
 			return true
 		})

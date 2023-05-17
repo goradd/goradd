@@ -9,7 +9,7 @@
 <ul>
 {{for _,t := range dd.Tables }}
 {{g
-    path := strings.SnakeToKebab(t.DbName)
+    path := strings.CamelToKebab(t.GoName)
 }}
   <li>
     <a href="{{= path }}-list">{{= t.GoName }} List</a>
