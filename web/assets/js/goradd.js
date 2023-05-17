@@ -90,7 +90,7 @@ var g$ = function(el) {
      * @param  {*}   [params.values.event]   The event's action value, if one is provided. This can be any type, including an object.
      * @param  {*}   [params.values.action]  The action's action value, if one is provided. Any type.
      * @param  {*}   [params.values.control] The control's action value, if one is provided. Any type.
-     * @return {object} Post Data
+     * @return {FormData} Post Data
      * @private
      */
     function _getAjaxData(params) {
@@ -153,9 +153,11 @@ var g$ = function(el) {
             var obj = postData[k];
             if (obj instanceof FileList) {
                 for (var i = 0; i < obj.length; i++) {
+                    goradd.log("Ajax: added file to " + k);
                     fd.append(k, obj[i]);
                 }
             } else {
+                goradd.log("Ajax: added " + postData[k] + " to " + k);
                 fd.append(k, postData[k]);
             }
         }
@@ -937,7 +939,6 @@ var g$ = function(el) {
             // Use an ajax queue so ajax requests happen synchronously
             goradd.ajaxq.enqueue(function () {
                 var data = _getAjaxData(params);
-                goradd.log("Gathered ajax data: " + JSON.stringify(data));
 
                 return {
                     url: formAction,
@@ -2662,14 +2663,26 @@ var g$ = function(el) {
                 }
             };
 
-            objRequest.onprogress = function (event) {
-                // pass this on to the form to be intercepted there
-                var obj = {
-                    lengthComputable: event.lengthComputable,
-                    loaded: event.loaded,
-                    total: event.total
-                };
-                g$(goradd.form()).trigger("progress", obj);
+            objRequest.onloadend = objRequest.onprogress = function (event) {
+                if (event.lengthComputable) {
+                    // pass this on to the form to be intercepted there
+                    var obj = {
+                        loaded: event.loaded,
+                        total: event.total
+                    };
+                    g$(goradd.form()).trigger("progress", obj);
+                    goradd.log("progress: " + event.loaded + " out of " + event.total);
+                }
+            };
+
+            objRequest.onerror = function (event) {
+                goradd.log("upload error");
+                opts.error("A file upload error occurred");
+            };
+
+            objRequest.ontimeout  = function (event) {
+                goradd.log("timeout error");
+                opts.error("The server did not respond in time.");
             };
 
             _currentRequests[ajaxID] = objRequest;

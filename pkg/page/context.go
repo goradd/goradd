@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/crypt"
 	"github.com/goradd/goradd/pkg/goradd"
 	http2 "github.com/goradd/goradd/pkg/http"
@@ -157,6 +158,16 @@ func (ctx *Context) fillHttp(r *http.Request) (err error) {
 		if strings.Contains(contentType, "multipart") {
 			// Get file info through ctx.Request.MultiPartForm
 			err = r.ParseMultipartForm(MultipartFormMax)
+
+			if config.Debug && len(r.MultipartForm.File) > 0 {
+				log.FrameworkDebug("Uploading files: ")
+				for key, group := range r.MultipartForm.File {
+					log.FrameworkDebug("Key: ", key)
+					for _, fh := range group {
+						log.FrameworkDebug(fh.Filename)
+					}
+				}
+			}
 		} else {
 			err = r.ParseForm()
 		}
