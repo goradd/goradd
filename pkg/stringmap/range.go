@@ -8,8 +8,6 @@ import (
 // You can also copy them and substitute your own types to make custom versions of these
 
 // SortedKeys returns the keys of any map that uses strings as keys, sorted alphabetically.
-// Note that even though we are using reflection here, this process is only slightly slower compared to not
-// using reflection, so feel free to use it in all situations.
 func SortedKeys[T any](m map[string]T) []string {
 	keys := make([]string, len(m), len(m))
 	idx := 0
@@ -24,7 +22,7 @@ func SortedKeys[T any](m map[string]T) []string {
 // Range is a convenience method to range over any map that uses strings as keys in a
 // predictable order from lowest to highest. It uses
 // a similar Range type function to the sync.StdMap.Range function.
-func Range[T any](m map[string]T, f func(key string, val any) bool) {
+func Range[T any](m map[string]T, f func(key string, val T) bool) {
 	keys := SortedKeys(m)
 
 	for _, k := range keys {

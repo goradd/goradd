@@ -1,5 +1,11 @@
 package query
 
+import (
+	"github.com/goradd/goradd/pkg/config"
+	"strconv"
+	"time"
+)
+
 // GoColumnType represents the GO type that corresponds to a database column
 type GoColumnType int
 
@@ -131,4 +137,61 @@ func ColTypeFromGoTypeString(name string) GoColumnType {
 	default:
 		panic("unknown column go type " + name)
 	}
+}
+
+// FromString will convert from a string to the correct Go type
+func (g GoColumnType) FromString(s string) any {
+	switch g {
+	case ColTypeUnknown:
+		return nil
+	case ColTypeBytes:
+		return nil
+	case ColTypeString:
+		return s
+	case ColTypeInteger:
+		if s == "" {
+			return int(0)
+		}
+		i, _ := strconv.Atoi(s)
+		return i
+	case ColTypeUnsigned:
+		if s == "" {
+			return uint(0)
+		}
+		i, _ := strconv.ParseUint(s, 10, 64)
+		return uint(i)
+	case ColTypeInteger64:
+		if s == "" {
+			return int64(0)
+		}
+		i, _ := strconv.ParseInt(s, 10, 64)
+		return i
+	case ColTypeUnsigned64:
+		if s == "" {
+			return uint64(0)
+		}
+		i, _ := strconv.ParseUint(s, 10, 64)
+		return i
+	case ColTypeTime:
+		if s == "" {
+			return time.Time{}
+		}
+		d, _ := time.Parse(config.DefaultDateTimeFormat, s)
+		return d
+	case ColTypeFloat32:
+		if s == "" {
+			return float32(0)
+		}
+		f, _ := strconv.ParseFloat(s, 32)
+		return float32(f)
+	case ColTypeFloat64:
+		if s == "" {
+			return float64(0)
+		}
+		f, _ := strconv.ParseFloat(s, 32)
+		return f
+	case ColTypeBool:
+		return s == "true"
+	}
+	return ""
 }

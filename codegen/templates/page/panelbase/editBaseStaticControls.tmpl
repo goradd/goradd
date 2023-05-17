@@ -4,7 +4,7 @@ if generator.DefaultStaticTextType != "" {
 	codegen.AddObjectPath(generator.DefaultStaticTextType)
     gen := generator.GetControlGenerator(generator.DefaultStaticTextType)
     for _,col := range t.Columns {
-        if col.IsPk {continue}
+        if col.IsPk && col.IsId {continue}
         cd := t.ControlDescription(col)
         if cd == nil || cd.Generator == nil {continue}
         var staticControl string

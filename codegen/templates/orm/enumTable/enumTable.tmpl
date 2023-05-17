@@ -60,6 +60,15 @@ func {{= propName }}FromID (id string) {{= propName }} {
 	return {{= propName }}(0)
 }
 
+// {{= propPlural }}FromIDs converts a slice of {{= propName }} IDs to a slice of {{= propName }}
+func {{= propPlural }}FromIDs (ids []string) (values []{{= propName }}) {
+    values = make([]{{= propName }}, 0, len(ids))
+    for _,id := range ids {
+        values = append(values, {{= propName }}FromID(id))
+    }
+    return
+}
+
 // {{= propName }}FromName converts a {{= propName }} name to a {{= propName }}
 func {{= propName }}FromName (name string) {{= propName }} {
 	switch name {

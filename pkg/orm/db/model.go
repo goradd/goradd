@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gedex/inflector"
 	. "github.com/goradd/goradd/pkg/orm/query"
+	"github.com/goradd/goradd/pkg/stringmap"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/kenshaw/snaker"
 	"log"
@@ -27,10 +28,10 @@ const (
 type Model struct {
 	// The database key corresponding to its key in the global database cluster
 	DbKey string
-	// Tables are the tables in the database
-	Tables []*Table
-	// EnumTables contains a description of the enumerated types from the enum tables in the database
-	EnumTables []*EnumTable
+	// Tables are the tables in the database, keyed by database table name
+	Tables map[string]*Table
+	// EnumTables contains a description of the enumerated types from the enum tables in the database, keyed by database table name
+	EnumTables map[string]*EnumTable
 
 	// ForeignKeySuffix is the text to strip off the end of foreign key references when converting to names.
 	// Defaults to "_id"
@@ -39,10 +40,6 @@ type Model struct {
 	// Defaults to "_enum".
 	EnumTableSuffix string
 
-	// tableMap is used to get to tables by internal name
-	tableMap map[string]*Table
-	// enumTableMap gets to enum tables by internal name
-	enumTableMap map[string]*EnumTable
 	// ignoreSchemas indicates that the database uses table schemas, but we will ignore
 	// them when generating object names. This means that the different tables in the schemas in the database
 	// will not have overlapping names.
@@ -79,15 +76,14 @@ func NewModel(dbKey string,
 // tables as objects and columns as member variables.
 func (m *Model) importDescription(desc DatabaseDescription) {
 
-	m.enumTableMap = make(map[string]*EnumTable)
-	m.tableMap = make(map[string]*Table)
+	m.EnumTables = make(map[string]*EnumTable)
+	m.Tables = make(map[string]*Table)
 
 	// deal with enum tables first
 	for _, table := range desc.Tables {
 		if table.EnumData != nil {
 			tt := m.importEnumTable(table)
-			m.EnumTables = append(m.EnumTables, tt)
-			m.enumTableMap[tt.DbName] = tt
+			m.EnumTables[tt.DbName] = tt
 		}
 	}
 
@@ -96,8 +92,7 @@ func (m *Model) importDescription(desc DatabaseDescription) {
 		if table.EnumData == nil {
 			t := m.importTable(table)
 			if t != nil {
-				m.Tables = append(m.Tables, t)
-				m.tableMap[t.DbName] = t
+				m.Tables[t.DbName] = t
 			}
 		}
 	}
@@ -110,9 +105,10 @@ func (m *Model) importDescription(desc DatabaseDescription) {
 	}
 
 	// import reverse references after the foreign keys are in place
-	for _, table := range m.Tables {
+	stringmap.Range(m.Tables, func(_ string, table *Table) bool {
 		m.importReverseReferences(table)
-	}
+		return true
+	})
 
 	for _, assn := range desc.MM {
 		m.importAssociation(assn)
@@ -121,13 +117,7 @@ func (m *Model) importDescription(desc DatabaseDescription) {
 
 // importEnumTable will import the enum table provided by the database description
 func (m *Model) importEnumTable(desc TableDescription) *EnumTable {
-	typeName := desc.Name
-	if m.ignoreSchemas {
-		parts := strings.Split(typeName, ".")
-		if len(parts) == 2 {
-			typeName = parts[1]
-		}
-	}
+	typeName := m.cleanTableName(desc.Name)
 	typeName = strings.TrimSuffix(typeName, m.EnumTableSuffix)
 
 	t := &EnumTable{
@@ -203,13 +193,7 @@ func (m *Model) importEnumTable(desc TableDescription) *EnumTable {
 
 // importTable will import the table provided by the description
 func (m *Model) importTable(desc TableDescription) *Table {
-	tableName := desc.Name
-	if m.ignoreSchemas {
-		parts := strings.Split(tableName, ".")
-		if len(parts) == 2 {
-			tableName = parts[1]
-		}
-	}
+	tableName := m.cleanTableName(desc.Name)
 
 	t := &Table{
 		DbKey:         m.DbKey,
@@ -369,68 +353,78 @@ func (m *Model) importAssociation(mm ManyManyDescription) {
 }
 
 func (m *Model) makeManyManyRef(
-	t1, c1, t2, c2, g2, g2p, t string,
+	sourceTableName, column1, destTableName, column2, goName, goPlural, assnTable string,
 	isEnum, supportsForeignKeys bool,
 ) *ManyManyReference {
-	sourceTableName := t1
-	destTableName := t2
-	sourceObjName := strings.TrimSuffix(c1, m.ForeignKeySuffix)
-	destObjName := strings.TrimSuffix(c2, m.ForeignKeySuffix)
 	sourceTable := m.Table(sourceTableName)
+	destGetterName := strings.TrimSuffix(column2, m.ForeignKeySuffix)
 
-	if m.ignoreSchemas {
-		parts := strings.Split(sourceTableName, ".")
-		if len(parts) == 2 {
-			sourceTableName = parts[1]
+	// if database comment has names to use, then use them. Otherwise generate them.
+	if goName == "" {
+		goName = UpperCaseIdentifier(destGetterName)
+	}
+	var i int = 2
+	var num string
+	for {
+		if conflicts, msg := sourceTable.HasGetterName(goName + num); conflicts {
+			log.Printf("*** Warning: ManyToMany column %s:%s creates a name that %s", assnTable, column2, msg)
+			num = fmt.Sprintf("%d", i)
+			i++
+			continue
 		}
-	}
-	var objName string
-	var objPlural string
-	var pkType string
-
-	if isEnum {
-		destTable := m.EnumTable(destTableName)
-		objName = destTable.GoName
-		objPlural = destTable.GoPlural
-		pkType = "int"
-	} else {
-		destTable := m.Table(destTableName)
-		objName = destTable.GoName
-		objPlural = destTable.GoPlural
-		pkType = destTable.PrimaryKeyGoType()
+		goName = goName + num
+		if num != "" {
+			log.Printf("*** Renaming to %s", goName)
+		}
+		break
 	}
 
-	goName := g2
-	goPlural := g2p
-
-	if goName != "" {
-		// use it
-	} else if sourceObjName != sourceTableName {
-		goName = UpperCaseIdentifier(destObjName) + "As" + UpperCaseIdentifier(sourceObjName)
-	} else {
-		goName = UpperCaseIdentifier(destObjName)
-	}
-
-	if goPlural != "" {
-		// use it
-	} else if sourceObjName != sourceTableName {
-		goPlural = inflector.Pluralize(UpperCaseIdentifier(destObjName)) + "As" + UpperCaseIdentifier(sourceObjName)
-	} else {
+	if goPlural == "" {
 		goPlural = inflector.Pluralize(goName)
+	}
+	num = ""
+	for {
+		if conflicts, msg := sourceTable.HasGetterName(goPlural + num); conflicts {
+			log.Printf("*** Warning: ManyToMany column %s:%s creates a name that %s", assnTable, column2, msg)
+			num = fmt.Sprintf("%d", i)
+			i++
+			continue
+		}
+		goPlural = goPlural + num
+		if num != "" {
+			log.Printf("*** Renaming to %s", goPlural)
+		}
+		break
+	}
+
+	var objectType, objectTypes, primaryKey, primaryKeyType string
+	if isEnum {
+		table := m.EnumTable(destTableName)
+		objectType = table.GoName
+		objectTypes = table.GoPlural
+		primaryKey = table.FieldNames[0]
+		primaryKeyType = table.FieldGoColumnType(0).GoType()
+	} else {
+		table := m.Table(destTableName)
+		objectType = table.GoName
+		objectTypes = table.GoPlural
+		primaryKey = table.PrimaryKeyColumn().DbName
+		primaryKeyType = table.PrimaryKeyGoType()
 	}
 
 	ref := ManyManyReference{
-		AssnTableName:         t,
-		AssnColumnName:        c1,
-		AssociatedTableName:   t2,
-		AssociatedTablePkType: pkType,
-		AssociatedColumnName:  c2,
-		AssociatedObjectType:  objName,
-		AssociatedObjectTypes: objPlural,
-		GoName:                goName,
-		GoPlural:              goPlural,
-		IsEnumAssociation:     isEnum,
-		SupportsForeignKeys:   supportsForeignKeys,
+		AssnTableName:        assnTable,
+		AssnSourceColumnName: column1,
+		AssnDestColumnName:   column2,
+		DestinationTableName: destTableName,
+		GoName:               goName,
+		GoPlural:             goPlural,
+		objectType:           objectType,
+		objectTypes:          objectTypes,
+		primaryKey:           primaryKey,
+		primaryKeyType:       primaryKeyType,
+		IsEnumAssociation:    isEnum,
+		SupportsForeignKeys:  supportsForeignKeys,
 	}
 	sourceTable.ManyManyReferences = append(sourceTable.ManyManyReferences, &ref)
 	return &ref
@@ -548,6 +542,18 @@ func (m *Model) importForeignKey(t *Table, cd ColumnDescription) {
 	}
 }
 
+// cleanTableName converts the database name to a snake case name that is
+// suitable for converting to equivalent descriptions.
+func (m *Model) cleanTableName(n string) string {
+	if m.ignoreSchemas {
+		parts := strings.Split(n, ".")
+		if len(parts) == 2 {
+			n = parts[1]
+		}
+	}
+	return strings.ReplaceAll(n, ".", "_")
+}
+
 func (m *Model) dbNameToEnglishName(name string) string {
 	return strings2.Title(name)
 }
@@ -566,7 +572,7 @@ func (m *Model) dbNameToGoPlural(name string) string {
 
 // Table returns a Table from the database given the table name.
 func (m *Model) Table(name string) *Table {
-	if v, ok := m.tableMap[name]; ok {
+	if v, ok := m.Tables[name]; ok {
 		return v
 	} else {
 		return nil
@@ -575,12 +581,12 @@ func (m *Model) Table(name string) *Table {
 
 // EnumTable returns a EnumTable from the database given the table name.
 func (m *Model) EnumTable(name string) *EnumTable {
-	return m.enumTableMap[name]
+	return m.EnumTables[name]
 }
 
 // IsEnumTable returns true if the given name is the name of a enum table in the database
 func (m *Model) IsEnumTable(name string) bool {
-	_, ok := m.enumTableMap[name]
+	_, ok := m.EnumTables[name]
 	return ok
 }
 

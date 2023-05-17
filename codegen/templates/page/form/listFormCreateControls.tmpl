@@ -5,7 +5,7 @@
 func (f *{{= formName }}) CreateControls(ctx context.Context) {
     f.FormBase.CreateControls(ctx) // Add site-wide controls
 	f.AddControls(ctx,
-		panel.{{= t.GoName }}ListPanelCreator{
+		{{= t.GoName }}ListPanelCreator{
 			ID:             "list-panel",
 		},
 	)

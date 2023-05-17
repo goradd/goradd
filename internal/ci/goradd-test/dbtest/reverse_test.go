@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestReverse2(t *testing.T) {
+func TestReverseConditionalJoin(t *testing.T) {
 	ctx := getContext()
 	people := model.QueryPeople(ctx).
 		Join(node.Person().ProjectsAsManager()).
@@ -55,6 +55,11 @@ func TestReverseMany(t *testing.T) {
 		}
 	}
 	assert.Len(t, names, 12) // Includes duplicates. If we ever get Distinct to manually remove duplicates, we should fix this.
+
+	// Test deep IsDirty
+	assert.False(t, people[6].IsDirty())
+	people[6].ProjectsAsManager()[0].TeamMembers()[0].SetFirstName("A")
+	assert.True(t, people[6].IsDirty())
 }
 
 func TestReverseManyExpansion(t *testing.T) {
@@ -224,4 +229,51 @@ func TestReverseLoadUnsaved(t *testing.T) {
 	assert.Panics(t, func() {
 		project.LoadMilestones(ctx)
 	})
+}
+
+func TestReverseSet(t *testing.T) {
+	ctx := getContext()
+
+	person := model.QueryPeople(ctx).
+		Where(Equal(node.Person().ID(), "7")).
+		Join(node.Person().ProjectsAsManager()).
+		OrderBy(node.Person().ProjectsAsManager().ID()).
+		Get()
+	projects := person.ProjectsAsManager()
+	assert.Len(t, projects, 2)
+	assert.Equal(t, "1", projects[0].ID())
+	assert.Equal(t, "4", projects[1].ID())
+
+	newProjects := model.QueryProjects(ctx).
+		Where(In(node.Project().ID(), "1", "2")).
+		Load()
+	person.SetProjectsAsManager(newProjects)
+	person.Save(ctx)
+
+	personTest := model.QueryPeople(ctx).
+		Where(Equal(node.Person().ID(), "7")).
+		Join(node.Person().ProjectsAsManager()).
+		OrderBy(node.Person().ProjectsAsManager().ID()).
+		Get()
+	projectsTest := personTest.ProjectsAsManager()
+	assert.Len(t, projectsTest, 2)
+	assert.Equal(t, "1", projectsTest[0].ID())
+	assert.Equal(t, "2", projectsTest[1].ID())
+
+	person.SetProjectsAsManager(projects)
+	person.Save(ctx)
+
+	person = model.QueryPeople(ctx).
+		Where(Equal(node.Person().ID(), "7")).
+		Join(node.Person().ProjectsAsManager()).
+		OrderBy(node.Person().ProjectsAsManager().ID()).
+		Get()
+	projects = person.ProjectsAsManager()
+	assert.Len(t, projects, 2)
+	assert.Equal(t, "1", projects[0].ID())
+	assert.Equal(t, "4", projects[1].ID())
+
+	projectsTest[1].SetManagerID("4")
+	projectsTest[1].Save(ctx)
+
 }

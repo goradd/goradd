@@ -56,25 +56,23 @@ func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFir
 
 
 for _,ref := range t.ManyManyReferences {
-
-	if ref.IsEnumAssociation {
-		assnTable := dd.EnumTable(ref.AssociatedTableName)
-		pk := assnTable.FieldNames[0]
+    pk := ref.PrimaryKey()
+    nodeName := strings2.LcFirst(ref.ObjectType())
 
 {{
 
 // {{= ref.GoPlural }} represents the many-to-many relationship formed by the {{= ref.AssnTableName }} table.
-func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTable.GoName) }}Node  {
-	cn := &{{= strings2.LcFirst(assnTable.GoName) }}Node {
+func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= nodeName }}Node  {
+	cn := &{{= nodeName }}Node {
 		query.NewManyManyNode (
 			"{{= t.DbKey }}",
 			"{{= ref.AssnTableName }}",
-			"{{= ref.AssnColumnName }}",
+			"{{= ref.AssnSourceColumnName }}",
 			"{{= ref.GoPlural }}",
-			"{{= ref.AssociatedTableName }}",
-			"{{= ref.AssociatedColumnName }}",
+			"{{= ref.DestinationTableName }}",
+			"{{= ref.AssnDestColumnName }}",
 			"{{= pk }}",
-			true,
+			{{b ref.IsEnumAssociation }},
 		),
 	}
 	query.SetParentNode(cn, n)
@@ -83,32 +81,7 @@ func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTa
 }
 
 }}
-	} else {
 
-		assnTable := dd.Table(ref.AssociatedTableName)
-        pk := assnTable.PrimaryKeyColumn().DbName
-{{
-// {{= ref.GoPlural }} represents the many-to-many relationship formed by the {{= ref.AssnTableName }} table.
-func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= strings2.LcFirst(assnTable.GoName) }}Node  {
-	cn := &{{= strings2.LcFirst(assnTable.GoName) }}Node {
-		query.NewManyManyNode (
-			"{{= t.DbKey }}",
-			"{{= ref.AssnTableName }}",
-			"{{= ref.AssnColumnName }}",
-			"{{= ref.GoPlural }}",
-			"{{= ref.AssociatedTableName }}",
-			"{{= ref.AssociatedColumnName }}",
-			"{{= pk }}",
-			false,
-		),
-	}
-	query.SetParentNode(cn, n)
-	return cn
-
-}
-
-}}
-	}
 }
 
 for _,ref2 := range t.ReverseReferences {

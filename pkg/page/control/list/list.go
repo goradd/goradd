@@ -338,3 +338,17 @@ func NoSelectionItemList() []interface{} {
 func SelectOneItemList() []interface{} {
 	return []interface{}{NewItem(config.SelectOneString, "")}
 }
+
+// IDerStringListCompare is a utility function that will compare a list of IDers with a list
+// of strings to see if their values are equal.
+func IDerStringListCompare[T IDer](ids []T, values []string) bool {
+	if len(ids) != len(values) {
+		return false
+	}
+	for i := range ids {
+		if ids[1].ID() != values[i] {
+			return false
+		}
+	}
+	return true
+}

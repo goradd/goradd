@@ -29,7 +29,7 @@ func (n *EnumTableNodeTemplate) FileName(key string, tt generator.EnumTableType)
     } else {
         targetDir = config.ProjectDir() + "/gen"
     }
-	return targetDir + "/" + key + "/model/node/" + tt.GoName + ".go"
+	return targetDir + "/" + key + "/model/node/" + tt.FileName() + ".go"
 }
 
 func (n *EnumTableNodeTemplate) GenerateEnumTable(codegen generator.CodeGenerator, dd *db.Model, tt generator.EnumTableType, _w io.Writer) (err error) {

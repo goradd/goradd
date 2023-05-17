@@ -2,7 +2,6 @@ package op
 
 import (
 	. "github.com/goradd/goradd/pkg/orm/query"
-	"reflect"
 )
 
 func Equal(arg1 interface{}, arg2 interface{}) *OperationNode {
@@ -59,24 +58,13 @@ func Like(n interface{}, pattern string) *OperationNode {
 }
 
 // In tests to see if the given node is in the "what" list
-func In(n NodeI, what ...interface{}) *OperationNode {
-	k := reflect.TypeOf(what[0]).Kind()
-	if k == reflect.Array || k == reflect.Slice {
-		// first item is array-like. Since that doesn't make sense in this context, we will assume
-		// we are trying to send in an array of something rather than list them out.
-		return NewOperationNode(OpIn, n, what[0]) // by passing an array as what here, it will cause the values to be output as a list
-	}
-	return NewOperationNode(OpIn, n, what) // by passing an array as what here, it will cause the values to be output as a list
+func In[T any](n NodeI, what ...T) *OperationNode {
+	return NewOperationNode(OpIn, n, what)
 }
 
-func NotIn(n NodeI, what ...interface{}) *OperationNode {
-	k := reflect.TypeOf(what[0]).Kind()
-	if k == reflect.Array || k == reflect.Slice {
-		// first item is array-like. Since that doesn't make sense in this context, we will assume
-		// we are trying to send in an array of something rather than list them out.
-		return NewOperationNode(OpNotIn, n, what[0]) // by passing an array as what here, it will cause the values to be output as a list
-	}
-	return NewOperationNode(OpNotIn, n, what) // by passing an array as what here, it will cause the values to be output as a list
+// NotIn tests to see if the given node is NOT in the "what" list
+func NotIn[T any](n NodeI, what ...T) *OperationNode {
+	return NewOperationNode(OpNotIn, n, what)
 }
 
 func IsNull(n interface{}) *OperationNode {

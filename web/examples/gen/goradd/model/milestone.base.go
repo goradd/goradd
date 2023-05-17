@@ -625,12 +625,13 @@ func (o *milestoneBase) resetDirtyStatus() {
 
 }
 
-func (o *milestoneBase) IsDirty() bool {
-	return o.idIsDirty ||
+func (o *milestoneBase) IsDirty() (dirty bool) {
+	dirty = o.idIsDirty ||
 		o.projectIDIsDirty ||
 		(o.oProject != nil && o.oProject.IsDirty()) ||
 		o.nameIsDirty
 
+	return
 }
 
 // Get returns the value of a field in the object based on the field's name.

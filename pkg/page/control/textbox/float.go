@@ -134,7 +134,7 @@ func (v MaxFloatValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if val, _ := strconv.ParseFloat(s, 64); val < v.MaxValue {
+	if val, _ := strconv.ParseFloat(s, 64); val > v.MaxValue {
 		if msg == "" {
 			return fmt.Sprintf(c.GT("Enter at most %f"), v.MaxValue)
 		} else {

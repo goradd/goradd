@@ -1,21 +1,21 @@
-//manyManyAccessors.tmpl
+// manyManyAccessors.tmpl
 for _,ref := range t.ManyManyReferences {
 	oName := oRef(ref)
 	if ref.IsEnumAssociation {
 
 {{
 
-// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectType}} values if loaded.
-func (o *{{privateName}}Base) {{= ref.GoPlural }}() []{{ref.AssociatedObjectType}} {
+// {{ref.GoPlural}} returns a slice of {{= ref.ObjectType() }} values if loaded.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []{{= ref.ObjectType() }} {
 	if o.{{oName}} == nil {
 		return nil
 	}
 	return o.{{oName}}
 }
 
-// Set{{= ref.GoPlural }} sets the associated values to the given slice of {{ref.AssociatedObjectType}} values.
+// Set{{= ref.GoPlural }} sets the associated values to the given slice of {{= ref.ObjectType() }} values.
 // It will also disassociate from all previously associated values.
-func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []{{ref.AssociatedObjectType}}) {
+func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []{{= ref.ObjectType() }}) {
 	o.{{oName}} = objs
 	o.{{oName}}IsDirty = true
 }
@@ -26,46 +26,82 @@ func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []{{ref.AssociatedObje
 
 	} else {
 
-    pkType := ref.AssociatedTablePkType
+        pkType := ref.PrimaryKeyType()
+        oType := ref.ObjectType()
 
 {{
-// {{ref.GoName}} returns a single {{ref.AssociatedObjectType}} object by primary key, if one was loaded
+// {{= ref.GoName}} returns a single {{= ref.ObjectType() }} object by primary key, if one was loaded
 // otherwise, it will return nil.
-func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= pkType }}) *{{ref.AssociatedObjectType}} {
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= pkType }}) *{{= oType }} {
 	if o.m{{= ref.GoPlural }} == nil {
 		return nil
 	}
 	return o.m{{= ref.GoPlural }}[pk]
 }
 
-// {{ref.GoPlural}} returns a slice of {{ref.AssociatedObjectType}} objects if loaded. If not loaded, will return nil.
-func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{ref.AssociatedObjectType}} {
+// {{ref.GoPlural}} returns a slice of {{= oType }} objects if loaded. If not loaded, will return nil.
+func (o *{{privateName}}Base) {{= ref.GoPlural }}() []*{{= oType }} {
 	return o.{{oName}}
 }
 
-// Set{{= ref.GoPlural }} sets the associated objects to the given slice of {{ref.AssociatedObjectType}} objects.
-// It will disassociate from all previously associated objects after saving.
-func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{ref.AssociatedObjectType}}) {
-	o.{{oName}} = objs
+// Set{{= ref.GoPlural }} sets the associated objects to the given slice of {{= oType }} objects
+// in preparation for saving. The associations will not be updated until Save() is called.
+// Objects that are modified or are new will be saved before completing the association.
+func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{= oType }}) {
+	o.{{= oName }} = objs
+	o.{{= oName }}IsDirty = true
+	o.s{{= ref.GoPlural }}PKs = nil
+    o.m{{= ref.GoPlural }} = map[{{= pkType }}]*{{= oType }}{}
+    for _,obj := range objs {
+        if !obj.IsNew() {
+            o.m{{= ref.GoPlural }}[obj.PrimaryKey()] = obj
+        }
+    }
+}
+
+// Set{{= ref.GoName }}PrimaryKeys prepares for setting the associated {{= oType }} objects to the
+// given slice of primary keys.
+// If objects are currently loaded, they will be unloaded.
+// The association does not take place until Save() is called. Calling Load before calling
+// Save will load the items that will be associated in the database after the Save call.
+// After calling Save, the objects will be unloaded, and you must call Load again if you want
+// them loaded.
+func (o *{{privateName}}Base) Set{{= ref.GoName }}PrimaryKeys(objs []{{= ref.PrimaryKeyType() }}) {
+	o.{{oName}} = nil
+	o.m{{=  ref.GoPlural }} = nil
+	o.s{{= ref.GoPlural }}PKs = objs
 	o.{{oName}}IsDirty = true
 }
 
-// Load{{= ref.GoPlural }} loads the associated {{= ref.GoName }} objects.
+// Load{{= ref.GoPlural }} loads the associated {{= oType }} objects.
 func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context) {
-	o.{{oName}} = Query{{= ref.AssociatedObjectTypes}}(ctx).
-		Where(op.Equal(node.{{= ref.AssociatedObjectType}}().{{= ref.MM.GoPlural}}(), o.PrimaryKey())).
-		Load()
+    if o.{{oName}}IsDirty && o.s{{= ref.GoPlural }}PKs == nil {
+        panic("dirty many-many relationships cannot be loaded; call Save() first")
+    }
 
-	o.m{{= ref.GoPlural }} = map[{{= pkType }}]*{{= ref.AssociatedObjectType}}{}
-	for _,i := range o.{{oName}} {
-	    o.m{{= ref.GoPlural }}[i.PrimaryKey()] = i
+    if o.s{{= ref.GoPlural }}PKs != nil {
+        // Load the objects that will be associated after a Save
+        o.{{oName}} = Query{{= ref.ObjectTypes() }}(ctx).
+            Where(op.In(node.{{= oType }}().PrimaryKeyNode(), o.s{{= ref.GoPlural }}PKs...)).
+            Load()
+    } else {
+        o.{{oName}} = Query{{= ref.ObjectTypes() }}(ctx).
+            Where(op.Equal(node.{{= oType }}().{{= ref.MM.GoPlural }}(), o.PrimaryKey())).
+            Load()
+    }
+
+	o.m{{= ref.GoPlural }} = map[{{= pkType }}]*{{= oType }}{}
+	for _,obj := range o.{{oName}} {
+	    o.m{{= ref.GoPlural }}[obj.PrimaryKey()] = obj
 	}
 }
 
 // Count{{= ref.GoPlural }} counts the number of associated {{= ref.GoName }} objects in the database.
+// Note that this returns what is reflected by the database at that instant, and not what
+// is the count of the loaded objects.
 func (o *{{privateName}}Base) Count{{= ref.GoPlural }}(ctx context.Context) int {
-	return int(Query{{= ref.AssociatedObjectTypes}}(ctx).
-		Where(op.Equal(node.{{= ref.AssociatedObjectType}}().{{= ref.MM.GoPlural}}(), o.PrimaryKey())).
+	return int(Query{{= ref.ObjectTypes() }}(ctx).
+		Where(op.Equal(node.{{= oType }}().{{= ref.MM.GoPlural}}(), o.PrimaryKey())).
 		Count(false))
 
 }

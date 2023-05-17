@@ -16,7 +16,7 @@ func TestMany2(t *testing.T) {
 	// All People Who Are on a Project Managed by Karen Wolfe (Person ID #7)
 	people := model.QueryPeople(ctx).
 		OrderBy(node.Person().LastName(), node.Person().FirstName()).
-		Where(Equal(node.Person().ProjectsAsTeamMember().Manager().LastName(), "Wolfe")).
+		Where(Equal(node.Person().Projects().Manager().LastName(), "Wolfe")).
 		Distinct().
 		Select(node.Person().LastName(), node.Person().FirstName()).
 		Load()
@@ -67,13 +67,13 @@ func TestManySelect(t *testing.T) {
 	ctx := getContext()
 
 	people := model.QueryPeople(ctx).
-		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsTeamMember().Name()).
-		Where(Equal(node.Person().ProjectsAsTeamMember().Manager().LastName(), "Wolfe")).
-		Select(node.Person().LastName(), node.Person().FirstName(), node.Person().ProjectsAsTeamMember().Name()).
+		OrderBy(node.Person().LastName(), node.Person().FirstName(), node.Person().Projects().Name()).
+		Where(Equal(node.Person().Projects().Manager().LastName(), "Wolfe")).
+		Select(node.Person().LastName(), node.Person().FirstName(), node.Person().Projects().Name()).
 		Load()
 
 	person := people[0]
-	projects := person.ProjectsAsTeamMember()
+	projects := person.Projects()
 	name := projects[0].Name()
 
 	assert.Equal(t, "ACME Payment System", name)
@@ -119,13 +119,13 @@ func TestForwardMany(t *testing.T) {
 func TestManyForward(t *testing.T) {
 	ctx := getContext()
 	people := model.QueryPeople(ctx).
-		OrderBy(node.Person().ID(), node.Person().ProjectsAsTeamMember().Name()).
-		Select(node.Person().ProjectsAsTeamMember().Manager().FirstName(), node.Person().ProjectsAsTeamMember().Manager().LastName()).
+		OrderBy(node.Person().ID(), node.Person().Projects().Name()).
+		Select(node.Person().Projects().Manager().FirstName(), node.Person().Projects().Manager().LastName()).
 		Load()
 
 	names := []string{}
 	var p *model.Project
-	for _, p = range people[0].ProjectsAsTeamMember() {
+	for _, p = range people[0].Projects() {
 		names = append(names, p.Manager().FirstName()+" "+p.Manager().LastName())
 	}
 	names2 := []string{
@@ -232,4 +232,18 @@ func Test2ndLoad(t *testing.T) {
 	mgr := projects[0].LoadManager(ctx)
 	assert.Equal(t, "Doe", mgr.LastName())
 
+}
+
+func TestSetPrimaryKeys(t *testing.T) {
+	ctx := getContext()
+	person := model.LoadPerson(ctx, "1", node.Person().Projects())
+	assert.Len(t, person.Projects(), 2)
+	person.SetProjectPrimaryKeys([]string{"1", "2", "3"})
+	person.Save(ctx)
+
+	person2 := model.LoadPerson(ctx, "1", node.Person().Projects())
+	assert.Len(t, person2.Projects(), 3)
+
+	person2.SetProjectPrimaryKeys([]string{"3", "4"})
+	person2.Save(ctx)
 }

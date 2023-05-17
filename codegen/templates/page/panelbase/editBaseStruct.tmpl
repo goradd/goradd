@@ -7,7 +7,7 @@ type {{= panelName }}I interface {
     for _,col := range t.Columns {
         cd := t.ControlDescription(col)
         if cd == nil {continue}
-        if cd.Generator != nil && !col.IsPk {
+        if cd.Generator != nil && !(col.IsPk && col.IsId) {
 {{
         {{= cd.ControlName }}Creator() {{= defaultWrapper }}
 }}
@@ -39,7 +39,7 @@ type {{= panelName }}I interface {
 }}
     Update()
     Refresh()
-    Load(ctx context.Context, pk {{= t.PrimaryKeyGoType() }}) error
+    Load(ctx context.Context, pk string) error
 }
 
 

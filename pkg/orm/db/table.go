@@ -88,3 +88,33 @@ func (t *Table) FileName() string {
 	}
 	return s
 }
+
+// HasGetterName returns true if the given name is in use by one of the getters.
+// This is used for detecting naming conflicts. Will also return an error string
+// to display if there is a conflict.
+func (t *Table) HasGetterName(name string) (hasName bool, desc string) {
+	for _, c := range t.Columns {
+		if c.GoName == name {
+			return false, "conflicts with column " + c.GoName
+		}
+	}
+
+	for _, rr := range t.ReverseReferences {
+		if rr.GoName == name {
+			return false, "conflicts with reverse reference singular name " + rr.GoName
+		}
+		if rr.GoPlural == name {
+			return false, "conflicts with reverse reference plural name " + rr.GoPlural
+		}
+	}
+
+	for _, mm := range t.ManyManyReferences {
+		if mm.GoName == name {
+			return false, "conflicts with many-many singular name " + mm.GoName
+		}
+		if mm.GoPlural == name {
+			return false, "conflicts with many-many plural name " + mm.GoPlural
+		}
+	}
+	return false, ""
+}

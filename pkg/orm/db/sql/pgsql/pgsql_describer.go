@@ -346,8 +346,7 @@ WHERE tc.constraint_type = 'FOREIGN KEY' AND
 	rows.Close()
 
 	foreignKeys = make(map[string][]pgForeignKey)
-	stringmap.Range(fkMap, func(_ string, val interface{}) bool {
-		fk := val.(pgForeignKey)
+	stringmap.Range(fkMap, func(_ string, fk pgForeignKey) bool {
 		i := fk.tableSchema + "." + fk.tableName
 		tableKeys := foreignKeys[i]
 		tableKeys = append(tableKeys, fk)
@@ -553,8 +552,8 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 	td.Options = t.options
 
 	// Create the indexes array in index name order so its predictable
-	stringmap.Range(indexes, func(key string, val interface{}) bool {
-		td.Indexes = append(td.Indexes, *(val.(*db.IndexDescription)))
+	stringmap.Range(indexes, func(key string, val *db.IndexDescription) bool {
+		td.Indexes = append(td.Indexes, *val)
 		return true
 	})
 	return td
@@ -706,7 +705,7 @@ func (m *DB) getManyManyDescription(t pgTable, enumTableSuffix string) (mm db.Ma
 		}
 	}
 
-	mm.AssnTableName = t.name
+	mm.AssnTableName = td.Name
 	mm.SupportsForeignKeys = true
 	ok = true
 	return

@@ -114,6 +114,7 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 {{if sUpdate != ""}}
    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
         {{= sUpdate }}
+        data.(*model.{{= t.GoName }}).Set{{= rr.GoName }}PrimaryKeys(val)
    }
 {{if}}
 }
@@ -122,6 +123,11 @@ func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
 func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) (modifies bool) {
 {{if sModifies != ""}}
    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+{{if rr.IsUnique() }}
+        val := data.(*model.{{= t.GoName }}).{{= rr.GoName }}()
+{{else}}
+        val := data.(*model.{{= t.GoName }}).{{= rr.GoPlural }}()
+{{if}}
         modifies = {{= sModifies }}
    }
 {{if}}
@@ -135,6 +141,80 @@ func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) (modifi
 {{
 func (c {{= cd.Connector }}) Load(ctx context.Context) []interface{} {
 {{= provider.GenerateProvider(rr, cd) }}
+}
+
+}}
+    }
+
+{{
+func init() {
+	gob.Register(new({{= cd.Connector }}))
+}
+
+}}
+
+    }
+
+
+}
+
+// Many-Many References
+
+for _,mm := range t.ManyManyReferences {
+    cd := t.ControlDescription(mm)
+    if cd == nil {continue}
+    if cd.Generator != nil {
+        sRefresh := cd.Generator.GenerateRefresh(mm, cd)
+        sUpdate := cd.Generator.GenerateUpdate(mm, cd)
+        sModifies := cd.Generator.GenerateModifies(mm, cd)
+
+{{
+type {{= cd.Connector }}  struct {
+}
+
+// Refresh will copy the data value to its corresponding control
+func (c {{= cd.Connector }}) Refresh(i page.ControlI, data interface{}) {
+{{if sRefresh != ""}}
+    if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+         objects := data.(*model.{{= t.GoName }}).{{= mm.GoPlural }}()
+
+        {{= sRefresh }}
+    }
+{{if}}
+}
+
+// Update will copy the control's value to its corresponding data field
+func (c {{= cd.Connector }}) Update(i page.ControlI, data interface{}) {
+{{if sUpdate != ""}}
+   if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+        {{= sUpdate }}
+{{if mm.IsEnumAssociation}}
+        data.(*model.{{= t.GoName }}).Set{{= mm.GoPlural }}(val)
+{{else}}
+        data.(*model.{{= t.GoName }}).Set{{= mm.GoName }}PrimaryKeys(val)
+{{if}}
+   }
+{{if}}
+}
+
+// Modifies returns true if the control's value does not match the corresponding data value
+func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) (modifies bool) {
+{{if sModifies != ""}}
+   if ctrl, ok := i.(*{{= codegen.ObjectType(cd.Path) }}); ok {
+        val := data.(*model.{{= t.GoName }}).{{= mm.GoPlural }}()
+        modifies = {{= sModifies }}
+   }
+{{if}}
+    return
+}
+
+
+}}
+
+    if provider,ok := cd.Generator.(generator.ProviderGenerator); ok {
+{{
+func (c {{= cd.Connector }}) Load(ctx context.Context) []interface{} {
+{{= provider.GenerateProvider(mm, cd) }}
 }
 
 }}

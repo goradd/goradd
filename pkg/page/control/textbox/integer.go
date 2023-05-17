@@ -148,7 +148,7 @@ func (v MaxIntValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if val, _ := strconv.Atoi(s); val < v.MaxValue {
+	if val, _ := strconv.Atoi(s); val > v.MaxValue {
 		if v.Message == "" {
 			return fmt.Sprintf(c.GT("Enter at most %d"), v.MaxValue)
 		} else {

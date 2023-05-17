@@ -39,7 +39,7 @@ and any project can have multiple team members.
 	}
 
 	project := model.LoadProject(ctx, "1", node.Project().TeamMembers())
-	person := model.LoadPerson(ctx, "1", node.Person().ProjectsAsTeamMember())
+	person := model.LoadPerson(ctx, "1", node.Person().Projects())
 
 	if _, err = io.WriteString(_w, `</p>
 <p>
@@ -106,14 +106,14 @@ and any project can have multiple team members.
 		return
 	}
 
-	for _i, _j := range person.ProjectsAsTeamMember() {
+	for _i, _j := range person.Projects() {
 		_ = _j
 
 		if _, err = io.WriteString(_w, _j.Name()); err != nil {
 			return
 		}
 
-		if _i < len(person.ProjectsAsTeamMember())-1 {
+		if _i < len(person.Projects())-1 {
 			if _, err = io.WriteString(_w, ", "); err != nil {
 				return
 			}

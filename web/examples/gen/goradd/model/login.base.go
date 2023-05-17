@@ -889,14 +889,15 @@ func (o *loginBase) resetDirtyStatus() {
 
 }
 
-func (o *loginBase) IsDirty() bool {
-	return o.idIsDirty ||
+func (o *loginBase) IsDirty() (dirty bool) {
+	dirty = o.idIsDirty ||
 		o.personIDIsDirty ||
 		(o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.usernameIsDirty ||
 		o.passwordIsDirty ||
 		o.isEnabledIsDirty
 
+	return
 }
 
 // Get returns the value of a field in the object based on the field's name.

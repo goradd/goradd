@@ -672,12 +672,13 @@ func (o *personWithLockBase) resetDirtyStatus() {
 
 }
 
-func (o *personWithLockBase) IsDirty() bool {
-	return o.idIsDirty ||
+func (o *personWithLockBase) IsDirty() (dirty bool) {
+	dirty = o.idIsDirty ||
 		o.firstNameIsDirty ||
 		o.lastNameIsDirty ||
 		o.sysTimestampIsDirty
 
+	return
 }
 
 // Get returns the value of a field in the object based on the field's name.

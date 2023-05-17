@@ -5,7 +5,7 @@
 // Variables used below
 var title  = t.GoName
 var formName = title + "DetailForm"
-var tableKebab = strings2.SnakeToKebab(t.DbName)
+var tableKebab = strings2.CamelToKebab(t.GoName)
 var listFormPath = path.Join("/goradd/form/",dd.DbKey,tableKebab + "-list")
 
 {{: detailFormImport.tmpl }}

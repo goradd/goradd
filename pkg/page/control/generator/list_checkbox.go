@@ -45,53 +45,36 @@ func (d CheckboxList) GenerateCreator(ref interface{}, desc *generator.ControlDe
 }
 
 func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDescription) string {
-	switch ref.(type) {
-	case *db.ReverseReference:
-		return `
-			var values []string
-			for _,obj := range objects {
-				values = append(values, fmt.Sprint(obj.PrimaryKey()))
-			}
-			ctrl.SetSelectedValues(values)`
-	case *db.ManyManyReference:
-		return ``
-	}
-	return ``
+	return `ctrl.SetValue(objects)`
 }
 
 func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) string {
-	/*	switch col := ref.(type) {
-		case *db.ReverseReference:
-			return fmt.Sprintf(`
-				values := ctrl.SelectedValues()
-				model.Unasso
-				`,
+	switch col := ref.(type) {
+	case *db.ReverseReference:
+		// do not need to handle Unique RRs
+		return fmt.Sprintf(`val := ctrl.SelectedValues()`)
+
+	case *db.ManyManyReference:
+		if col.IsEnumAssociation {
+			return fmt.Sprintf(`val := model.%sFromIDs(ctrl.SelectedValues())`,
 				col.GoPlural)
-		case *db.ManyManyReference:
-			return fmt.Sprintf(`
-				values := []string
-				for _,obj := range model.Load%s(ctx) {
-					values = append(values, obj.PrimaryKey())
-				}
-				ctrl.SetSelectedValues(values)`,
-				col.GoPlural)
+		} else {
+			return fmt.Sprintf(`val := ctrl.SelectedValues()`)
 		}
-	*/
+		return ""
+	}
+
 	return ``
 }
 
 func (d CheckboxList) GenerateModifies(ref interface{}, desc *generator.ControlDescription) string {
-	/*	switch ref.(type) {
-		case *db.ReverseReference:
-			return `
-				var values []string
-				for _,obj := range objects {
-					values = append(values, fmt.Sprint(obj.PrimaryKey()))
-				}
-				ctrl.SetSelectedValues(values)`
-		case *db.ManyManyReference:
-			return `false`
-		}*/
+	switch ref.(type) {
+	case *db.ReverseReference:
+		return `!list.IDerStringListCompare(val, ctrl.SelectedValues())`
+
+	case *db.ManyManyReference:
+		return `!list.IDerStringListCompare(val, ctrl.SelectedValues())`
+	}
 	return ``
 }
 
@@ -100,7 +83,11 @@ func (d CheckboxList) GenerateProvider(ref interface{}, desc *generator.ControlD
 	case *db.ReverseReference:
 		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.AssociatedTable.GoPlural)
 	case *db.ManyManyReference:
-		return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.AssociatedTableName)
+		if col.IsEnumAssociation {
+			return fmt.Sprintf(`return model.All%sI()`, col.ObjectTypes())
+		} else {
+			return fmt.Sprintf(`return model.Query%s(ctx).LoadI()`, col.ObjectTypes())
+		}
 	}
 	return ``
 }

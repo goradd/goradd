@@ -733,13 +733,14 @@ func (o *addressBase) resetDirtyStatus() {
 
 }
 
-func (o *addressBase) IsDirty() bool {
-	return o.idIsDirty ||
+func (o *addressBase) IsDirty() (dirty bool) {
+	dirty = o.idIsDirty ||
 		o.personIDIsDirty ||
 		(o.oPerson != nil && o.oPerson.IsDirty()) ||
 		o.streetIsDirty ||
 		o.cityIsDirty
 
+	return
 }
 
 // Get returns the value of a field in the object based on the field's name.

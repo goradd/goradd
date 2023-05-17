@@ -30,7 +30,7 @@ type ReverseReference struct {
 // AssociatedGoName returns the name of the column that is pointing back to us. The name returned
 // is the Go name that we could use to name the referenced object.
 func (r *ReverseReference) AssociatedGoName() string {
-	return UpperCaseIdentifier(r.AssociatedColumn.DbName)
+	return r.AssociatedColumn.GoName
 }
 
 func (r *ReverseReference) JsonKey(dd *Model) string {
@@ -49,6 +49,6 @@ func (r *ReverseReference) AssociatedTableName() string {
 	return r.AssociatedTable.DbName
 }
 
-func (r *ReverseReference) AssociatedPkType() string {
+func (r *ReverseReference) PrimaryKeyType() string {
 	return r.AssociatedTable.PrimaryKeyColumn().ColumnType.GoType()
 }

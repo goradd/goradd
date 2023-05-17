@@ -85,10 +85,10 @@ func (o *{{privateName}}Base) Delete(ctx context.Context) {
     {{for _,ref := range t.ManyManyReferences}}
         d.Associate(ctx,
             "{{= ref.AssnTableName }}",
-            "{{= ref.AssnColumnName }}",
+            "{{= ref.AssnSourceColumnName }}",
             o.PrimaryKey(),
-            "{{= ref.AssociatedTableName }}",
-            "{{= ref.AssociatedColumnName }}",
+            "{{= ref.DestinationTableName }}",
+            "{{= ref.AssnDestColumnName }}",
             nil)
 
     {{for}}

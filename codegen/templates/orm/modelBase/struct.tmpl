@@ -40,13 +40,15 @@ for _,ref := range t.ReverseReferences {
 	if ref.IsUnique() {
 {{
 	{{= oName }} *{{= ref.GoType }}
+	{{= oName}}PK *{{= ref.PrimaryKeyType() }}
 	{{= oName }}IsDirty bool
 }}
 	} else {
 	    mName := mapPrefix + ref.GoPlural
 {{
-	{{= oName }} []*{{= ref.GoType }} // Objects in the order they were queried
-	{{= mName }} map[{{= ref.AssociatedPkType() }}] *{{= ref.GoType }}					  // Objects by PK
+	{{= oName }} []*{{= ref.GoType }}                                   // Objects in the order they were queried
+	{{= mName }} map[{{= ref.PrimaryKeyType() }}] *{{= ref.GoType }}	// Objects by PK
+    s{{= ref.GoPlural}}PKs []{{= ref.PrimaryKeyType() }}            // Primary keys to associate at Save time
 	{{= oName }}IsDirty bool
 }}
 	}
@@ -62,9 +64,10 @@ if len(t.ManyManyReferences) > 0 {
 
 for _,ref := range t.ManyManyReferences {
 {{
-	{{= objectPrefix }}{{ref.GoPlural}} []{{if !ref.IsEnumAssociation }}*{{if}}{{ref.AssociatedObjectType}}
+	{{= objectPrefix }}{{ref.GoPlural}} []{{if !ref.IsEnumAssociation }}*{{if}}{{ref.ObjectType()}}
 {{if !ref.IsEnumAssociation }}
-	m{{= ref.GoPlural }} map[{{= ref.AssociatedTablePkType }}] *{{ref.AssociatedObjectType}}					  // Objects by PK
+	m{{= ref.GoPlural }} map[{{= ref.PrimaryKeyType() }}] *{{= ref.ObjectType() }}	// Objects by PK
+    s{{= ref.GoPlural }}PKs []{{= ref.PrimaryKeyType() }}                           // Primary keys to be associated at Save time
 {{if}}
     {{= objectPrefix }}{{ref.GoPlural}}IsDirty bool
 

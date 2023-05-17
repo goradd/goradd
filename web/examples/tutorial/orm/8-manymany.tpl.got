@@ -30,7 +30,7 @@ In the example below, we are using the team member - project association. Any pe
 and any project can have multiple team members.
 {{g
 	project := model.LoadProject(ctx, "1", node.Project().TeamMembers())
-	person := model.LoadPerson(ctx, "1", node.Person().ProjectsAsTeamMember())
+	person := model.LoadPerson(ctx, "1", node.Person().Projects())
 }}
 </p>
 <p>
@@ -40,7 +40,7 @@ and any project can have multiple team members.
 </p>
 <p>
     Person {{= person.FirstName() }} {{= person.LastName() }} is a member of these projects:
-    {{join person.ProjectsAsTeamMember(), ", "}}{{= _j.Name() }}{{join}}
+    {{join person.Projects(), ", "}}{{= _j.Name() }}{{join}}
 </p>
 <h2>Creating Many-Many Linked Records</h2>
 <p>

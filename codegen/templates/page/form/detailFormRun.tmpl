@@ -6,7 +6,7 @@
 // This is a good place to do anything that needs to happen before doing any of your actions or drawing,
 // like checking if the user is authorized to access the page.
 func (f *{{= formName }})Run(ctx context.Context) {
-    if !session.Has(ctx, "{{= t.LcGoName }}DetailID") {
+    if !session.Has(ctx, {{= t.GoName }}DetailSessionID) {
         // Attempting to go the detail panel without first going to the list panel
         http2.SendBadRequest()
     }

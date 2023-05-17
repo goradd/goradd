@@ -20,17 +20,28 @@ func (o *{{privateName}}Base) {{= ref.GoName }}() *{{ref.GoType}} {
 // Load{{ref.GoName}} returns the connected {{ref.GoType}} object, if one was loaded.
 // Otherwise, it will load a new one and return it.
 func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.GoType}} {
+    if o.{{oName}} != nil && o.{{oName}}.IsDirty() {
+        panic("The {{= ref.GoName }} has changed. You must save it first before changing to a different one.")
+    }
 	if o.{{oName}} == nil {
+	    var pk {{= t.PrimaryKeyColumn().GoType() }}
+	    if o.{{oName}}PK != nil {
+	        pk = *o.{{oName}}PK
+	    } else {
+	        pk = o.{{= t.PrimaryKeyColumn().GoName }}()
+	    }
 {{if assocColIsPk }}
-		o.{{oName}} = Load{{ref.GoType}}(ctx, o.{{= t.PrimaryKeyColumn().GoName }}())
+		o.{{oName}} = Load{{ref.GoType}}(ctx, pk)
 {{else}}
-		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, o.{{= t.PrimaryKeyColumn().GoName }}())
+		o.{{oName}} = Load{{ref.GoType}}By{{= associatedGoName }}(ctx, pk)
 {{if}}
 	}
 	return o.{{oName}}
 }
 
 // Set{{ref.GoName}} associates the given object with the {{t.GoName}}.
+//
+// The association is temporary until you call Save().
 {{if ref.IsNullable() }}
 // If it has an item already associated with it,
 // the foreign key for that item will be set to null.
@@ -42,13 +53,36 @@ func (o *{{privateName}}Base) Load{{= ref.GoName }}(ctx context.Context) *{{ref.
 // or joined with an expansion, be particularly careful, since you may be changing an item
 // that is not currently attached to this {{t.GoName}}.
 func (o *{{privateName}}Base) Set{{= ref.GoName }}(obj *{{= ref.GoType }}) {
-{{if ref.IsNullable() }}
     if o.{{oName}} != nil && o.{{oName}}.IsDirty() {
         panic("The {{= ref.GoName }} has changed. You must save it first before changing to a different one.")
     }
-{{if}}
 	o.{{oName}} = obj
 	o.{{oName}}IsDirty = true
+}
+
+// Set{{ref.GoName}}PrimaryKey associates the given object with the {{t.GoName}}
+// that has the given primary key.
+//
+// The association is temporary until you call Save().
+// If a {{t.GoName}} was loaded, it will be unloaded.
+//
+{{if ref.IsNullable() }}
+// If it has an item already associated with it in the database,
+// the foreign key for that item will be set to null when you call Save().
+{{else}}
+// WARNING! If it has an item already associated with it in the database,
+// that item will be DELETED when you call Save() since it cannot be null.
+{{if}}
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing an item
+// that is not currently attached to this {{t.GoName}}.
+func (o *{{privateName}}Base) Set{{= ref.GoName }}PrimaryKey(pk {{= ref.PrimaryKeyType() }}) {
+    if o.{{oName}} != nil && o.{{oName}}.IsDirty() {
+        panic("The {{= ref.GoName }} has changed. You must save it first before changing to a different one.")
+    }
+	o.{{oName}} = nil
+	o.{{oName}}IsDirty = true
+	o.{{oName}}PK = &pk
 }
 
 
@@ -59,7 +93,7 @@ func (o *{{privateName}}Base) Set{{= ref.GoName }}(obj *{{= ref.GoType }}) {
 {{
 // {{ref.GoName}} returns a single {{ref.GoType}} object by primary key, if one was loaded.
 // Otherwise, it will return nil. It will not return {{ref.GoType}} objects that are not saved.
-func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= ref.AssociatedPkType() }}) *{{ref.GoType}} {
+func (o *{{privateName}}Base) {{= ref.GoName }}(pk {{= ref.PrimaryKeyType() }}) *{{ref.GoType}} {
 	if o.{{mName}} == nil {
 		return nil
 	}
@@ -87,15 +121,20 @@ func (o *{{privateName}}Base) Load{{= ref.GoPlural }}(ctx context.Context, condi
     }
 
 	qb := query{{ref.GoTypePlural}}(ctx)
-	cond := Equal(node.{{= ref.GoType }}().{{= associatedGoName }}(), o.PrimaryKey())
-	if conditions != nil {
-		conditions = append(conditions, cond)
-	    cond = And(conditions...)
-	}
+	var cond *query.OperationNode
+	if o.s{{= ref.GoPlural }}PKs != nil {
+	    cond = In(node.{{= ref.GoType }}().PrimaryKeyNode(), o.s{{= ref.GoPlural }}PKs...)
+	} else {
+        cond = Equal(node.{{= ref.GoType }}().{{= associatedGoName }}(), o.PrimaryKey())
+    }
+    if conditions != nil {
+        conditions = append(conditions, cond)
+        cond = And(conditions...)
+    }
 
 	o.{{oName}} = qb.Where(cond).Load()
 
-    o.{{mName}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
+    o.{{mName}} = make(map[{{= ref.PrimaryKeyType() }}]*{{= ref.GoType }})
     for _,obj := range o.{{oName}} {
         pk := obj.{{= ref.AssociatedTable.PrimaryKeyColumn().GoName}}()
         o.{{mName}}[pk] = obj
@@ -128,13 +167,41 @@ func (o *{{privateName}}Base) Set{{= ref.GoPlural }}(objs []*{{= ref.GoType }}) 
     }
 
 	o.{{oName}} = objs
-	o.{{mName}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
+	o.{{mName}} = make(map[{{= ref.PrimaryKeyType() }}]*{{= ref.GoType }})
 	for _,obj := range o.{{oName}} {
 	    pk := obj.{{= ref.AssociatedTable.PrimaryKeyColumn().GoName}}()
 	    if pk != {{= ref.AssociatedTable.PrimaryKeyColumn().ColumnType.DefaultValue()}} {
 	        o.{{mName}}[pk] = obj
 	    }
 	}
+	o.{{oName}}IsDirty = true
+}
+
+
+// Set{{ref.GoName}}PrimaryKeys associates the given object primary keys with the {{t.GoName}}.
+//
+// The association is temporary until you call Save().
+//
+{{if ref.IsNullable() }}
+// If it has items already associated with it that will not be associated after a save,
+// the foreign keys for those will be set to null when you Save().
+{{else}}
+// WARNING! If it has items already associated with it that will not be associated after a save,
+// those items will be DELETED when you Save() since they cannot be null.
+{{if}}
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this {{t.GoName}}.
+func (o *{{privateName}}Base) Set{{= ref.GoName }}PrimaryKeys(pks []{{= ref.PrimaryKeyType() }}) {
+    for _,obj := range o.{{oName}} {
+        if obj.IsDirty() {
+            panic("You cannot overwrite items that have changed but have not been saved.")
+        }
+    }
+
+    o.{{oName}} = nil
+	o.s{{= ref.GoPlural}}PKs = pks
+	o.{{mName}} = nil
 	o.{{oName}}IsDirty = true
 }
 

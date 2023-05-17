@@ -61,6 +61,15 @@ func ProjectStatusFromID(id string) ProjectStatus {
 	return ProjectStatus(0)
 }
 
+// ProjectStatusesFromIDs converts a slice of ProjectStatus IDs to a slice of ProjectStatus
+func ProjectStatusesFromIDs(ids []string) (values []ProjectStatus) {
+	values = make([]ProjectStatus, 0, len(ids))
+	for _, id := range ids {
+		values = append(values, ProjectStatusFromID(id))
+	}
+	return
+}
+
 // ProjectStatusFromName converts a ProjectStatus name to a ProjectStatus
 func ProjectStatusFromName(name string) ProjectStatus {
 	switch name {
