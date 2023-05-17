@@ -51,33 +51,54 @@ func (o *{{privateName}}Base) update(ctx context.Context) {
         {{if ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionSetNull ||
                 (ref.AssociatedColumn.ForeignKey.DeleteAction == db.FKActionRestrict && ref.IsNullable()) }}
             {{if ref.IsUnique()}}
-               obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
+                obj := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
                         Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
                         Get()
-               if obj != nil  && obj.PrimaryKey() != o.{{= oRef(ref) }}.PrimaryKey() {
+                if obj != nil  && obj.PrimaryKey() != o.{{= oRef(ref) }}.PrimaryKey() {
                    obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
                    obj.Save(ctx)
-               }
-               o.{{= oRef(ref) }}.{{= ref.AssociatedColumn.ModelName()}}IsDirty = true // force a change in case data is stale
-               o.{{= oRef(ref) }}.Set{{= ref.AssociatedColumn.GoName }}(o.PrimaryKey())
-               o.{{= oRef(ref) }}.Save(ctx)
+                }
+                if o.{{= oRef(ref) }}PK != nil {
+                    if o.{{= oRef(ref) }} != nil && o.{{= oRef(ref) }}.IsDirty() {
+                        // Save detached record
+                        o.{{= oRef(ref) }}.Save(ctx)
+                    }
+                    o.{{= oRef(ref) }} = Load{{= ref.GoType}}(ctx, *o.{{= oRef(ref) }}PK, node.{{= ref.GoType}}().PrimaryKeyNode())
+                }
+                o.{{= oRef(ref) }}.{{= ref.AssociatedColumn.ModelName()}}IsDirty = true // force a change in case data is stale
+                o.{{= oRef(ref) }}.Set{{= ref.AssociatedColumn.GoName }}(o.PrimaryKey())
+                o.{{= oRef(ref) }}.Save(ctx)
             {{else}}
-               objs := Query{{= ref.AssociatedTable.GoPlural }}(ctx).
-                          Where(Equal(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
-                          Select(node.{{= ref.AssociatedTable.GoName}}().{{= ref.AssociatedColumn.GoName}}()).
+                if o.s{{= ref.GoPlural }}PKs != nil {
+                    // Get objects we are going to associate if not already loaded
+                    objs := Query{{= ref.GoTypePlural }}(ctx).
+                          Where(In(node.{{= ref.GoType}}().PrimaryKeyNode(), o.s{{= ref.GoPlural }}PKs...)).
+                          Select(node.{{= ref.GoType}}().{{= ref.AssociatedColumn.GoName}}()).
                           Load()
-               for _,obj := range objs {
-                  if _,ok := o.{{= mapPrefix + ref.GoPlural }}[obj.PrimaryKey()]; !ok {
-                      // The old object is not in the group of new objects
-                      obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
-                      obj.Save(ctx)
-                  }
-               }
-               for _,obj := range o.{{= oRef(ref) }} {
-                  obj.{{= ref.AssociatedColumn.ModelName()}}IsDirty = true // force a change in case data is stale
-                  obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
-                  obj.Save(ctx)
-               }
+                    for _,obj := range objs {
+                        if _,ok := o.{{= mapPrefix }}{{= ref.GoPlural }}[obj.PrimaryKey()]; !ok {
+                            o.{{= mapPrefix }}{{= ref.GoPlural }}[obj.PrimaryKey()] = obj
+                            o.{{= oRef(ref) }} = append(o.{{= oRef(ref) }}, obj)
+                        }
+                    }
+                }
+                objs := Query{{= ref.GoTypePlural }}(ctx).
+                          Where(Equal(node.{{= ref.GoType}}().{{= ref.AssociatedColumn.GoName}}(), o.PrimaryKey())).
+                          Select(node.{{= ref.GoType}}().{{= ref.AssociatedColumn.GoName}}()).
+                          Load()
+
+                for _,obj := range objs {
+                    if _,ok := o.{{= mapPrefix }}{{= ref.GoPlural }}[obj.PrimaryKey()]; !ok {
+                        // The old object is not in the group of new objects
+                        obj.Set{{= ref.AssociatedColumn.GoName}}(nil)
+                        obj.Save(ctx)
+                    }
+                }
+                for _,obj := range o.{{= oRef(ref) }} {
+                    obj.{{= ref.AssociatedColumn.ModelName()}}IsDirty = true // force a change in case data is stale
+                    obj.Set{{= ref.AssociatedColumn.GoName}}(o.PrimaryKey())
+                    obj.Save(ctx)
+                }
 
             {{if}}
         {{else}} {{# not nullable}}
@@ -232,7 +253,7 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 {{else}}
 {{g mName := mapPrefix + ref.GoPlural }}
     if o.{{= oName }} != nil {
-        o.{{= mName }} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }})
+        o.{{= mName }} = make(map[{{= ref.PrimaryKeyType() }}]*{{= ref.GoType }})
         for _,obj := range o.{{= oName }} {
             obj.Set{{= ref.AssociatedColumn.GoName}}(id)
             obj.Save(ctx)

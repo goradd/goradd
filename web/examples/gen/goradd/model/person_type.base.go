@@ -69,7 +69,7 @@ func PersonTypeFromID(id string) PersonType {
 
 // PersonTypesFromIDs converts a slice of PersonType IDs to a slice of PersonType
 func PersonTypesFromIDs(ids []string) (values []PersonType) {
-	values = make([]PersonType, len(ids), len(ids))
+	values = make([]PersonType, 0, len(ids))
 	for _, id := range ids {
 		values = append(values, PersonTypeFromID(id))
 	}

@@ -40,13 +40,15 @@ for _,ref := range t.ReverseReferences {
 	if ref.IsUnique() {
 {{
 	{{= oName }} *{{= ref.GoType }}
+	{{= oName}}PK *{{= ref.PrimaryKeyType() }}
 	{{= oName }}IsDirty bool
 }}
 	} else {
 	    mName := mapPrefix + ref.GoPlural
 {{
-	{{= oName }} []*{{= ref.GoType }} // Objects in the order they were queried
-	{{= mName }} map[{{= ref.AssociatedPkType() }}] *{{= ref.GoType }}					  // Objects by PK
+	{{= oName }} []*{{= ref.GoType }}                                   // Objects in the order they were queried
+	{{= mName }} map[{{= ref.PrimaryKeyType() }}] *{{= ref.GoType }}	// Objects by PK
+    s{{= ref.GoPlural}}PKs []{{= ref.PrimaryKeyType() }}            // Primary keys to associate at Save time
 	{{= oName }}IsDirty bool
 }}
 	}

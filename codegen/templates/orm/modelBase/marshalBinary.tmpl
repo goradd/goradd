@@ -54,6 +54,22 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
             return nil, err
         }
     }
+
+    if err := encoder.Encode(o.{{= objectPrefix}}{{= ref.GoName }}PK != nil); err != nil {
+        return nil, err
+    }
+    if o.{{= objectPrefix}}{{= ref.GoName }}PK != nil {
+        if err := encoder.Encode(*o.{{= objectPrefix}}{{= ref.GoName }}PK); err != nil {
+            return nil, err
+        }
+    }
+
+
+    if err := encoder.Encode(o.{{= objectPrefix }}{{= ref.GoName }}IsDirty); err != nil {
+        return nil, err
+    }
+
+
 {{else}}
     if o.{{= objectPrefix}}{{= ref.GoPlural }} == nil {
         if err := encoder.Encode(false); err != nil {
@@ -67,6 +83,19 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
             return nil, err
         }
     }
+    if err := encoder.Encode(o.s{{= ref.GoPlural }}PKs != nil); err != nil {
+        return nil, err
+    }
+    if o.s{{= ref.GoPlural }}PKs != nil {
+        if err := encoder.Encode(o.s{{= ref.GoPlural }}PKs); err != nil {
+            return nil, err
+        }
+    }
+
+    if err := encoder.Encode(o.{{= objectPrefix }}{{= ref.GoPlural }}IsDirty); err != nil {
+        return nil, err
+    }
+
 {{# We will need to rebuild the map based on the object decoded, since they are pointers to the same objects}}
 {{if}}
 {{for}}
@@ -84,6 +113,20 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
             return nil, err
         }
     }
+    if err := encoder.Encode(o.{{= objectPrefix}}{{= ref.GoPlural }}IsDirty); err != nil {
+        return nil, err
+    }
+{{if !ref.IsEnumAssociation }}
+    if err := encoder.Encode(o.s{{= ref.GoPlural }}PKs != nil); err != nil {
+        return nil, err
+    }
+    if o.s{{= ref.GoPlural }}PKs != nil {
+        if err := encoder.Encode(o.s{{= ref.GoPlural }}PKs); err != nil {
+            return nil, err
+        }
+    }
+{{if}}
+
 {{# We will need to rebuild the map (when not a enum table association) based on the object decoded, since they are pointers to the same objects}}
 {{for}}
 
@@ -156,6 +199,21 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
             return
         }
     }
+
+    if err = dec.Decode(&isPtr); err != nil {
+        return
+    }
+    if isPtr {
+        o.{{= objectPrefix}}{{= ref.GoName }}PK = new ({{= ref.PrimaryKeyType() }})
+        if err = dec.Decode(o.{{= objectPrefix}}{{= ref.GoName }}PK); err != nil {
+            return
+        }
+    }
+
+    if err = dec.Decode(&o.{{= objectPrefix }}{{= ref.GoName }}IsDirty); err != nil {
+        return
+    }
+
 {{else}}
     if err = dec.Decode(&isPtr); err != nil {
         return
@@ -165,12 +223,26 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
             return
         }
         if len(o.{{= objectPrefix}}{{= ref.GoPlural }}) > 0 {
-            o.m{{= ref.GoPlural }} = make(map[{{= ref.AssociatedPkType() }}] *{{= ref.GoType }})
+            o.m{{= ref.GoPlural }} = make(map[{{= ref.PrimaryKeyType() }}] *{{= ref.GoType }})
             for _,p := range o.{{= objectPrefix }}{{= ref.GoPlural }} {
                 o.m{{= ref.GoPlural }}[p.PrimaryKey()] = p
             }
         }
     }
+
+    if err = dec.Decode(&isPtr); err != nil {
+        return
+    }
+    if isPtr {
+        if err = dec.Decode(&o.s{{= ref.GoPlural }}PKs); err != nil {
+            return
+        }
+    }
+
+    if err = dec.Decode(&o.{{= objectPrefix }}{{= ref.GoPlural }}IsDirty); err != nil {
+        return
+    }
+
 {{if}}
 {{for}}
 
@@ -192,6 +264,21 @@ func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
         }
 {{if}}
     }
+    if err = dec.Decode(&o.{{= objectPrefix}}{{= ref.GoPlural }}IsDirty); err != nil {
+        return
+    }
+{{if !ref.IsEnumAssociation}}
+    if err = dec.Decode(&isPtr); err != nil {
+        return
+    }
+    if isPtr {
+        if err = dec.Decode(&o.s{{= ref.GoPlural}}PKs); err != nil {
+            return
+        }
+    }
+{{if}}
+
+
 {{for}}
 
     if err = dec.Decode(&isPtr); err != nil {

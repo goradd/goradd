@@ -73,6 +73,7 @@ type projectBase struct {
 	// Reverse reference objects.
 	oMilestones        []*Milestone          // Objects in the order they were queried
 	mMilestones        map[string]*Milestone // Objects by PK
+	sMilestonesPKs     []string              // Primary keys to associate at Save time
 	oMilestonesIsDirty bool
 
 	// Many-Many reference objects.
@@ -929,7 +930,12 @@ func (o *projectBase) LoadMilestones(ctx context.Context, conditions ...interfac
 	}
 
 	qb := queryMilestones(ctx)
-	cond := Equal(node.Milestone().ProjectID(), o.PrimaryKey())
+	var cond *query.OperationNode
+	if o.sMilestonesPKs != nil {
+		cond = In(node.Milestone().PrimaryKeyNode(), o.sMilestonesPKs...)
+	} else {
+		cond = Equal(node.Milestone().ProjectID(), o.PrimaryKey())
+	}
 	if conditions != nil {
 		conditions = append(conditions, cond)
 		cond = And(conditions...)
@@ -972,6 +978,28 @@ func (o *projectBase) SetMilestones(objs []*Milestone) {
 			o.mMilestones[pk] = obj
 		}
 	}
+	o.oMilestonesIsDirty = true
+}
+
+// SetMilestonePrimaryKeys associates the given object primary keys with the Project.
+//
+// The association is temporary until you call Save().
+//
+// WARNING! If it has items already associated with it that will not be associated after a save,
+// those items will be DELETED when you Save() since they cannot be null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this Project.
+func (o *projectBase) SetMilestonePrimaryKeys(pks []string) {
+	for _, obj := range o.oMilestones {
+		if obj.IsDirty() {
+			panic("You cannot overwrite items that have changed but have not been saved.")
+		}
+	}
+
+	o.oMilestones = nil
+	o.sMilestonesPKs = pks
+	o.mMilestones = nil
 	o.oMilestonesIsDirty = true
 }
 
@@ -2318,6 +2346,18 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
+	if err := encoder.Encode(o.sMilestonesPKs != nil); err != nil {
+		return nil, err
+	}
+	if o.sMilestonesPKs != nil {
+		if err := encoder.Encode(o.sMilestonesPKs); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := encoder.Encode(o.oMilestonesIsDirty); err != nil {
+		return nil, err
+	}
 
 	if o.oChildren == nil {
 		if err := encoder.Encode(false); err != nil {
@@ -2331,6 +2371,18 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
+	if err := encoder.Encode(o.oChildrenIsDirty); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.sChildrenPKs != nil); err != nil {
+		return nil, err
+	}
+	if o.sChildrenPKs != nil {
+		if err := encoder.Encode(o.sChildrenPKs); err != nil {
+			return nil, err
+		}
+	}
+
 	if o.oParents == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -2343,6 +2395,18 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
+	if err := encoder.Encode(o.oParentsIsDirty); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.sParentsPKs != nil); err != nil {
+		return nil, err
+	}
+	if o.sParentsPKs != nil {
+		if err := encoder.Encode(o.sParentsPKs); err != nil {
+			return nil, err
+		}
+	}
+
 	if o.oTeamMembers == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -2352,6 +2416,17 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 		if err := encoder.Encode(o.oTeamMembers); err != nil {
+			return nil, err
+		}
+	}
+	if err := encoder.Encode(o.oTeamMembersIsDirty); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.sTeamMembersPKs != nil); err != nil {
+		return nil, err
+	}
+	if o.sTeamMembersPKs != nil {
+		if err := encoder.Encode(o.sTeamMembersPKs); err != nil {
 			return nil, err
 		}
 	}
@@ -2532,6 +2607,19 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
+		if err = dec.Decode(&o.sMilestonesPKs); err != nil {
+			return
+		}
+	}
+
+	if err = dec.Decode(&o.oMilestonesIsDirty); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
 		if err = dec.Decode(&o.oChildren); err != nil {
 			return
 		}
@@ -2543,6 +2631,18 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 			}
 		}
 	}
+	if err = dec.Decode(&o.oChildrenIsDirty); err != nil {
+		return
+	}
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+		if err = dec.Decode(&o.sChildrenPKs); err != nil {
+			return
+		}
+	}
+
 	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
@@ -2558,6 +2658,18 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 			}
 		}
 	}
+	if err = dec.Decode(&o.oParentsIsDirty); err != nil {
+		return
+	}
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+		if err = dec.Decode(&o.sParentsPKs); err != nil {
+			return
+		}
+	}
+
 	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
@@ -2571,6 +2683,17 @@ func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 			for _, p := range o.oTeamMembers {
 				o.mTeamMembers[p.PrimaryKey()] = p
 			}
+		}
+	}
+	if err = dec.Decode(&o.oTeamMembersIsDirty); err != nil {
+		return
+	}
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+		if err = dec.Decode(&o.sTeamMembersPKs); err != nil {
+			return
 		}
 	}
 

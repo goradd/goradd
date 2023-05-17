@@ -50,13 +50,10 @@ func (d CheckboxList) GenerateRefresh(ref interface{}, desc *generator.ControlDe
 
 func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDescription) string {
 	switch col := ref.(type) {
-	/*	case *db.ReverseReference:
-		return fmt.Sprintf(`
-			values := ctrl.SelectedValues()
-			model.Unasso
-			`,
-			col.GoPlural)
-	*/
+	case *db.ReverseReference:
+		// do not need to handle Unique RRs
+		return fmt.Sprintf(`val := ctrl.SelectedValues()`)
+
 	case *db.ManyManyReference:
 		if col.IsEnumAssociation {
 			return fmt.Sprintf(`val := model.%sFromIDs(ctrl.SelectedValues())`,
@@ -72,16 +69,11 @@ func (d CheckboxList) GenerateUpdate(ref interface{}, desc *generator.ControlDes
 
 func (d CheckboxList) GenerateModifies(ref interface{}, desc *generator.ControlDescription) string {
 	switch ref.(type) {
-	/*		case *db.ReverseReference:
-			return `
-				var values []string
-				for _,obj := range objects {
-					values = append(values, fmt.Sprint(obj.PrimaryKey()))
-				}
-				ctrl.SetSelectedValues(values)`
-	*/
+	case *db.ReverseReference:
+		return `!list.IDerStringListCompare(val, ctrl.SelectedValues())`
+
 	case *db.ManyManyReference:
-		return `modifies = !list.IDerStringListCompare(val, ctrl.SelectedValues())`
+		return `!list.IDerStringListCompare(val, ctrl.SelectedValues())`
 	}
 	return ``
 }

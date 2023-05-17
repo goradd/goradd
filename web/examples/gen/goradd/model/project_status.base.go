@@ -63,7 +63,7 @@ func ProjectStatusFromID(id string) ProjectStatus {
 
 // ProjectStatusesFromIDs converts a slice of ProjectStatus IDs to a slice of ProjectStatus
 func ProjectStatusesFromIDs(ids []string) (values []ProjectStatus) {
-	values = make([]ProjectStatus, len(ids), len(ids))
+	values = make([]ProjectStatus, 0, len(ids))
 	for _, id := range ids {
 		values = append(values, ProjectStatusFromID(id))
 	}

@@ -36,13 +36,17 @@ type personBase struct {
 	// Reverse reference objects.
 	oAddresses                []*Address          // Objects in the order they were queried
 	mAddresses                map[string]*Address // Objects by PK
+	sAddressesPKs             []string            // Primary keys to associate at Save time
 	oAddressesIsDirty         bool
 	oEmployeeInfo             *EmployeeInfo
+	oEmployeeInfoPK           *string
 	oEmployeeInfoIsDirty      bool
 	oLogin                    *Login
+	oLoginPK                  *string
 	oLoginIsDirty             bool
 	oProjectsAsManager        []*Project          // Objects in the order they were queried
 	mProjectsAsManager        map[string]*Project // Objects by PK
+	sProjectsAsManagerPKs     []string            // Primary keys to associate at Save time
 	oProjectsAsManagerIsDirty bool
 
 	// Many-Many reference objects.
@@ -323,7 +327,12 @@ func (o *personBase) LoadAddresses(ctx context.Context, conditions ...interface{
 	}
 
 	qb := queryAddresses(ctx)
-	cond := Equal(node.Address().PersonID(), o.PrimaryKey())
+	var cond *query.OperationNode
+	if o.sAddressesPKs != nil {
+		cond = In(node.Address().PrimaryKeyNode(), o.sAddressesPKs...)
+	} else {
+		cond = Equal(node.Address().PersonID(), o.PrimaryKey())
+	}
 	if conditions != nil {
 		conditions = append(conditions, cond)
 		cond = And(conditions...)
@@ -369,6 +378,28 @@ func (o *personBase) SetAddresses(objs []*Address) {
 	o.oAddressesIsDirty = true
 }
 
+// SetAddressPrimaryKeys associates the given object primary keys with the Person.
+//
+// The association is temporary until you call Save().
+//
+// WARNING! If it has items already associated with it that will not be associated after a save,
+// those items will be DELETED when you Save() since they cannot be null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this Person.
+func (o *personBase) SetAddressPrimaryKeys(pks []string) {
+	for _, obj := range o.oAddresses {
+		if obj.IsDirty() {
+			panic("You cannot overwrite items that have changed but have not been saved.")
+		}
+	}
+
+	o.oAddresses = nil
+	o.sAddressesPKs = pks
+	o.mAddresses = nil
+	o.oAddressesIsDirty = true
+}
+
 // EmployeeInfo returns the connected EmployeeInfo object, if one was loaded.
 // Otherwise, it will return nil.
 func (o *personBase) EmployeeInfo() *EmployeeInfo {
@@ -381,21 +412,55 @@ func (o *personBase) EmployeeInfo() *EmployeeInfo {
 // LoadEmployeeInfo returns the connected EmployeeInfo object, if one was loaded.
 // Otherwise, it will load a new one and return it.
 func (o *personBase) LoadEmployeeInfo(ctx context.Context) *EmployeeInfo {
+	if o.oEmployeeInfo != nil && o.oEmployeeInfo.IsDirty() {
+		panic("The EmployeeInfo has changed. You must save it first before changing to a different one.")
+	}
 	if o.oEmployeeInfo == nil {
-		o.oEmployeeInfo = LoadEmployeeInfoByPersonID(ctx, o.ID())
+		var pk string
+		if o.oEmployeeInfoPK != nil {
+			pk = *o.oEmployeeInfoPK
+		} else {
+			pk = o.ID()
+		}
+		o.oEmployeeInfo = LoadEmployeeInfoByPersonID(ctx, pk)
 	}
 	return o.oEmployeeInfo
 }
 
 // SetEmployeeInfo associates the given object with the Person.
+//
+// The association is temporary until you call Save().
 // WARNING! If it has an item already associated with it,
 // that item will be DELETED since it cannot be null.
 // If you did not use a join to query the items in the first place, used a conditional join,
 // or joined with an expansion, be particularly careful, since you may be changing an item
 // that is not currently attached to this Person.
 func (o *personBase) SetEmployeeInfo(obj *EmployeeInfo) {
+	if o.oEmployeeInfo != nil && o.oEmployeeInfo.IsDirty() {
+		panic("The EmployeeInfo has changed. You must save it first before changing to a different one.")
+	}
 	o.oEmployeeInfo = obj
 	o.oEmployeeInfoIsDirty = true
+}
+
+// SetEmployeeInfoPrimaryKey associates the given object with the Person
+// that has the given primary key.
+//
+// The association is temporary until you call Save().
+// If a Person was loaded, it will be unloaded.
+//
+// WARNING! If it has an item already associated with it in the database,
+// that item will be DELETED when you call Save() since it cannot be null.
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing an item
+// that is not currently attached to this Person.
+func (o *personBase) SetEmployeeInfoPrimaryKey(pk string) {
+	if o.oEmployeeInfo != nil && o.oEmployeeInfo.IsDirty() {
+		panic("The EmployeeInfo has changed. You must save it first before changing to a different one.")
+	}
+	o.oEmployeeInfo = nil
+	o.oEmployeeInfoIsDirty = true
+	o.oEmployeeInfoPK = &pk
 }
 
 // Login returns the connected Login object, if one was loaded.
@@ -410,13 +475,24 @@ func (o *personBase) Login() *Login {
 // LoadLogin returns the connected Login object, if one was loaded.
 // Otherwise, it will load a new one and return it.
 func (o *personBase) LoadLogin(ctx context.Context) *Login {
+	if o.oLogin != nil && o.oLogin.IsDirty() {
+		panic("The Login has changed. You must save it first before changing to a different one.")
+	}
 	if o.oLogin == nil {
-		o.oLogin = LoadLoginByPersonID(ctx, o.ID())
+		var pk string
+		if o.oLoginPK != nil {
+			pk = *o.oLoginPK
+		} else {
+			pk = o.ID()
+		}
+		o.oLogin = LoadLoginByPersonID(ctx, pk)
 	}
 	return o.oLogin
 }
 
 // SetLogin associates the given object with the Person.
+//
+// The association is temporary until you call Save().
 // If it has an item already associated with it,
 // the foreign key for that item will be set to null.
 // If you did not use a join to query the items in the first place, used a conditional join,
@@ -428,6 +504,26 @@ func (o *personBase) SetLogin(obj *Login) {
 	}
 	o.oLogin = obj
 	o.oLoginIsDirty = true
+}
+
+// SetLoginPrimaryKey associates the given object with the Person
+// that has the given primary key.
+//
+// The association is temporary until you call Save().
+// If a Person was loaded, it will be unloaded.
+//
+// If it has an item already associated with it in the database,
+// the foreign key for that item will be set to null when you call Save().
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing an item
+// that is not currently attached to this Person.
+func (o *personBase) SetLoginPrimaryKey(pk string) {
+	if o.oLogin != nil && o.oLogin.IsDirty() {
+		panic("The Login has changed. You must save it first before changing to a different one.")
+	}
+	o.oLogin = nil
+	o.oLoginIsDirty = true
+	o.oLoginPK = &pk
 }
 
 // ProjectAsManager returns a single Project object by primary key, if one was loaded.
@@ -460,7 +556,12 @@ func (o *personBase) LoadProjectsAsManager(ctx context.Context, conditions ...in
 	}
 
 	qb := queryProjects(ctx)
-	cond := Equal(node.Project().ManagerID(), o.PrimaryKey())
+	var cond *query.OperationNode
+	if o.sProjectsAsManagerPKs != nil {
+		cond = In(node.Project().PrimaryKeyNode(), o.sProjectsAsManagerPKs...)
+	} else {
+		cond = Equal(node.Project().ManagerID(), o.PrimaryKey())
+	}
 	if conditions != nil {
 		conditions = append(conditions, cond)
 		cond = And(conditions...)
@@ -503,6 +604,28 @@ func (o *personBase) SetProjectsAsManager(objs []*Project) {
 			o.mProjectsAsManager[pk] = obj
 		}
 	}
+	o.oProjectsAsManagerIsDirty = true
+}
+
+// SetProjectAsManagerPrimaryKeys associates the given object primary keys with the Person.
+//
+// The association is temporary until you call Save().
+//
+// If it has items already associated with it that will not be associated after a save,
+// the foreign keys for those will be set to null when you Save().
+// If you did not use a join to query the items in the first place, used a conditional join,
+// or joined with an expansion, be particularly careful, since you may be changing items
+// that are not currently attached to this Person.
+func (o *personBase) SetProjectAsManagerPrimaryKeys(pks []string) {
+	for _, obj := range o.oProjectsAsManager {
+		if obj.IsDirty() {
+			panic("You cannot overwrite items that have changed but have not been saved.")
+		}
+	}
+
+	o.oProjectsAsManager = nil
+	o.sProjectsAsManagerPKs = pks
+	o.mProjectsAsManager = nil
 	o.oProjectsAsManagerIsDirty = true
 }
 
@@ -985,10 +1108,24 @@ func (o *personBase) update(ctx context.Context) {
 
 		if o.oProjectsAsManagerIsDirty {
 
+			if o.sProjectsAsManagerPKs != nil {
+				// Get objects we are going to associate if not already loaded
+				objs := QueryProjects(ctx).
+					Where(In(node.Project().PrimaryKeyNode(), o.sProjectsAsManagerPKs...)).
+					Select(node.Project().ManagerID()).
+					Load()
+				for _, obj := range objs {
+					if _, ok := o.mProjectsAsManager[obj.PrimaryKey()]; !ok {
+						o.mProjectsAsManager[obj.PrimaryKey()] = obj
+						o.oProjectsAsManager = append(o.oProjectsAsManager, obj)
+					}
+				}
+			}
 			objs := QueryProjects(ctx).
 				Where(Equal(node.Project().ManagerID(), o.PrimaryKey())).
 				Select(node.Project().ManagerID()).
 				Load()
+
 			for _, obj := range objs {
 				if _, ok := o.mProjectsAsManager[obj.PrimaryKey()]; !ok {
 					// The old object is not in the group of new objects
@@ -1406,6 +1543,19 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
+	if err := encoder.Encode(o.sAddressesPKs != nil); err != nil {
+		return nil, err
+	}
+	if o.sAddressesPKs != nil {
+		if err := encoder.Encode(o.sAddressesPKs); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := encoder.Encode(o.oAddressesIsDirty); err != nil {
+		return nil, err
+	}
+
 	if o.oEmployeeInfo == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -1418,6 +1568,20 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
+
+	if err := encoder.Encode(o.oEmployeeInfoPK != nil); err != nil {
+		return nil, err
+	}
+	if o.oEmployeeInfoPK != nil {
+		if err := encoder.Encode(*o.oEmployeeInfoPK); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := encoder.Encode(o.oEmployeeInfoIsDirty); err != nil {
+		return nil, err
+	}
+
 	if o.oLogin == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -1430,6 +1594,20 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
+
+	if err := encoder.Encode(o.oLoginPK != nil); err != nil {
+		return nil, err
+	}
+	if o.oLoginPK != nil {
+		if err := encoder.Encode(*o.oLoginPK); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := encoder.Encode(o.oLoginIsDirty); err != nil {
+		return nil, err
+	}
+
 	if o.oProjectsAsManager == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -1441,6 +1619,18 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 		if err := encoder.Encode(o.oProjectsAsManager); err != nil {
 			return nil, err
 		}
+	}
+	if err := encoder.Encode(o.sProjectsAsManagerPKs != nil); err != nil {
+		return nil, err
+	}
+	if o.sProjectsAsManagerPKs != nil {
+		if err := encoder.Encode(o.sProjectsAsManagerPKs); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := encoder.Encode(o.oProjectsAsManagerIsDirty); err != nil {
+		return nil, err
 	}
 
 	if o.oPersonTypes == nil {
@@ -1455,6 +1645,10 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 	}
+	if err := encoder.Encode(o.oPersonTypesIsDirty); err != nil {
+		return nil, err
+	}
+
 	if o.oProjects == nil {
 		if err := encoder.Encode(false); err != nil {
 			return nil, err
@@ -1464,6 +1658,17 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 			return nil, err
 		}
 		if err := encoder.Encode(o.oProjects); err != nil {
+			return nil, err
+		}
+	}
+	if err := encoder.Encode(o.oProjectsIsDirty); err != nil {
+		return nil, err
+	}
+	if err := encoder.Encode(o.sProjectsPKs != nil); err != nil {
+		return nil, err
+	}
+	if o.sProjectsPKs != nil {
+		if err := encoder.Encode(o.sProjectsPKs); err != nil {
 			return nil, err
 		}
 	}
@@ -1543,6 +1748,20 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 			}
 		}
 	}
+
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+		if err = dec.Decode(&o.sAddressesPKs); err != nil {
+			return
+		}
+	}
+
+	if err = dec.Decode(&o.oAddressesIsDirty); err != nil {
+		return
+	}
+
 	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
@@ -1551,6 +1770,21 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 			return
 		}
 	}
+
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+		o.oEmployeeInfoPK = new(string)
+		if err = dec.Decode(o.oEmployeeInfoPK); err != nil {
+			return
+		}
+	}
+
+	if err = dec.Decode(&o.oEmployeeInfoIsDirty); err != nil {
+		return
+	}
+
 	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
@@ -1559,6 +1793,21 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 			return
 		}
 	}
+
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+		o.oLoginPK = new(string)
+		if err = dec.Decode(o.oLoginPK); err != nil {
+			return
+		}
+	}
+
+	if err = dec.Decode(&o.oLoginIsDirty); err != nil {
+		return
+	}
+
 	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
@@ -1578,10 +1827,27 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 		return
 	}
 	if isPtr {
+		if err = dec.Decode(&o.sProjectsAsManagerPKs); err != nil {
+			return
+		}
+	}
+
+	if err = dec.Decode(&o.oProjectsAsManagerIsDirty); err != nil {
+		return
+	}
+
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
 		if err = dec.Decode(&o.oPersonTypes); err != nil {
 			return
 		}
 	}
+	if err = dec.Decode(&o.oPersonTypesIsDirty); err != nil {
+		return
+	}
+
 	if err = dec.Decode(&isPtr); err != nil {
 		return
 	}
@@ -1595,6 +1861,17 @@ func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 			for _, p := range o.oProjects {
 				o.mProjects[p.PrimaryKey()] = p
 			}
+		}
+	}
+	if err = dec.Decode(&o.oProjectsIsDirty); err != nil {
+		return
+	}
+	if err = dec.Decode(&isPtr); err != nil {
+		return
+	}
+	if isPtr {
+		if err = dec.Decode(&o.sProjectsPKs); err != nil {
+			return
 		}
 	}
 

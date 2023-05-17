@@ -157,7 +157,7 @@ for _,ref := range t.ReverseReferences {
 		switch {{oName}} := v.(type) {
 		case []db.ValueMap:
 			o.{{oName}} = make([]*{{= ref.GoType }}, 0, len({{oName}}))
-			o.{{mName}} = make(map[{{= ref.AssociatedPkType() }}]*{{= ref.GoType }},len({{oName}}))
+			o.{{mName}} = make(map[{{= ref.PrimaryKeyType() }}]*{{= ref.GoType }},len({{oName}}))
 			for _,v2 := range {{oName}} {
 				obj := new({{= ref.GoType }})
 				obj.load(v2, obj, objThis, "{{parentName}}")
