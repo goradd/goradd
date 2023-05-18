@@ -32,9 +32,18 @@ func NewBuilderFromUrl(u *url2.URL) *Builder {
 }
 
 // SetValue sets the GET value in the URL
-func (u *Builder) SetValue(k string, v interface{}) *Builder {
+func (u *Builder) SetValue(k string, v any) *Builder {
 	value := fmt.Sprint(v)
 	u.values.Set(k, value)
+	return u
+}
+
+// SetValues sets the GET values in the URL from a map
+func (u *Builder) SetValues(m map[string]any) *Builder {
+	for k, v := range m {
+		value := fmt.Sprint(v)
+		u.values.Set(k, value)
+	}
 	return u
 }
 

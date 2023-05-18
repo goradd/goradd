@@ -71,6 +71,11 @@ func getSession(ctx context.Context) *Session {
 	return ctx.Value(sessionContext).(*Session)
 }
 
+// HasSession returns true if the session exists.
+func HasSession(ctx context.Context) bool {
+	return ctx.Value(sessionContext) != nil
+}
+
 // Has returns true if the given key exists in the session store
 func Has(ctx context.Context, key string) bool {
 	return getSession(ctx).data.Has(key)
