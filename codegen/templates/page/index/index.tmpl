@@ -7,8 +7,9 @@
 <body>
 <h1>{{dd.DbKey}}</h1>
 <ul>
-{{for _,t := range dd.Tables }}
+{{for _,k := range stringmap.SortedKeys(dd.Tables) }}
 {{g
+    t := dd.Tables[k]
     path := strings.CamelToKebab(t.GoName)
 }}
   <li>
