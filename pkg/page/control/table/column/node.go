@@ -135,7 +135,12 @@ type NodeColumnCreator struct {
 	// Title is the title of the column that will appear in the header
 	Title string
 	// Sortable makes the column display sort arrows in the header
+	// Deprecated: Use SortDirection instead
 	Sortable bool
+	// SortDirection sets the initial sorting direction of the column, and will make the column sortable
+	// By default, the column is not sortable.
+	SortDirection table.SortDirection
+	// IsHtml indicates that the texter is producing HTML rather than text that should be escaped.
 	table.ColumnOptions
 }
 
@@ -147,6 +152,9 @@ func (c NodeColumnCreator) Create(ctx context.Context, parent table.TableI) tabl
 	col.SetTitle(c.Title)
 	if c.Sortable {
 		col.SetSortable()
+	}
+	if c.SortDirection != table.NotSortable {
+		col.SetSortDirection(c.SortDirection)
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col
