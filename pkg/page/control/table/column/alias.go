@@ -75,7 +75,12 @@ type AliasColumnCreator struct {
 	// Title is the static title string to use in the header row
 	Title string
 	// Sortable makes the column display sort arrows in the header
+	// Deprecated: Use SortDirection instead
 	Sortable bool
+	// SortDirection sets the initial sorting direction of the column, and will make the column sortable
+	// By default, the column is not sortable.
+	SortDirection table.SortDirection
+	// IsHtml indicates that the texter is producing HTML rather than text that should be escaped.
 	table.ColumnOptions
 }
 
@@ -87,6 +92,9 @@ func (c AliasColumnCreator) Create(ctx context.Context, parent table.TableI) tab
 	col.SetTitle(c.Title)
 	if c.Sortable {
 		col.SetSortable()
+	}
+	if c.SortDirection != table.NotSortable {
+		col.SetSortDirection(c.SortDirection)
 	}
 	col.ApplyOptions(ctx, parent, c.ColumnOptions)
 	return col

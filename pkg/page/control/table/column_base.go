@@ -19,6 +19,10 @@ import (
 	"github.com/goradd/html5tag"
 )
 
+// SortDirection indicates the current direction of the sort arrows for the column.
+//   - NotSortable indicates the column cannot be sorted.
+//   - NotSorted indicates that the column CAN be sorted, but the direction is currently not determined
+//   - SortAscending and SortDescending indicate the column is currently sorted in the corresponding direction.
 type SortDirection int
 
 const (
@@ -28,9 +32,11 @@ const (
 	NotSorted      = SortDirection(-100)
 )
 
+const ColumnSortEventName = "gr-sort"
+
 // ColumnSortEvent indicates a column's sort button has been clicked.
 func ColumnSortEvent() *event.Event {
-	return event.NewEvent("gr-sort")
+	return event.NewEvent(ColumnSortEventName)
 }
 
 // SortButtonHtmlGetter is the injected function for getting the html for sort buttons in the column header.
@@ -466,7 +472,7 @@ func (c *ColumnBase) RenderSortButton(labelHtml string) string {
 
 	return fmt.Sprintf(
 		`<button class="gr-transparent-btn" onclick="g$('%s').trigger('%s', '%s'); return false;">%s</button>`,
-		c.parentTable.ID(), ColumnSortEvent(), c.ID(), labelHtml)
+		c.parentTable.ID(), ColumnSortEventName, c.ID(), labelHtml)
 }
 
 // SortDirection returns the current sort direction.

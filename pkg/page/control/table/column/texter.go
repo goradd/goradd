@@ -36,7 +36,11 @@ type TexterColumnCreator struct {
 	// Title is the title at the top of the column
 	Title string
 	// Sortable makes the column display sort arrows in the header
+	// Deprecated: Use SortDirection instead
 	Sortable bool
+	// SortDirection sets the initial sorting direction of the column, and will make the column sortable
+	// By default, the column is not sortable.
+	SortDirection table.SortDirection
 	// IsHtml indicates that the texter is producing HTML rather than text that should be escaped.
 	IsHtml bool
 	table.ColumnOptions
@@ -60,6 +64,9 @@ func (c TexterColumnCreator) Create(ctx context.Context, parent table.TableI) ta
 	col.SetTitle(c.Title)
 	if c.Sortable {
 		col.SetSortable()
+	}
+	if c.SortDirection != table.NotSortable {
+		col.SetSortDirection(c.SortDirection)
 	}
 	if c.IsHtml {
 		col.SetIsHtml(true)

@@ -260,7 +260,8 @@ type SelectListCreator struct {
 	// Items is a static list of labels and values that will be in the list. Or, use a DataProvider to dynamically generate the items.
 	Items []ListValue
 	// NilItem is a helper to add an item at the top of the list with a nil value. This is often
-	// used to specify no selection, or a message that a selection is required.
+	// used to specify no selection, or a message that a selection is required. This only works
+	// if you are NOT using a DataProvider
 	NilItem string
 	// DataProvider is the control that will dynamically provide the data for the list and that implements the DataBinder interface.
 	DataProvider control2.DataBinder

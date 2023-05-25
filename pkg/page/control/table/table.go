@@ -150,8 +150,8 @@ func (t *Table) Init(parent page.ControlI, id string) {
 	t.columns = []ColumnI{}
 	t.sortHistoryLimit = 1
 	t.sortableHtml = "&udarr;"
-	t.sortAscHtml = "&darr;"
-	t.sortDescHtml = "&uarr;"
+	t.sortAscHtml = "&uarr;"
+	t.sortDescHtml = "&darr;"
 }
 
 // this returns the TableI interface for calling into "virtual" functions. This allows us to call functions defined
@@ -966,12 +966,14 @@ func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	if c.Data != nil {
 		ctrl.SetData(c.Data)
 	}
+	var sortable bool
 	if c.Columns != nil {
 		for _, colCreator := range c.Columns {
-			ctrl.AddColumn(colCreator.Create(ctx, ctrl))
+			col := ctrl.AddColumn(colCreator.Create(ctx, ctrl))
+			sortable = sortable || col.IsSortable()
 		}
 	}
-	if c.Sortable {
+	if sortable || c.Sortable {
 		ctrl.MakeSortable()
 	}
 	if c.SortHistoryLimit > 0 {
