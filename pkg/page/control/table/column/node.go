@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/goradd/goradd/pkg/page/control/table"
 
-	"github.com/goradd/goradd/pkg/iface"
+	"github.com/goradd/goradd/pkg/any"
 	"github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/page"
 )
@@ -64,7 +64,7 @@ func (c *NodeColumn) CellData(_ context.Context, _ int, _ int, data interface{})
 		v2 := v
 		for i = len(names) - 2; i > 0; i-- {
 			obj := v2.Get(names[i])
-			if iface.IsNil(obj) {
+			if any.IsNil(obj) {
 				return nil // Either an object was not joined, or the joined object does not exist in the database.
 			}
 			v2, ok = obj.(Getter)

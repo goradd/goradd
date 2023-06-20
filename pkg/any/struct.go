@@ -1,4 +1,4 @@
-package reflect
+package any
 
 import (
 	"fmt"
@@ -41,7 +41,7 @@ func SetFieldValues(s interface{}, values map[string]interface{}) error {
 	if sVal.Kind() != reflect.Struct {
 		return fmt.Errorf("Not a struct")
 	}
-	for name,val := range values {
+	for name, val := range values {
 		field := sVal.FieldByName(name)
 		if field.IsValid() {
 			field.Set(reflect.ValueOf(val))
@@ -49,4 +49,3 @@ func SetFieldValues(s interface{}, values map[string]interface{}) error {
 	}
 	return nil
 }
-

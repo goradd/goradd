@@ -144,6 +144,7 @@ for i,fieldName := range tt.FieldNames[1:] {
 func {{= propName }}{{= title }}() []{{= typeName }} {
 	return []{{= typeName }} {
 	    // 0 item will be a blank
+	    {{= typ.DefaultValue() }},
 {{g for _,value := range tt.Values { }}
 	    {{= generator.AsConstant(value[fieldName], typ) }},
 {{g } }}

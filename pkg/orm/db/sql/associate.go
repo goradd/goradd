@@ -2,7 +2,7 @@ package sql
 
 import (
 	"context"
-	"github.com/goradd/goradd/pkg/reflect"
+	"github.com/goradd/goradd/pkg/any"
 )
 
 // Associate is a helper function for the sql database implementations.
@@ -36,7 +36,7 @@ func Associate(ctx context.Context,
 	}
 
 	// Add new associations
-	for _, relatedPk := range reflect.InterfaceSlice(relatedPks) {
+	for _, relatedPk := range any.InterfaceSlice(relatedPks) {
 		sql = "INSERT INTO " + db.QuoteIdentifier(table) + "(" +
 			db.QuoteIdentifier(column) + "," + db.QuoteIdentifier(relatedColumn) +
 			") VALUES (" + db.FormatArgument(1) + "," + db.FormatArgument(2) + ")"

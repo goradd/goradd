@@ -1,9 +1,10 @@
-package iface
+// Package any has general purpose utility functions for working with interfaces and generic types.
+package any
 
 import "reflect"
 
 // If returns the first item if cond is true, or the second item if it is false.
-func If(cond bool, i1, i2 interface{}) interface{} {
+func If[T any](cond bool, i1, i2 T) T {
 	if cond {
 		return i1
 	} else {
@@ -11,9 +12,15 @@ func If(cond bool, i1, i2 interface{}) interface{} {
 	}
 }
 
+// Zero returns the zero value of a type.
+func Zero[T any]() T {
+	var v T
+	return v
+}
+
 // IsNil is a safe test for nil for any kind of variable, and will not panic
 // If i points to a nil object, IsNil will return true, as opposed to i==nil which will return false
-func IsNil(i interface{}) bool {
+func IsNil(i any) bool {
 	if i == nil {
 		return true
 	}
