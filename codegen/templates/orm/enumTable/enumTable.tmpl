@@ -113,10 +113,10 @@ func ({{= propLetter }} {{= propName }}) Value() interface{} {
 
 }}
 
-for i,fieldName := range tt.FieldNames[1:] {
+for i := range tt.FieldNames[1:] {
 	typ := tt.FieldGoColumnType(i+1)
 	typeName := typ.GoType()
-	title := db.UpperCaseIdentifier(fieldName)
+	title := tt.FieldGoName(i+1)
 
 {{
 func ({{= propLetter }} {{= propName }}) {{= title }}() {{= typeName }} {
@@ -138,17 +138,16 @@ func ({{= propLetter }} {{= propName }}) {{= title }}() {{= typeName }} {
 for i,fieldName := range tt.FieldNames[1:] {
 	typ := tt.FieldGoColumnType(i+1)
 	typeName := typ.GoType()
-	varName := inflector.Pluralize(fieldName)
-	title := inflector.Pluralize(db.UpperCaseIdentifier(fieldName))
+	title := tt.FieldGoPlural(i+1)
 
 {{
 func {{= propName }}{{= title }}() []{{= typeName }} {
-	{{= varName }} := make([]{{= typeName }}, {{i len(tt.Values) + 1 }})
-	// 0 item will be a blank
-{{g for i,value := range tt.Values { }}
-	{{= varName }}[{{i i + 1 }}] = {{= generator.AsConstant(value[fieldName], typ) }}
+	return []{{= typeName }} {
+	    // 0 item will be a blank
+{{g for _,value := range tt.Values { }}
+	    {{= generator.AsConstant(value[fieldName], typ) }},
 {{g } }}
-	return {{= varName }}
+    }
 }
 
 }}
