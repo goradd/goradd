@@ -16,4 +16,4 @@
 .glide/
 
 #deploy directory
-deploy/
+/deploy/

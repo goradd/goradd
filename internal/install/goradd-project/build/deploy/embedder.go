@@ -1,7 +1,6 @@
 //go:build release
-// +build release
 
-package web
+package deploy
 
 // This file embeds the static files into the application as static files for
 // the release build.
@@ -31,7 +30,7 @@ func init() {
 	// cache-busting to make sure that when you deploy new versions of these files, the client
 	// will not use a previous cached version, but if the file did not change, the client
 	// can still use a cached version.
-	sub,_ = fs.Sub(a, "app")
-	sub,_ = fs.Sub(sub, "assets")
+	sub, _ = fs.Sub(a, "app")
+	sub, _ = fs.Sub(sub, "assets")
 	http.RegisterAssetDirectory(config.AssetPrefix, sub)
 }

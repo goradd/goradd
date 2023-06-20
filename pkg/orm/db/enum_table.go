@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/gedex/inflector"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"github.com/kenshaw/snaker"
 )
@@ -47,6 +48,16 @@ func (tt *EnumTable) FieldGoName(i int) string {
 	return fn
 }
 
+// FieldGoPlural returns the go plural name corresponding to the given field offset
+func (tt *EnumTable) FieldGoPlural(i int) string {
+	if i >= len(tt.FieldNames) {
+		return ""
+	}
+	fn := tt.FieldNames[i]
+	fn = inflector.Pluralize(UpperCaseIdentifier(fn))
+	return fn
+}
+
 // FieldGoColumnType returns the GoColumnType corresponding to the given field offset
 func (tt *EnumTable) FieldGoColumnType(i int) GoColumnType {
 	if i >= len(tt.FieldNames) {
@@ -57,6 +68,7 @@ func (tt *EnumTable) FieldGoColumnType(i int) GoColumnType {
 	return ft
 }
 
+// FileName returns the default file name corresponding to the enum table.
 func (tt *EnumTable) FileName() string {
 	return snaker.CamelToSnake(tt.GoName)
 }

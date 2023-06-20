@@ -3,9 +3,9 @@ package table
 import (
 	"context"
 	"fmt"
+	"github.com/goradd/goradd/pkg/any"
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
-	"github.com/goradd/goradd/pkg/reflect"
 	time2 "github.com/goradd/goradd/pkg/time"
 	"html"
 	"io"
@@ -762,23 +762,19 @@ func (c *ColumnBase) ApplyFormat(data interface{}) string {
 	case nil:
 		return ""
 	default:
-		if c.format == "" {
-			if reflect.IsSlice(d) {
-				return reflect.JoinStringers(d, ", ")
-			} else {
-				out = fmt.Sprint(d)
+		var format = c.format
+		if format == "" {
+			format = `%v`
+		}
+		if any.IsSlice(d) {
+			s := any.InterfaceSlice(d)
+			var items []string
+			for _, i := range s {
+				items = append(items, fmt.Sprintf(format, i))
 			}
+			return strings.Join(items, ", ")
 		} else {
-			if reflect.IsSlice(d) {
-				s := reflect.InterfaceSlice(d)
-				var items []string
-				for _, i := range s {
-					items = append(items, fmt.Sprintf(c.format, i))
-				}
-				return strings.Join(items, ", ")
-			} else {
-				out = fmt.Sprintf(c.format, d)
-			}
+			out = fmt.Sprintf(format, d)
 		}
 	}
 	return out
