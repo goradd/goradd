@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/config"
 	"html"
 	"io"
 	"strings"
@@ -216,7 +217,7 @@ func (c *FormGroup) Deserialize(dec page.Decoder) {
 // are wrapping as the Child item.
 type FormGroupCreator struct {
 	// ID is the optional control id on the html form. If you do not specify this, it
-	// will create on for you that is the ID of the child control + "-fg"
+	// will create on for you that is the ID of the child control + "-ff"
 	ID string
 	// Label is the text that will be in the html label tag associated with the Child control.
 	Label string
@@ -250,7 +251,7 @@ type FormGroupCreator struct {
 // Create is called by the framework to create the control. You do not
 // normally need to call it.
 func (f FormGroupCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	id := control.MakeCreatorWrapperID(f.ID, f.Child, "fg")
+	id := control.MakeCreatorWrapperID(f.ID, f.Child, config.DefaultFormFieldWrapperIdSuffix)
 	c := NewFormGroup(parent, id)
 	f.Init(ctx, c)
 	return c

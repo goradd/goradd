@@ -8,10 +8,10 @@ import (
 
 // BootstrapCodegenSetup sets up the default code generator to generate bootstrap controls when possible.
 func BootstrapCodegenSetup() {
-	generator.DefaultFormFieldCreator = "github.com/goradd/goradd/pkg/bootstrap/control/FormGroupCreator"
+	generator.DefaultFormFieldWrapperType = "github.com/goradd/goradd/pkg/bootstrap/control/FormGroup"
 
-	generator.DefaultButtonCreator = "github.com/goradd/goradd/pkg/bootstrap/control/ButtonCreator"
-	generator.DefaultDataPagerCreator = "github.com/goradd/goradd/pkg/bootstrap/control/DataPagerCreator"
+	generator.DefaultButtonType = "github.com/goradd/goradd/pkg/bootstrap/control/Button"
+	generator.DefaultDataPagerType = "github.com/goradd/goradd/pkg/bootstrap/control/DataPager"
 
 	generator.DefaultControlTypeFunc = func(ref interface{}) (path string) {
 		path = generator.DefaultControlType(ref)

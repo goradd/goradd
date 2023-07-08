@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/control"
 	"github.com/goradd/goradd/pkg/pool"
@@ -157,7 +158,7 @@ type FormFieldsetCreator struct {
 }
 
 func (f FormFieldsetCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	id := control.MakeCreatorWrapperID(f.ID, f.Child, "fs")
+	id := control.MakeCreatorWrapperID(f.ID, f.Child, config.DefaultFormFieldWrapperIdSuffix)
 	c := NewFormFieldset(parent, id)
 	f.Init(ctx, c)
 	return c

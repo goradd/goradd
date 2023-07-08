@@ -19,8 +19,8 @@ This is an example of a very generic form layout in Bootstrap.
 		return
 	}
 
-	if ctrl.Page().HasControl("nameText-fg") {
-		ctrl.Page().GetControl("nameText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="form-label"`)
+	if ctrl.Page().HasControl("nameText-ff") {
+		ctrl.Page().GetControl("nameText-ff").(control.LabelAttributer).LabelAttributes().MergeString(`class="form-label"`)
 	}
 
 	if `` == "" {
@@ -28,7 +28,7 @@ This is an example of a very generic form layout in Bootstrap.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-		ctrl.Page().GetControl("nameText-fg").Draw(ctx, _w)
+		ctrl.Page().GetControl("nameText-ff").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -39,7 +39,7 @@ This is an example of a very generic form layout in Bootstrap.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-		ctrl.Page().GetControl("nameText-fg").ProcessAttributeString(``).Draw(ctx, _w)
+		ctrl.Page().GetControl("nameText-ff").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -47,8 +47,8 @@ This is an example of a very generic form layout in Bootstrap.
 
 	}
 
-	if ctrl.Page().HasControl("childrenText-fg") {
-		ctrl.Page().GetControl("childrenText-fg").(control.LabelAttributer).LabelAttributes().MergeString(`class="form-label"`)
+	if ctrl.Page().HasControl("childrenText-ff") {
+		ctrl.Page().GetControl("childrenText-ff").(control.LabelAttributer).LabelAttributes().MergeString(`class="form-label"`)
 	}
 
 	if `` == "" {
@@ -56,7 +56,7 @@ This is an example of a very generic form layout in Bootstrap.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-		ctrl.Page().GetControl("childrenText-fg").Draw(ctx, _w)
+		ctrl.Page().GetControl("childrenText-ff").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -67,7 +67,7 @@ This is an example of a very generic form layout in Bootstrap.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-		ctrl.Page().GetControl("childrenText-fg").ProcessAttributeString(``).Draw(ctx, _w)
+		ctrl.Page().GetControl("childrenText-ff").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -156,7 +156,7 @@ This is an example of a very generic form layout in Bootstrap.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-		ctrl.Page().GetControl("dogCheck-fg").Draw(ctx, _w)
+		ctrl.Page().GetControl("dogCheck-ff").Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return
@@ -167,7 +167,7 @@ This is an example of a very generic form layout in Bootstrap.
 		if _, err = io.WriteString(_w, `    `); err != nil {
 			return
 		}
-		ctrl.Page().GetControl("dogCheck-fg").ProcessAttributeString(``).Draw(ctx, _w)
+		ctrl.Page().GetControl("dogCheck-ff").ProcessAttributeString(``).Draw(ctx, _w)
 		if _, err = io.WriteString(_w, `
 `); err != nil {
 			return

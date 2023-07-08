@@ -8,18 +8,18 @@ func (f *{{= formName }}) CreateControls(ctx context.Context) {
         {{= t.GoName }}EditPanelCreator {
             ID: {{= title }}EditPanelID,
         },
-        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+        {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= title }}SaveButtonID,
             Text: f.GT("Save"),
             OnSubmit: action.Ajax(f.ID(), {{= title }}SaveAction),
         },
-        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+        {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= title }}CancelButtonID,
             Text: f.GT("Cancel"),
             OnSubmit: action.Ajax(f.ID(), {{= title }}CancelAction),
   	        ValidationType: event.ValidateNone,
         },
-        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+        {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= title }}DeleteButtonID,
             Text: f.GT("Delete"),
  	        OnSubmit: action.Group (

@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"encoding/gob"
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/page"
 	"github.com/goradd/goradd/pkg/page/action"
@@ -196,4 +197,6 @@ func GetButton(c page.ControlI, id string) *Button {
 
 func init() {
 	page.RegisterControl(&Button{})
+	var s ButtonStyle
+	gob.Register(s)
 }

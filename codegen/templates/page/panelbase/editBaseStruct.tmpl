@@ -9,7 +9,7 @@ type {{= panelName }}I interface {
         if cd == nil {continue}
         if cd.Generator != nil && !(col.IsPk && col.IsId) {
 {{
-        {{= cd.ControlName }}Creator() {{= defaultWrapper }}
+        {{= cd.ControlName }}Creator() {{= defaultWrapperType }}Creator
 }}
         }
     }
@@ -19,7 +19,7 @@ type {{= panelName }}I interface {
         if cd == nil {continue}
         if cd.Generator != nil {
 {{
-        {{= cd.ControlName }}Creator() {{= defaultWrapper }}
+        {{= cd.ControlName }}Creator() {{= defaultWrapperType }}Creator
 }}
         }
 
@@ -30,7 +30,7 @@ type {{= panelName }}I interface {
         if cd == nil {continue}
         if cd.Generator != nil {
 {{
-        {{= cd.ControlName }}Creator() {{= defaultWrapper }}
+        {{= cd.ControlName }}Creator() {{= defaultWrapperType }}Creator
 }}
         }
 

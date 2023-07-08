@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"github.com/goradd/goradd/pkg/config"
 	"html"
 	"io"
 	"reflect"
@@ -47,7 +48,7 @@ type FormFieldWrapper struct {
 	subtag string
 }
 
-func NewFormField(parent page.ControlI, id string) *FormFieldWrapper {
+func NewFormFieldWrapper(parent page.ControlI, id string) *FormFieldWrapper {
 	p := &FormFieldWrapper{}
 	p.Self = p
 	p.Init(parent, id)
@@ -312,8 +313,8 @@ type FormFieldWrapperCreator struct {
 // AddControls for the parent control you want to add this to, or add this to
 // the Children of the parent control's creator.
 func (f FormFieldWrapperCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
-	id := MakeCreatorWrapperID(f.ID, f.Child, "ff")
-	c := NewFormField(parent, id)
+	id := MakeCreatorWrapperID(f.ID, f.Child, config.DefaultFormFieldWrapperIdSuffix)
+	c := NewFormFieldWrapper(parent, id)
 	f.Init(ctx, c)
 	if f.IsInline { // subclasses might deal with this issue differently
 		c.Tag = "span"
@@ -364,15 +365,17 @@ func GetCreatorID(c page.Creator) string {
 }
 
 // MakeCreatorWrapperID is used by Creators of wrapper controls to return the computed id of a
-// parent control that wraps a control creator.
+// parent control that wraps a control creator if the wrapper does not have a defined id.
+//
 // This would be the id of the parent control, followed by the id of the child control, followed by the postfix.
-func MakeCreatorWrapperID(wrapperId string, childCreator page.Creator, postfix string) string {
+// If a value is passed to wrapperId, it is returned unchanged.
+func MakeCreatorWrapperID(wrapperId string, childCreator page.Creator, suffix string) string {
 	id := wrapperId
 	if id == "" &&
 		childCreator != nil {
 		childId := GetCreatorID(childCreator)
 		if childId != "" {
-			id = childId + "-" + postfix
+			id = childId + suffix
 		}
 	}
 	return id

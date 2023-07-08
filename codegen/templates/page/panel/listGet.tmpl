@@ -2,6 +2,7 @@
 
 {{
 
+// Get{{= panelName }} returns the {{= panelName }} on the page with the given id.
 func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
 	return c.Page().GetControl(id).(*{{= panelName }})
 }

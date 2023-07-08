@@ -2,7 +2,7 @@
 
 // Prepare the imports
 codegen.ResetImports()
-codegen.AddObjectPath(generator.DefaultFormFieldCreator)
+codegen.AddObjectPath(generator.DefaultFormFieldWrapperType)
 codegen.AddImportPaths(
     "github.com/goradd/goradd/pkg/page/control",
 )
@@ -32,7 +32,7 @@ for _,ref := range t.ManyManyReferences {
     }
 }
 
-defaultWrapper := codegen.ObjectType(generator.DefaultFormFieldCreator)
+defaultWrapperType := codegen.ObjectType(generator.DefaultFormFieldWrapperType)
 ctrlPkg := codegen.ImportPackage("github.com/goradd/goradd/pkg/page/control")
 
 {{

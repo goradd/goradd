@@ -228,7 +228,7 @@ func (p *Page) GenerateControlID(id string) string {
 	}
 }
 
-// GetControl returns the control with the given id. If not found, it panics. Use HasControl to check for existence.
+// GetControl returns the ControlI with the given id. If not found, it panics. Use HasControl to check for existence.
 func (p *Page) GetControl(id string) ControlI {
 	if id == "" {
 		panic("attempting to get a control with a blank id")
@@ -243,6 +243,27 @@ func (p *Page) GetControl(id string) ControlI {
 	}
 }
 
+// Control returns the control with the given id. Use this function to retrieve
+// controls created with control creators.
+//
+// If the control does not exist, or is not of the given type, it will return a nil object of the given type.
+// Be sure to use a pointer to a control type.
+//
+// Example:
+//
+//	myTextBox := page.Control[*control.Textbox](f.Page(), myId)
+func Control[T ControlI](p *Page, id string) T {
+	if p.HasControl(id) {
+		c := p.GetControl(id)
+		if c2, ok := c.(T); ok {
+			return c2
+		}
+	}
+	var v T
+	return v // returns a nil object
+}
+
+// HasControl returns true if the control with the given id is registered on the page.
 func (p *Page) HasControl(id string) bool {
 	if id == "" {
 		return false

@@ -8,7 +8,7 @@ func (f *{{= formName }}) CreateControls(ctx context.Context) {
         {{= t.GoName }}DetailPanelCreator {
             ID: {{= title }}DetailPanelID,
         },
-        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+        {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= title }}OkButtonID,
             Text: f.GT("OK"),
             OnSubmit: action.Ajax(f.ID(), {{= title }}OkAction),

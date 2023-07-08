@@ -1,6 +1,5 @@
 {{< package }}panels{{end package}}
 {{< imports }}
-    "github.com/goradd/goradd/pkg/page/control"
     . "github.com/goradd/goradd/pkg/bootstrap/control"
 {{end imports}}
 {{define control}}Forms2Panel{{end control}}
@@ -12,30 +11,30 @@
 This is an example of a typical form with inline labels.
 </p>
 
-{{setLabelAttributes nameText-fg, class="col-form-label col-2"}}
-{{setInnerDivAttributes nameText-fg, class="col-10"}}
-{{draw nameText-fg, class="row mb-3"}}
+{{setLabelAttributes nameText-ff, class="col-form-label col-2"}}
+{{setInnerDivAttributes nameText-ff, class="col-10"}}
+{{draw nameText-ff, class="row mb-3"}}
 
-{{setLabelAttributes streetText-fg, class="col-form-label col-2"}}
-{{setInnerDivAttributes streetText-fg, class="col-10"}}
-{{draw streetText-fg, class = "row mb-3"}}
+{{setLabelAttributes streetText-ff, class="col-form-label col-2"}}
+{{setInnerDivAttributes streetText-ff, class="col-10"}}
+{{draw streetText-ff, class = "row mb-3"}}
 
 {{# This row is quite tricky to put together}}
 <div class="row align-items-center mb-3">
     <div class="col-6">
-        {{setLabelAttributes cityText-fg, class="col-form-label col-4"}}
-        {{setInnerDivAttributes cityText-fg, class="col-8"}}
-        {{draw cityText-fg, class = "row" }}
+        {{setLabelAttributes cityText-ff, class="col-form-label col-4"}}
+        {{setInnerDivAttributes cityText-ff, class="col-8"}}
+        {{draw cityText-ff, class = "row" }}
     </div>
     <div class="col-2">
-        {{setLabelAttributes stateText-fg, class="col-form-label col-6"}}
-        {{setInnerDivAttributes stateText-fg, class="col-6"}}
-        {{draw stateText-fg, class = "row"}}
+        {{setLabelAttributes stateText-ff, class="col-form-label col-6"}}
+        {{setInnerDivAttributes stateText-ff, class="col-6"}}
+        {{draw stateText-ff, class = "row"}}
     </div>
     <div class="col-4">
-        {{setLabelAttributes zipText-fg, class="col-form-label col-4"}}
-        {{setInnerDivAttributes zipText-fg, class="col-8"}}
-        {{draw zipText-fg, class = "row"}}
+        {{setLabelAttributes zipText-ff, class="col-form-label col-4"}}
+        {{setInnerDivAttributes zipText-ff, class="col-8"}}
+        {{draw zipText-ff, class = "row"}}
     </div>
 </div>
 
