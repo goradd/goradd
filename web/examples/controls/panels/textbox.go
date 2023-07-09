@@ -24,7 +24,7 @@ func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
 }
 
 func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, "textboxPanel")
+	p.Panel.Init(parent, id)
 
 	p.Panel.AddControls(ctx,
 		FormFieldWrapperCreator{

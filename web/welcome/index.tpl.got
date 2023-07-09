@@ -1,7 +1,7 @@
 {{< imports }}
 "github.com/goradd/goradd/pkg/http"
 {{end imports}}
-{{< filename }}/goradd/index.html{{end filename}}
+{{< route }}/goradd/index.html{{end route}}
 
 {{define template}}<!DOCTYPE html>
 <html>

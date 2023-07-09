@@ -125,6 +125,9 @@ func (ctrl *{{form}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error
 }
 {{end renderFormTemplate}}
 
+{{# renderControlTemplate renders the template for the given control type.
+    Define the "control" macro as the control type that the template is attached to.
+}}
 {{define renderControlTemplate}}
 package {{put package}}
 
@@ -142,6 +145,10 @@ func (ctrl *{{control}}) DrawTemplate(ctx context.Context, _w io.Writer) (err er
 }
 {{end renderControlTemplate}}
 
+{{# renderResource will draw the defined template at a given url route.
+    Define the "route" macro as the url that will draw the template.
+    The template should include every part of the web page, including the DOCTYPE and html tags.
+}}
 {{define renderResource}}
 package {{put package}}
 
@@ -152,7 +159,7 @@ import (
 )
 
 func init() {
-    http.RegisterDrawFunc("{{> filename}}",
+    http.RegisterDrawFunc("{{> route}}",
         func(ctx context.Context, _w io.Writer) (err error) {
 {{
 {{put template}}
@@ -162,3 +169,53 @@ func init() {
         })
 }
 {{end renderResource}}
+
+{{# definePanel will define all the code for a panel with the given "control" name.
+    This is a convenience template for creating a div that simply needs to draw
+    some content.
+    Define "vars" to be additional variables to add to the panel. These values should be
+    upper case so that they are exported which will enable the serializer to save and restore
+    them on each http call. For example:
+    {{define vars}}
+      MyInt int
+      MyString string
+    {{end vars}}
+
+    In the template, "ctrl" will be the name of the receiver for the control.
+}}
+
+{{define definePanel}}
+package {{put package}}
+
+import (
+    "context"
+    "io"
+    {{put? imports}}
+)
+
+type {{control}} struct {
+	Panel
+	{{put? vars}}
+}
+
+// New{{control}} creates a new {{control}} panel control.
+func New{{control}}(parent page.ControlI, id string) PanelI {
+	p := &{{control}}{}
+	p.Self = p
+	p.Panel.Init(parent, id)
+	return p
+}
+
+// DrawTemplate draws the template defined in the template file for the {{control}} control.
+func (ctrl *{{control}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
+{{
+{{put template}}
+}}
+	return
+}
+
+func init() {
+	page.RegisterControl(&{{control}}{})
+}
+
+{{end define Panel}}
