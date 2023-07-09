@@ -104,7 +104,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 func (p *SelectListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
-		GetFormFieldset(p, "checklist1-fs").SetInstructions(
+		GetFormFieldset(p, "checklist1-ff").SetInstructions(
 			strings.Join(GetCheckboxList(p, "checklist1").SelectedIds(), ","))
 	}
 }
