@@ -247,7 +247,7 @@ func (p *Page) GetControl(id string) ControlI {
 // controls created with control creators.
 //
 // If the control does not exist, or is not of the given type, it will return a nil object of the given type.
-// Be sure to use a pointer to a control type.
+// Be sure to use a pointer to a control type as the template type.
 //
 // Example:
 //
