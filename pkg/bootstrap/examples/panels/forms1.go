@@ -37,12 +37,14 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 	p.Panel.Init(parent, id)
 	p.Panel.AddControls(ctx,
 		FormGroupCreator{
+			ID:    "nameText-ff",
 			Label: "Name",
 			Child: TextboxCreator{
 				ID: "nameText",
 			},
 		},
 		FormGroupCreator{
+			ID:           "childrenText-ff",
 			Label:        "Child Count",
 			Instructions: "How many children do you have?",
 			Child: IntegerTextboxCreator{
@@ -67,6 +69,7 @@ func (p *Forms1Panel) Init(ctx context.Context, parent page.ControlI, id string)
 			ID: "radioResult",
 		},
 		FormGroupCreator{
+			ID:           "dogCheck-ff",
 			Label:        "Dog",
 			Instructions: "Do you have a dog?",
 			Child: CheckboxCreator{

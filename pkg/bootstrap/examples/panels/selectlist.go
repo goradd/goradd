@@ -104,7 +104,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 func (p *SelectListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
-		GetFormFieldset(p, "checklist1-fs").SetInstructions(
+		GetFormFieldset(p, "checklist1-ff").SetInstructions(
 			strings.Join(GetCheckboxList(p, "checklist1").SelectedIds(), ","))
 	}
 }
@@ -133,7 +133,7 @@ func testSelectListServerSubmit(t *browsertest.TestForm) {
 func testSelectListSubmit(t *browsertest.TestForm, btnID string) {
 	t.ChooseListValue("selectListWithSize", "2")
 	t.Click(btnID)
-	t.AssertEqual(true, t.ControlHasClass("singleSelectList-fg", "error"))
+	t.AssertEqual(true, t.ControlHasClass("singleSelectList-ff", "error"))
 
 	t.WithForm(func(f page.FormI) {
 		t.AssertEqual(2, GetSelectList(f, "selectListWithSize").IntValue())

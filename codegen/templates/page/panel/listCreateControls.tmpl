@@ -21,7 +21,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
     }
     var caption interface{}
     if {{= t.LcGoName }}ListShowDataPager {
-        caption = {{= codegen.ObjectType(generator.DefaultDataPagerCreator) }} {
+        caption = {{= codegen.ObjectType(generator.DefaultDataPagerType) }}Creator {
                                   ID:            {{= t.LcGoName }}PagerID,
                                   PagedControlID:{{= t.LcGoName }}ListID,
                               }
@@ -42,7 +42,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
             },
             Columns: p.ColumnCreators(ctx),
         },
-        {{= codegen.ObjectType(generator.DefaultButtonCreator) }} {
+        {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= t.LcGoName }}NewButtonID,
             Text: p.GT("New"),
             OnClick:action.Ajax(p.ID(), {{= lcPanelName }}NewClick),

@@ -2,6 +2,8 @@
 
 {{
 
+// RowAttributes returns attributes for each row of the table.
+// In particular, this sets the "value" of each row in the table to the corresponding database primary key.
 func (p *{{= panelName }}) RowAttributes(row int, data interface{}) html5tag.Attributes {
 	return html5tag.NewAttributes().SetData("value", {{if t.PrimaryKeyGoType() == "string"}}data.(*model.{{= t.GoName }}).PrimaryKey(){{else}}fmt.Sprint(data.(*model.{{= t.GoName }}).PrimaryKey()){{if}})
 }

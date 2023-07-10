@@ -27,7 +27,7 @@ func (p *{{= panelName }}) Validate(ctx context.Context) bool {
                 // Fix this if this becomes an issue some day
 
 {{
-    if {{join idx.Columns,","}}ctrl{{i _i+1}}{{join}} := {{join idx.Columns,","}}p.Get{{= t.ControlDescription(_j).ControlName }}(){{join}}; {{join idx.Columns, "&& "}}ctrl{{i _i+1}} != nil {{join}}{
+    if {{join idx.Columns,","}}ctrl{{i _i+1}}{{join}} := {{join idx.Columns,","}}p.{{= t.ControlDescription(_j).ControlName }}(){{join}}; {{join idx.Columns, "&& "}}ctrl{{i _i+1}} != nil {{join}}{
         {{for i,col := range idx.Columns}}
         val{{i i+1 }} := ctrl{{i i+1}}.Value().({{= col.ColumnType.GoType() }})
         {{for}}

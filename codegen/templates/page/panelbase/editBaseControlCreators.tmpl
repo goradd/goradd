@@ -11,22 +11,25 @@
         cd.Package = codegen.ObjectPackage(cd.Path)
         creatorString := cd.Generator.GenerateCreator(col, cd)
         if creatorString != "" {
-            creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
+            creatorString = codegen.WrapFormField(defaultWrapperType, cd.DefaultLabel, cd.ControlID, creatorString)
 
 {{
-func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} {
+
+// {{= cd.ControlName }}Creator returns a creator for the {{= cd.ControlName }} control.
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapperType }}Creator {
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+// {{= cd.ControlName }}() returns the {{= cd.ControlName }} control if it exists. Otherwise it will return nil.
+func (p *{{= panelName }}) {{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
     id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
-    if !p.Page().HasControl(id) {
-        return nil
-    }
-	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
-	    return c
-	}
-	return nil
+    return page.Control[*{{= cd.Package }}.{{= cd.ControlType }}](p.Page(), id)
+}
+
+// {{= cd.ControlName }}Wrapper() returns the wrapper of the {{= cd.ControlName }} control if it exists. Otherwise it will return nil.
+func (p *{{= panelName }}) {{= cd.ControlName }}Wrapper() *{{= defaultWrapperType }} {
+    id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }} + config.DefaultFormFieldWrapperIdSuffix
+    return page.Control[*{{= defaultWrapperType }}](p.Page(), id)
 }
 
 }}
@@ -41,22 +44,16 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.
         cd.Package = codegen.ObjectPackage(cd.Path)
         creatorString := cd.Generator.GenerateCreator(ref, cd)
         if creatorString != "" {
-            creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
+            creatorString = codegen.WrapFormField(defaultWrapperType, cd.DefaultLabel, cd.ControlID, creatorString)
 
 {{
-func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} {
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapperType }}Creator {
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+func (p *{{= panelName }}) {{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
     id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
-    if !p.Page().HasControl(id) {
-        return nil
-    }
-	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
-	    return c
-	}
-	return nil
+    return page.Control[*{{= cd.Package }}.{{= cd.ControlType }}](p.Page(), id)
 }
 
 }}
@@ -70,22 +67,16 @@ func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.
         cd.Package = codegen.ObjectPackage(cd.Path)
         creatorString := cd.Generator.GenerateCreator(ref, cd)
         if creatorString != "" {
-            creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
+            creatorString = codegen.WrapFormField(defaultWrapperType, cd.DefaultLabel, cd.ControlID, creatorString)
 
 {{
-func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapper }} {
+func (p *{{= panelName }}) {{= cd.ControlName }}Creator() {{= defaultWrapperType }}Creator {
 	return {{= creatorString }}
 }
 
-func (p *{{= panelName }}) Get{{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
+func (p *{{= panelName }}) {{= cd.ControlName }}() *{{= cd.Package }}.{{= cd.ControlType }} {
     id := p.ID() + "-" + {{= t.GoName }}{{= cd.ControlIDConst() }}
-    if !p.Page().HasControl(id) {
-        return nil
-    }
-	if c,ok := p.Page().GetControl(id).(*{{= cd.Package }}.{{= cd.ControlType }}); ok {
-	    return c
-	}
-	return nil
+    return page.Control[*{{= cd.Package }}.{{= cd.ControlType }}](p.Page(), id)
 }
 
 }}

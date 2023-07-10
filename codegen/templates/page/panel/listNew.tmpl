@@ -2,6 +2,7 @@
 
 {{
 
+// New{{= panelName }} creates and returns a new {{= panelName }} panel.
 func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
     p.Self = p
@@ -9,6 +10,7 @@ func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *
 	return p
 }
 
+// Init initializes the {{= panelName }}. Call this when creating a derivative type of {{= panelName }}.
 func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 	p.CreateControls(ctx)
@@ -17,6 +19,7 @@ func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id st
 }
 
 func init() {
+    // Registers the control type with the framework.
     page.RegisterControl(&{{= panelName }}{})
 }
 

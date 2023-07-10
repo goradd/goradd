@@ -16,7 +16,7 @@ if generator.DefaultStaticTextType != "" {
         cd.Connector = t.GoName + staticControl + "Connector"
 		cd.Package = codegen.ObjectPackage(generator.DefaultStaticTextType)
         creatorString := gen.GenerateCreator(col, cd)
-        creatorString = generator.WrapFormField(defaultWrapper, cd.DefaultLabel, cd.ControlID, creatorString)
+        creatorString = codegen.WrapFormField(defaultWrapperType, cd.DefaultLabel, cd.ControlID, creatorString)
         sRefresh := gen.GenerateRefresh(col, cd)
 
 {{

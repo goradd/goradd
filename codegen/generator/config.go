@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/orm/query"
 )
@@ -10,14 +9,17 @@ import (
 // It gets initialized here, so that if you want to replace it, you can first call the default function
 var DefaultControlTypeFunc = DefaultControlType
 
-// DefaultFormFieldCreator defines what form field wrapper will be used for generated controls.
-var DefaultFormFieldCreator = "github.com/goradd/goradd/pkg/page/control/FormFieldWrapperCreator"
+// DefaultFormFieldWrapperType defines what form control wrapper will be used for generated controls.
+// The wrapper should also have a creator that has the type name DefaultFormFieldWrapperType + "Creator".
+var DefaultFormFieldWrapperType = "github.com/goradd/goradd/pkg/page/control/FormFieldWrapper"
 
-// DefaultButtonCreator defines what buttons will be used for generated forms.
-var DefaultButtonCreator = "github.com/goradd/goradd/pkg/page/control/button/ButtonCreator"
+// DefaultButtonType defines what buttons will be used for generated forms.
+// The button should also have a creator that has the type name DefaultButtonType + "Creator"
+var DefaultButtonType = "github.com/goradd/goradd/pkg/page/control/button/Button"
 
-// DefaultDataPagerCreator defines what pager will be used for generated forms.
-var DefaultDataPagerCreator = "github.com/goradd/goradd/pkg/page/control/DataPagerCreator"
+// DefaultDataPagerType defines what pager will be used for generated forms.
+// The pager should also have a creator that has the type name DefaultDataPagerType + "Creator"
+var DefaultDataPagerType = "github.com/goradd/goradd/pkg/page/control/DataPager"
 
 // DefaultStaticTextType is the type of control to create to display content as static text rather than something editable.
 var DefaultStaticTextType = "github.com/goradd/goradd/pkg/page/control/Panel"
@@ -78,16 +80,4 @@ func DefaultControlType(ref interface{}) string {
 	default:
 		panic("Unkown reference type")
 	}
-}
-
-func WrapFormField(wrapper string, label string, forId string, child string) string {
-	return fmt.Sprintf(
-		`%s{
-	ID: p.ID() + "-%s-ff",
-	For:  p.ID() + "-%s",
-	Label: "%s",
-	Child: %s,
-}
-`, wrapper, forId, forId, label, child)
-
 }

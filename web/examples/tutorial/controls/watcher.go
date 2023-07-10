@@ -15,17 +15,20 @@ type WatcherPanel struct {
 
 func NewWatcherPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 	p := &WatcherPanel{}
+	p.Self = p
 	p.Panel.Init(parent, "")
 	return p
 }
 
-
 func init() {
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("controls", 0, "watcher", "Watching Database Changes", NewWatcherPanel,
-		[]string {
+		[]string{
 			sys.SourcePath(),
 			filepath.Join(dir, "watcher.tpl.got"),
 		})
 }
 
+func init() {
+	page.RegisterControl(&WatcherPanel{})
+}

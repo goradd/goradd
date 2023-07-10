@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/goradd/gofile/pkg/sys"
+	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/orm/db"
 	"github.com/goradd/goradd/pkg/stringmap"
 	"github.com/goradd/goradd/pkg/strings"
@@ -337,4 +338,18 @@ func (c *CodeGenerator) ObjectPackage(imp string) string {
 	} else {
 		return a
 	}
+}
+
+// WrapFormField returns a creator template for a field wrapper with type wrapperType.
+//
+// child should be the creator template for the control that will be wrapped.
+func (c *CodeGenerator) WrapFormField(wrapperType string, label string, forId string, child string) string {
+	return fmt.Sprintf(
+		`%sCreator{
+	ID: p.ID() + "-%s%s",
+	For:  p.ID() + "-%s",
+	Label: "%s",
+	Child: %s,
+}
+`, wrapperType, forId, config.DefaultFormFieldWrapperIdSuffix, forId, label, child)
 }
