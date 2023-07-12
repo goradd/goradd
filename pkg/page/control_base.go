@@ -1984,7 +1984,7 @@ type Creator interface {
 	Create(ctx context.Context, parent ControlI) ControlI
 }
 
-// AddControls adds sub-controls to a control using a Create function
+// AddControls adds sub-controls to a control using Creator objects
 func (c *ControlBase) AddControls(ctx context.Context, creators ...Creator) {
 	for _, creator := range creators {
 		creator.Create(ctx, c)

@@ -24,16 +24,23 @@ If you have not yet installed your application, see the [Quickstart] document.
 
 ## Database Configuration
 
-Start your application by modeling your data in a SQL database like MySQL.
+Start your development by modeling your data in a SQL database like MySQL or Postgres.
 SQL databases are great for modeling relationships, they are easy to restructure,
 and they have some built-in integrity checks. When your application grows to the
 point of needing the kind of benefits that NoSQL databases provide, and your 
 data model is more firmly established, you can transition to using a NoSQL
 database.
 
-To start, create a SQL database and then edit the goradd-project/config/db.go
+It is best to install a SQL database system locally on your development computer. 
+After you create the SQL database that will host your data, edit the 
+*goradd-project/config/db.go*
 file and enter the database credentials that will allow the application to
-access the database.
+access the database. During development, be sure these credentials have access to 
+your database, and access to the additional tables that describe the database. For
+example, in MySQL, the credentials should be able to access the "mysql" table, and
+in postrgres, the "information_schema" and the "pg_catalog" tables. You can use the
+root user during development to accomplish this, and then for deployment, specify
+a user that only has the minimal credentials to access the database.
 
 See the article [Structuring the Database](#) for details, but the basic idea is 
 to create tables with
