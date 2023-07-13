@@ -290,7 +290,7 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 }
 
 // DoPrivateAction is called by the framework and will respond to the DialogClose action sent by any close buttons on the
-// page to close the dialog. You do not normally need to call this.
+// page to close the dialog.
 func (d *Dialog) DoPrivateAction(_ context.Context, a action.Params) {
 	switch a.ID {
 	case ClosedAction:

@@ -3,7 +3,9 @@
 for _,col := range t.Columns {
 {{
 
-func Count{{t.GoName}}By{{col.GoName}}(ctx context.Context, {{= col.ModelName()}} {{= col.ColumnType.GoType() }}) int {
+// Count{{t.GoName}}By{{col.GoName}} queries the database and returns the number of {{t.GoName}} objects that
+// have the given {{= col.ModelName() }} value.
+func Count{{t.GoName}}By{{col.GoName}}(ctx context.Context, {{= col.ModelName() }} {{= col.ColumnType.GoType() }}) int {
 {{if col.ForeignKey != nil}}
     if {{= col.ModelName()}} == {{= col.ColumnType.DefaultValue() }} {
         return 0

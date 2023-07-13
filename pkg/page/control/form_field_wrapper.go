@@ -324,8 +324,7 @@ func (f FormFieldWrapperCreator) Create(ctx context.Context, parent page.Control
 	return c
 }
 
-// Init is called by implementations of a FormFieldWrapper to initialize
-// the creator. You do not normally need to call this.
+// Init is called by implementations of a FormFieldWrapper to initialize the creator.
 func (f FormFieldWrapperCreator) Init(ctx context.Context, c FormFieldWrapperI) {
 	c.ApplyOptions(ctx, f.ControlOptions)
 	c.SetText(f.Label)

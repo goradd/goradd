@@ -606,7 +606,7 @@ func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page
 }
 
 // Init is called by implementations of Buttons to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 	if c.MaxPageButtons > 0 {
 		ctrl.SetMaxPageButtons(c.MaxPageButtons)

@@ -921,7 +921,6 @@ func (c TableCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 }
 
 // Init is called by implementations of Tables to initialize a base control.
-// You do not normally need to call this.
 func (c TableCreator) Init(ctx context.Context, ctrl TableI) {
 	ctrl.SetHideIfEmpty(c.HideIfEmpty)
 	if c.Caption != nil {

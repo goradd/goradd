@@ -1,6 +1,7 @@
 // listAction.tmpl
 
 {{
+// DoAction performs the action specified by a.
 func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case {{= lcPanelName }}Search:

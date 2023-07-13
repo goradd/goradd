@@ -2,7 +2,7 @@
 
 {{
 
-// BindData determines what records will be displayed in the lister.
+// BindData determines what records will be displayed in the list panel, and specifically in the s control.
 // Override to change what records get displayed.
 func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
     switch s.ID() {
@@ -27,6 +27,7 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataMa
     }
 }
 
+// BuildQuery returns a query builder that will query for the records to be displayed in the list.
 func (p *{{= panelName }}) BuildQuery(ctx context.Context) *model.{{= t.GoPlural }}Builder {
 	q := model.Query{{= t.GoPlural }}(ctx)
 {{if forwardJoins != nil}}

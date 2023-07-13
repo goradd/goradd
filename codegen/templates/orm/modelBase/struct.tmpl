@@ -1,7 +1,9 @@
 // struct.tmpl
 {{
-// {{privateName}}Base is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
 
+// {{privateName}}Base is embedded in a {{= t.GoName }} object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the {{= t.GoName }} embedder.
+// Instead, use the accessor functions.
 type {{privateName}}Base struct {
 }}
 
@@ -30,6 +32,7 @@ if len(t.ReverseReferences) > 0 {
 {{
 
 // Reverse reference objects.
+
 }}
 } // if
 

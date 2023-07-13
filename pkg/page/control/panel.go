@@ -21,7 +21,8 @@ type PanelI interface {
 // Panel is a GoRADD control that is a basic "div" wrapper.
 //
 // Panel can be used for any kind of HTML tag by simply changing the Tag attribute. For example,
-//  panel.Tag = "nav"
+//
+//	panel.Tag = "nav"
 //
 // Turns a panel into a "nav" tag.
 //
@@ -88,15 +89,14 @@ type PanelCreator struct {
 	page.ControlOptions
 }
 
-// Create is called by the framework to create the panel. You do not normally need to call this.
+// Create is called by the framework to create the panel.
 func (c PanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewPanel(parent, c.ID)
 	c.Init(ctx, ctrl)
 	return ctrl
 }
 
-// Init is called by implementations to initialize a control with the
-// creator. You do not normally need to call this.
+// Init is called by implementations to initialize a control with the creator.
 func (c PanelCreator) Init(ctx context.Context, ctrl PanelI) {
 	if c.Text != "" {
 		ctrl.SetText(c.Text)

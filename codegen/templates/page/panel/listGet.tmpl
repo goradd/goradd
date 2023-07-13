@@ -7,10 +7,12 @@ func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
 	return c.Page().GetControl(id).(*{{= panelName }})
 }
 
+// listTable returns the table control that displays the list of items.
 func (p *{{= panelName }}) listTable() *table.PagedTable {
     return table.GetPagedTable(p, {{= t.LcGoName }}ListID)
 }
 
+// filterText returns the Textbox that filters the list of items.
 func (p *{{= panelName }}) filterText() *textbox.Textbox {
     return textbox.GetTextbox(p, {{= t.LcGoName }}FilterTextID)
 }

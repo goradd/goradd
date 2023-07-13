@@ -45,7 +45,7 @@ func (c *Fieldset) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	return a
 }
 
-// DrawTag is called by the framework.
+// DrawTag is called by the framework to draw the html for the control.
 func (c *Fieldset) DrawTag(ctx context.Context, w io.Writer) {
 	var ctrl string
 
@@ -76,7 +76,7 @@ type FieldsetCreator struct {
 	page.ControlOptions
 }
 
-// Create is called by the framework to create the panel. You do not normally need to call this.
+// Create is called by the framework to create the panel.
 func (c FieldsetCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewFieldset(parent, c.ID)
 	if c.Legend != "" {

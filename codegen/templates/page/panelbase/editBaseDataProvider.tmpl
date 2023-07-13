@@ -1,6 +1,7 @@
 //dataProvider.tmpl
 
 {{
+// BindData is called by the framework to load associated data into the s control.
 func (p *{{= panelName }}) BindData(ctx context.Context, s {{= ctrlPkg }}.DataManagerI) {
     id := strings.TrimPrefix(s.ID(), p.ID()+"-")
 

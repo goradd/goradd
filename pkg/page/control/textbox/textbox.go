@@ -472,7 +472,7 @@ func (c TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.C
 }
 
 // Init is called by implementations of Textboxes to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c TextboxCreator) Init(ctx context.Context, ctrl TextboxI) {
 	if c.Placeholder != "" {
 		ctrl.SetPlaceholder(c.Placeholder)

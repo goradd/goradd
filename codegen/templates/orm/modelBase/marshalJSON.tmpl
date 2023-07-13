@@ -99,7 +99,6 @@ func (o *{{privateName}}Base) MarshalStringMap() (map[string]interface{}) {
 // The fields it expects are:
 {{for _,col := range t.Columns}}
 //   "{{= col.JsonKey() }}" - {{= col.GoType() }}{{if col.IsNullable}}, nullable{{if}}
-
 {{for}}
 func (o *{{privateName}}Base) UnmarshalJSON (data []byte) (err error) {
     var v map[string]interface{}

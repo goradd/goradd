@@ -21,11 +21,13 @@ import(
 	"goradd-project/gen/{{dd.DbKey}}/model/node"
 )
 
+// {{= panelName }} is a panel of static controls that shows the content of a {{= t.GoName }} object.
 type {{= panelName }} struct {
 	control.Panel
 	{{= t.GoName }} *model.{{= t.GoName }}
 }
 
+// New{{= panelName }} returns a panel of static controls that displays the content of a {{= t.GoName }} object.
 func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
     p.Self = p
@@ -33,14 +35,17 @@ func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *
 	return p
 }
 
+// Init initializes the panel. It should be called by any derived objects.
 func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.Panel.Init(parent, id)
 	p.CreateControls(ctx)
 }
 
+// CreateControls is the place to create the controls that will be displayed by the panel
 func (p *{{= panelName }}) CreateControls(ctx context.Context) {
 }
 
+// DoAction responds to actions in the panel.
 func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
     switch a.ID {
     default:
@@ -87,25 +92,28 @@ func (p *{{= panelName }}) Refresh() {
 
 // Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
 func (p *{{= panelName }}) Reload(ctx context.Context) {
-    p.Load(ctx, fmt.Sprint(p.{{= t.GoName }}.OriginalPrimaryKey()))
+    _ = p.Load(ctx, fmt.Sprint(p.{{= t.GoName }}.OriginalPrimaryKey()))
 }
 
-
+// {{t.GoName}}DetailPanelCreator is the creator that will create the {{t.GoName}}DetailPanel.
 type {{t.GoName}}DetailPanelCreator struct {
 	ID string
 }
 
+// Create is called by the framework to create a new {{panelName}} from the information in the creator object.
 func (c {{t.GoName}}DetailPanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	p := New{{panelName}}(ctx, parent, c.ID)
 	return p
 }
 
+// Get{{= panelName }} returns the {{= panelName }} object with the given id. It will panic if the
+// id is not in the form, or if the object is not the correct type.
 func Get{{= panelName }}(c page.ControlI, id string) *{{= panelName }} {
 	return c.Page().GetControl(id).(*{{= panelName }})
 }
 
 func init() {
-    page.RegisterControl(&{{= panelName }}{})
+    page.RegisterControl(&{{= panelName }}{}) // registers the control with the framework for serialization.
 }
 
 }}

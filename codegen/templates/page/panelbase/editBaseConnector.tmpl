@@ -11,6 +11,8 @@ for _,col := range t.Columns {
         sModifies := cd.Generator.GenerateModifies(col, cd)
 
 {{
+
+// {{= cd.Connector }} provides methods called by the framework to move data between the control and the database.
 type {{= cd.Connector }}  struct {
 }
 
@@ -62,6 +64,7 @@ func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) (modifi
 
         if provider,ok := cd.Generator.(generator.ProviderGenerator); ok {
 {{
+// Load puts display items into the control.
 func (c {{= cd.Connector }}) Load(ctx context.Context) []interface{} {
 {{= provider.GenerateProvider(col, cd) }}
 }
