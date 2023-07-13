@@ -144,8 +144,7 @@ func (c ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.Co
 	return ctrl
 }
 
-// Init is called by implementations of Buttons to initialize a control with the
-// creator. You do not normally need to call this.
+// Init is called by implementations of Buttons to initialize a control with the creator.
 func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 	ctrl.SetLabel(c.Text)
 	if c.OnSubmit != nil {

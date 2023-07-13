@@ -201,7 +201,7 @@ func (c FloatTextboxCreator) Create(ctx context.Context, parent page.ControlI) p
 }
 
 // Init is called by implementations of Textboxes to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c FloatTextboxCreator) Init(ctx context.Context, ctrl FloatI) {
 	if c.MinValue != nil {
 		ctrl.SetMinValue(c.MinValue.Value, c.MinValue.InvalidMessage)

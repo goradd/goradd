@@ -124,8 +124,7 @@ func (c ActiveLinkCreator) Create(ctx context.Context, parent page.ControlI) pag
 	return ctrl
 }
 
-// Init is called by implementations of ActiveLinks to initialize a control with the
-// creator. You do not normally need to call this.
+// Init is called by implementations of ActiveLinks to initialize a control with the creator.
 func (c ActiveLinkCreator) Init(ctx context.Context, ctrl ActiveLinkI) {
 	sub := LinkCreator{
 		ID:             c.ID,

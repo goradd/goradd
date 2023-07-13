@@ -229,8 +229,7 @@ func (c SelectTableCreator) Create(ctx context.Context, parent page.ControlI) pa
 	return ctrl
 }
 
-// Init is called by implementations of Buttons to initialize a control with the
-// creator. You do not normally need to call this.
+// Init is called by implementations of Buttons to initialize a control with the creator.
 func (c SelectTableCreator) Init(ctx context.Context, ctrl SelectTableI) {
 	sub := TableCreator{
 		ID:               c.ID,

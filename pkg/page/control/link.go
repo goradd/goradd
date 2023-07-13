@@ -98,7 +98,7 @@ func (c LinkCreator) Create(ctx context.Context, parent page.ControlI) page.Cont
 }
 
 // Init is called by implementations of Links to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c LinkCreator) Init(ctx context.Context, ctrl LinkI) {
 	ctrl.SetLabel(c.Text)
 	if c.Location != "" {

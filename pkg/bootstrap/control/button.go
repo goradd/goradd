@@ -168,7 +168,7 @@ func (c ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.Co
 }
 
 // Init is called by implementations of Buttons to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 	sub := grctl.ButtonCreator{
 		ID:             c.ID,

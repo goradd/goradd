@@ -69,7 +69,7 @@ func (c NavLinkCreator) Create(ctx context.Context, parent page.ControlI) page.C
 }
 
 // Init is called by implementations of NavLinks to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c NavLinkCreator) Init(ctx context.Context, ctrl NavLinkI) {
 	sub := grctl.ActiveLinkCreator{
 		ID:               c.ID,

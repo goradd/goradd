@@ -220,7 +220,7 @@ func (c FileSelectCreator) Create(ctx context.Context, parent page.ControlI) pag
 }
 
 // Init is called by implementations of controls to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c FileSelectCreator) Init(ctx context.Context, ctrl FileSelectI) {
 	if c.OnChange != nil {
 		ctrl.On(event.Change(), c.OnChange)

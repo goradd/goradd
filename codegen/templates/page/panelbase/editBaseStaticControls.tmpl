@@ -20,10 +20,12 @@ if generator.DefaultStaticTextType != "" {
         sRefresh := gen.GenerateRefresh(col, cd)
 
 {{
+// {{= staticControl }}Creator returns a creator for the {{= staticControl }}.
 func (p *{{= panelName }}) {{= staticControl }}Creator() page.Creator {
 	return {{= creatorString }}
 }
 
+// {{= cd.Connector }} provides methods called by the framework to move data between the control and the database.
 type {{= cd.Connector }}  struct {
 }
 
@@ -48,7 +50,7 @@ func (c {{= cd.Connector }}) Modifies(i page.ControlI, data interface{}) bool {
 }
 
 func init() {
-	gob.Register(new({{= cd.Connector }}))
+	gob.Register(new({{= cd.Connector }})) // registers the control with the framework for serialization
 }
 
 }}

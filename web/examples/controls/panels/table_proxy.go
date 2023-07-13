@@ -144,7 +144,7 @@ func testTableProxyCol(t *browsertest.TestForm) {
 type ProjectPanelCreator struct {
 }
 
-// Create is called by the framework to create the panel. You do not normally need to call this.
+// Create is called by the framework to create the panel.
 func (c ProjectPanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewProjectPanel(parent)
 	return ctrl

@@ -1,5 +1,7 @@
 //dirty.tmpl
 {{
+
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *{{privateName}}Base) resetDirtyStatus() {
 {{for _,col := range t.Columns }}
 	o.{{= col.ModelName() }}IsDirty = false
@@ -13,6 +15,7 @@ func (o *{{privateName}}Base) resetDirtyStatus() {
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *{{privateName}}Base) IsDirty() (dirty bool) {
     dirty = {{join t.Columns, "|| \n"}}o.{{= _j.ModelName() }}IsDirty {{if _j.ReferenceFunction() != "" && !_j.IsEnum() }} ||
 	    (o.{{= oRef(_j) }} != nil && o.{{= oRef(_j) }}.IsDirty()) {{if}}{{join}}

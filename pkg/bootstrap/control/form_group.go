@@ -258,7 +258,7 @@ func (f FormGroupCreator) Create(ctx context.Context, parent page.ControlI) page
 }
 
 // Init is called by implementations of a FormFieldWrapper to initialize
-// the creator. You do not normally need to call this.
+// the creator.
 func (f FormGroupCreator) Init(ctx context.Context, c FormGroupI) {
 	// Reuse parent creator
 	ff := control.FormFieldWrapperCreator{

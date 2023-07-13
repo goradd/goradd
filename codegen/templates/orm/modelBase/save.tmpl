@@ -317,24 +317,27 @@ func (o *{{privateName}}Base) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "{{t.DbKey}}", "{{t.DbName}}", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *{{privateName}}Base) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 {{for _,col := range t.Columns}}
 	if o.{{= col.ModelName() }}IsDirty {
-    {{if col.IsNullable}}
+{{if col.IsNullable}}
         if 	o.{{= col.ModelName() }}IsNull {
             fields["{{= col.DbName }}"] = nil
         } else {
   		    fields["{{= col.DbName }}"] = o.{{= col.ModelName() }}
         }
-    {{else}}
+{{else}}
 		fields["{{= col.DbName }}"] = o.{{= col.ModelName() }}
-    {{if}}
+{{if}}
 	}
 {{for}}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *{{privateName}}Base) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 {{for _,col := range t.Columns}}
@@ -342,15 +345,15 @@ func (o *{{privateName}}Base) getValidFields() (fields map[string]interface{}) {
     if col.IsId {continue}
 }}
 	if o.{{= col.ModelName() }}IsValid {
-    {{if col.IsNullable}}
+{{if col.IsNullable}}
         if 	o.{{= col.ModelName() }}IsNull {
             fields["{{= col.DbName }}"] = nil
         } else {
   		    fields["{{= col.DbName }}"] = o.{{= col.ModelName() }}
         }
-    {{else}}
+{{else}}
 		fields["{{= col.DbName }}"] = o.{{= col.ModelName() }}
-    {{if}}
+{{if}}
 	}
 {{for}}
 	return

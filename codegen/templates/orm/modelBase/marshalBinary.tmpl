@@ -153,6 +153,7 @@ func (o *{{privateName}}Base) MarshalBinary() ([]byte, error) {
     return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a {{= t.GoName }} object.
 func (o *{{privateName}}Base) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)

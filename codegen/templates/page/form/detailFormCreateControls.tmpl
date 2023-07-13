@@ -2,6 +2,7 @@
 
 {{
 
+// CreateControls is called by the framework when the form is created and is the place to create controls for the form.
 func (f *{{= formName }}) CreateControls(ctx context.Context) {
     f.FormBase.CreateControls(ctx) // Add site-wide controls
     f.AddControls(ctx,

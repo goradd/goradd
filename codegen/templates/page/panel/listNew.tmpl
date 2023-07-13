@@ -19,8 +19,7 @@ func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id st
 }
 
 func init() {
-    // Registers the control type with the framework.
-    page.RegisterControl(&{{= panelName }}{})
+    page.RegisterControl(&{{= panelName }}{}) // Register the control with the framework.
 }
 
 

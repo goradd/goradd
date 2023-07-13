@@ -26,7 +26,7 @@ func NewDateTimeSpan(parent page.ControlI, id string) *DateTimeSpan {
 	return s
 }
 
-// Init is called by subclasses to initialize the parent. You do not normally need to call this.
+// Init is called by subclasses to initialize the parent.
 func (s *DateTimeSpan) Init(parent page.ControlI, id string) {
 	s.Span.Init(parent, id)
 	s.format = config.DefaultDateTimeFormat
