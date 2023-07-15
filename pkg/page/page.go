@@ -327,7 +327,7 @@ func (p *Page) Title() string {
 	return p.title
 }
 
-// Call SetTitle to set the content of the <title> tag to be output in the head of the page.
+// SetTitle sets the content of the <title> tag.
 func (p *Page) SetTitle(title string) {
 	p.title = title
 }

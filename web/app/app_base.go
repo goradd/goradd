@@ -45,6 +45,7 @@ type ApplicationI interface {
 	AccessLogHandler(next http.Handler) http.Handler
 	PutDbContextHandler(next http.Handler) http.Handler
 	ServeAppMux(next http.Handler) http.Handler
+	ServeRequestHandler() http.Handler
 	ServePatternMux(next http.Handler) http.Handler
 }
 
@@ -174,9 +175,9 @@ func (a *Application) MakeAppServer() http.Handler {
 	// the handler chain gets built in the reverse order of getting called
 
 	// These handlers are called in reverse order
-	h := a.ServeRequestHandler() // Should go at the end of the chain to catch whatever is missed above
-	h = a.this().ServeAppMux(h)  // Serves other dynamic files, and possibly the api
-	h = a.ServePageHandler(h)    // Serves the Goradd dynamic pages
+	h := a.this().ServeRequestHandler() // Should go at the end of the chain to catch whatever is missed above
+	h = a.this().ServeAppMux(h)         // Serves other dynamic files, and possibly the api
+	h = a.ServePageHandler(h)           // Serves the Goradd dynamic pages
 	h = a.PutAppContextHandler(h)
 	h = a.this().SessionHandler(h)
 	h = a.BufferedOutputHandler(h) // Must be in front of the session handler
@@ -220,7 +221,10 @@ func (a *Application) HSTSHandler(next http.Handler) http.Handler {
 }
 
 // ServeRequestHandler is the last handler on the default call chain.
-// It returns a simple not found error by default.
+// It returns a simple not found error.
+// By default, this handler is never reached, because of the html root handler registered in
+// goradd-project/web/embedder.go. You will need to modify or delete that handler
+// to reach this handler. You can override this handler by duplicating it in your app object.
 func (a *Application) ServeRequestHandler() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)

@@ -29,7 +29,9 @@ var root embed.FS
 var a embed.FS
 
 func init() {
-	// This server is designed to serve HTML type files that can be bookmarked.
+	// This server is designed to serve HTML type files that can be bookmarked. It servese them out of the
+	// root path. Feel free to change the path as needed, or delete this section all together if you are
+	// not serving any html file.
 	sub, _ := fs.Sub(root, "root")
 	serv := http.FileSystemServer{Fsys: sub, SendModTime: true}
 	http.RegisterAppPrefixHandler("/", serv)
@@ -38,6 +40,8 @@ func init() {
 	// cache-busting to make sure that when you deploy new versions of these files, the client
 	// will not use a previous cached version, but if the file did not change, the client
 	// can still use a cached version.
-	sub,_ = fs.Sub(a, "assets")
+	// If you have no custom assets, like css, javascript, fonts or images in the project's assets
+	// directory, you can delete this section.
+	sub, _ = fs.Sub(a, "assets")
 	http.RegisterAssetDirectory(path.Join(config.AssetPrefix, "project"), sub)
 }
