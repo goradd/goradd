@@ -31,19 +31,18 @@ type FormGroup struct {
 
 func NewFormGroup(parent page.ControlI, id string) *FormGroup {
 	p := &FormGroup{}
-	p.Self = p
-	p.Init(parent, id)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (c *FormGroup) Init(parent page.ControlI, id string) {
-	c.FormFieldWrapper.Init(parent, id)
+func (c *FormGroup) Init(self any, parent page.ControlI, id string) {
+	c.FormFieldWrapper.Init(self, parent, id)
 	c.innerDivAttr = html5tag.NewAttributes()
 	c.InstructionAttributes().AddClass("form-text")
 }
 
 func (c *FormGroup) this() FormGroupI {
-	return c.Self.(FormGroupI)
+	return c.Self().(FormGroupI)
 }
 
 func (c *FormGroup) Validate(ctx context.Context) bool {

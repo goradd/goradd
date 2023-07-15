@@ -44,18 +44,17 @@ type Panel struct {
 
 func NewPanel(parent page.ControlI, id string) *Panel {
 	p := &Panel{}
-	p.Self = p
-	p.Init(parent, id)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (c *Panel) Init(parent page.ControlI, id string) {
-	c.ControlBase.Init(parent, id)
+func (c *Panel) Init(self any, parent page.ControlI, id string) {
+	c.ControlBase.Init(self, parent, id)
 	c.Tag = "div"
 }
 
 func (c *Panel) this() PanelI {
-	return c.Self.(PanelI)
+	return c.Self().(PanelI)
 }
 
 func (c *Panel) DrawingAttributes(ctx context.Context) html5tag.Attributes {

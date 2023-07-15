@@ -13,13 +13,12 @@ type RepeaterPanel struct {
 }
 
 func NewRepeaterPanel(ctx context.Context, parent page.ControlI) {
-	p := &RepeaterPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "repeaterPanel")
+	p := new(RepeaterPanel)
+	p.Init(p, ctx, parent, "repeaterPanel")
 }
 
-func (p *RepeaterPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, "repeaterPanel")
+func (p *RepeaterPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, "repeaterPanel")
 	p.AddControls(ctx,
 		RepeaterCreator{
 			ID:           "repeater1",

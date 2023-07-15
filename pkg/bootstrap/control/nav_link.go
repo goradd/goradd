@@ -20,21 +20,20 @@ type NavLink struct {
 // NewNavLink creates a new NavLink.
 func NewNavLink(parent page.ControlI, id string) *NavLink {
 	l := new(NavLink)
-	l.Self = l
-	l.Init(parent, id)
+	l.Init(l, parent, id)
 	return l
 }
 
 // Init initializes the button
-func (l *NavLink) Init(parent page.ControlI, id string) {
-	l.ActiveLink.Init(parent, id)
+func (l *NavLink) Init(self any, parent page.ControlI, id string) {
+	l.ActiveLink.Init(self, parent, id)
 	l.ActiveAttributes().
 		AddClass("active").
 		Set("aria-current", "page")
 }
 
 func (l *NavLink) this() NavLinkI {
-	return l.Self.(NavLinkI)
+	return l.Self().(NavLinkI)
 }
 
 // DrawingAttributes returns the attributes to add to the tag just before the button is drawn.

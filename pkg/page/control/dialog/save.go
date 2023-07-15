@@ -34,13 +34,12 @@ func GetSavePanel(parent page.ControlI, id string) (*SavePanel, bool) {
 
 	dlg := NewDialogI(parent.ParentForm(), id+"-dlg")
 	dp := new(SavePanel)
-	dp.Self = dp
-	dp.Init(dlg, id)
+	dp.Init(dp, dlg, id)
 	return dp, true
 }
 
-func (p *SavePanel) Init(dlg page.ControlI, id string) {
-	p.DialogPanel.Init(dlg, id)
+func (p *SavePanel) Init(self any, dlg page.ControlI, id string) {
+	p.DialogPanel.Init(self, dlg, id)
 	p.AddCloseButton(p.GT("Cancel"), CancelButtonnID)
 	p.AddButton(p.GT("Save"), SaveButtonID, &ButtonOptions{
 		Validates: true,

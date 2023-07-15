@@ -47,21 +47,20 @@ type CheckboxList struct {
 // NewCheckboxList creates a new CheckboxList
 func NewCheckboxList(parent page.ControlI, id string) *CheckboxList {
 	l := &CheckboxList{}
-	l.Self = l
-	l.Init(parent, id)
+	l.Init(l, parent, id)
 	return l
 }
 
 // Init is called by subclasses
-func (l *CheckboxList) Init(parent page.ControlI, id string) {
-	l.MultiselectList.Init(parent, id)
+func (l *CheckboxList) Init(self any, parent page.ControlI, id string) {
+	l.MultiselectList.Init(self, parent, id)
 	l.Tag = "div"
 	l.rowClass = "gr-cbl-row"
 	l.labelDrawingMode = page.DefaultCheckboxLabelDrawingMode
 }
 
 func (l *CheckboxList) this() CheckboxListI {
-	return l.Self.(CheckboxListI)
+	return l.Self().(CheckboxListI)
 }
 
 // SetColumnCount sets the number of columns to use to display the list. Items will be evenly distributed

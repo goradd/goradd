@@ -13,13 +13,12 @@ type ImageCapturePanel struct {
 }
 
 func NewImageCapturePanel(ctx context.Context, parent page.ControlI) {
-	p := &ImageCapturePanel{}
-	p.Self = p
-	p.Init(ctx, parent, "imageCapturePanel")
+	p := new(ImageCapturePanel)
+	p.Init(p, ctx, parent, "imageCapturePanel")
 }
 
-func (p *ImageCapturePanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, "imageCapturePanel")
+func (p *ImageCapturePanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, "imageCapturePanel")
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
 			ID:    "ic1-ff",

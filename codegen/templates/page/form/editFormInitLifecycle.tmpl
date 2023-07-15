@@ -1,0 +1,11 @@
+// editFormInitLifecycle.tmpl
+
+{{
+
+// Init is called by the framework immediately after the form is created from the route.
+// It initializes the base structures.
+func (f *{{= formName }}) Init(ctx context.Context, id string) {
+	f.FormBase.Init(f, ctx, id)
+}
+
+}}

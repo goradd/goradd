@@ -70,7 +70,7 @@ func (a *Application) Init(self ApplicationI) {
 }
 
 func (a *Application) this() ApplicationI {
-	return a.Self.(ApplicationI)
+	return a.Self().(ApplicationI)
 }
 
 // SetupErrorHandling prepares the application for various types of error handling

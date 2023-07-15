@@ -61,13 +61,12 @@ func GetDialogPanel(parent page.ControlI, id string) (dialogPanel *DialogPanel, 
 
 	dlg := NewDialogI(parent.ParentForm(), id+"-dlg")
 	dialogPanel = new(DialogPanel)
-	dialogPanel.Self = dialogPanel
-	dialogPanel.Init(dlg, id)
+	dialogPanel.Init(dialogPanel, dlg, id)
 	return dialogPanel, true
 }
 
-func (p *DialogPanel) Init(parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *DialogPanel) Init(self any, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.AddClass("gr-dlg-pnl") // Give the ability to provide a consistent style across the app to all panels in a dialog
 }
 

@@ -7,10 +7,9 @@ import (
 
 func TestFormBase_Init(t *testing.T) {
 
-	f := &MockForm{}
-	f.Self = f
+	f := new(MockForm)
 	assert.Panics(t, func() {
-		f.FormBase.Init(nil, "")
+		f.Init(nil, "")
 	})
 
 	f = NewMockForm()

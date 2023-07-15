@@ -24,14 +24,13 @@ type Tabs struct {
 // TODO: Modify this so that you can optionally show each panel through ajax
 
 func NewTabs(parent page.ControlI, id string) *Tabs {
-	t := &Tabs{}
-	t.Self = t
-	t.Init(parent, id)
+	t := new(Tabs)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (t *Tabs) Init(parent page.ControlI, id string) {
-	t.Panel.Init(parent, id)
+func (t *Tabs) Init(self any, parent page.ControlI, id string) {
+	t.Panel.Init(self, parent, id)
 	t.On(event.NewEvent("show.bs.tab"), action.SetControlValue(t.ID(), "selectedId", javascript.JsCode("event.target.id")))
 }
 

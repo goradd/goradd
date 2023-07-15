@@ -28,22 +28,21 @@ type Image struct {
 
 // NewImage creates a new image.
 func NewImage(parent page.ControlI, id string) *Image {
-	i := &Image{}
-	i.Self = i
-	i.Init(parent, id)
+	i := new(Image)
+	i.Init(i, parent, id)
 	return i
 }
 
 // Init is called by subclasses. Normally you will not call this directly.
-func (i *Image) Init(parent page.ControlI, id string) {
-	i.ControlBase.Init(parent, id)
+func (i *Image) Init(self any, parent page.ControlI, id string) {
+	i.ControlBase.Init(self, parent, id)
 	i.Tag = "img"
 	i.IsVoidTag = true
 	i.typ = "jpeg"
 }
 
 func (i *Image) this() ImageI {
-	return i.Self.(ImageI)
+	return i.Self().(ImageI)
 }
 
 // Src returns the src attribute

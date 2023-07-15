@@ -21,14 +21,13 @@ type RadioButton struct {
 
 func NewRadioButton(parent page.ControlI, id string) *RadioButton {
 	c := &RadioButton{}
-	c.Self = c
-	c.Init(parent, id)
+	c.Init(c, parent, id)
 	config.LoadBootstrap(c.ParentForm())
 	return c
 }
 
 func (c *RadioButton) this() RadioButtonI {
-	return c.Self.(RadioButtonI)
+	return c.Self().(RadioButtonI)
 }
 
 func (c *RadioButton) SetInline(v bool) *RadioButton {

@@ -62,20 +62,19 @@ const ButtonBlock = "btn-block"
 // NewButton creates a new bootstrap html button
 func NewButton(parent page.ControlI, id string) *Button {
 	b := new(Button)
-	b.Self = b
-	b.Init(parent, id)
+	b.Init(b, parent, id)
 	return b
 }
 
 // Init initializes the button
-func (b *Button) Init(parent page.ControlI, id string) {
-	b.Button.Init(parent, id)
+func (b *Button) Init(self any, parent page.ControlI, id string) {
+	b.Button.Init(self, parent, id)
 	b.style = ButtonStyleSecondary // default
 	config.LoadBootstrap(b.ParentForm())
 }
 
 func (b *Button) this() ButtonI {
-	return b.Self.(ButtonI)
+	return b.Self().(ButtonI)
 }
 
 // SetButtonStyle will set the button's style to one of the predefined bootstrap styles.

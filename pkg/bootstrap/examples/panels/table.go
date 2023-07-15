@@ -72,13 +72,12 @@ var tableSliceData = []TableSliceData{
 }
 
 func NewTablePanel(ctx context.Context, parent page.ControlI) {
-	p := &TablePanel{}
-	p.Self = p
-	p.Init(ctx, parent, "tablePanel")
+	p := new(TablePanel)
+	p.Init(p, ctx, parent, "tablePanel")
 }
 
-func (f *TablePanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	f.Panel.Init(parent, id)
+func (f *TablePanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	f.Panel.Init(self, parent, id)
 	f.AddControls(ctx,
 		table.PagedTableCreator{
 			ID:             "table1",

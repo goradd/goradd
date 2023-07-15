@@ -17,8 +17,7 @@ type EmailTextbox struct {
 
 func NewEmailTextbox(parent page.ControlI, id string) *EmailTextbox {
 	t := new(EmailTextbox)
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 

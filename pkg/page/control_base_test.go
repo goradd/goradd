@@ -9,8 +9,7 @@ func TestControlBase_Init(t *testing.T) {
 	t.Run("normal create", func(t *testing.T) {
 		f := NewMockForm()
 		b := new(ControlBase)
-		b.Self = b
-		b.Init(f, "testid")
+		b.Init(b, f, "testid")
 
 		assert.True(t, b.NeedsRefresh())
 		assert.Equal(t, "testid", b.ID())
@@ -19,29 +18,25 @@ func TestControlBase_Init(t *testing.T) {
 	t.Run("id with underscore", func(t *testing.T) {
 		f := NewMockForm()
 		b := new(ControlBase)
-		b.Self = b
 		assert.Panics(t, func() {
-			b.Init(f, "test_id")
+			b.Init(b, f, "test_id")
 		})
 	})
 
 	t.Run("same id", func(t *testing.T) {
 		f := NewMockForm()
 		b := new(ControlBase)
-		b.Self = b
-		b.Init(f, "testid")
+		b.Init(b, f, "testid")
 		b2 := new(ControlBase)
-		b2.Self = b2
 		assert.Panics(t, func() {
-			b2.Init(f, "testid")
+			b2.Init(b, f, "testid")
 		})
 	})
 
 	t.Run("no id", func(t *testing.T) {
 		f := NewMockForm()
 		b := new(ControlBase)
-		b.Self = b
-		b.Init(f, "")
+		b.Init(b, f, "")
 		assert.Equal(t, "c1", b.ID())
 	})
 }

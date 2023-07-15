@@ -26,13 +26,12 @@ type RadioListGroup struct {
 
 func NewRadioListGroup(parent page.ControlI, id string) *RadioListGroup {
 	l := new(RadioListGroup)
-	l.Self = l
-	l.Init(parent, id)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *RadioListGroup) Init(parent page.ControlI, id string) {
-	l.RadioList.Init(parent, id)
+func (l *RadioListGroup) Init(self any, parent page.ControlI, id string) {
+	l.RadioList.Init(self, parent, id)
 	l.SetLabelDrawingMode(html5tag.LabelWrapAfter)
 	l.SetRowClass("")
 	l.buttonStyle = ButtonStyleSecondary
@@ -40,7 +39,7 @@ func (l *RadioListGroup) Init(parent page.ControlI, id string) {
 }
 
 func (l *RadioListGroup) this() RadioListGroupI {
-	return l.Self.(RadioListGroupI)
+	return l.Self().(RadioListGroupI)
 }
 
 func (l *RadioListGroup) SetButtonStyle(buttonStyle string) RadioListGroupI {

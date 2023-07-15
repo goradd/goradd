@@ -39,9 +39,8 @@ type BasicForm struct {
 }
 
 func CreateBasicForm(ctx context.Context) page.FormI {
-	f := &BasicForm{}
-	f.Self = f
-	f.MockForm.Init(ctx, "BasicForm")
+	f := new(BasicForm)
+	f.FormBase.Init(f, ctx, "BasicForm")
 	f.CreateControls(ctx)
 	return f
 }

@@ -44,13 +44,12 @@ func GetEditPanel(parent page.ControlI, id string, objectName string) (*EditPane
 
 	dlg := NewDialogI(parent.ParentForm(), id+"-dlg")
 	dp := new(EditPanel)
-	dp.Self = dp
-	dp.Init(dlg, id, objectName)
+	dp.Init(dp, dlg, id, objectName)
 	return dp, true
 }
 
-func (p *EditPanel) Init(dlg page.ControlI, id string, objectName string) {
-	p.DialogPanel.Init(dlg, id)
+func (p *EditPanel) Init(self any, dlg page.ControlI, id string, objectName string) {
+	p.DialogPanel.Init(self, dlg, id)
 	p.AddButton(p.GT("Delete"),
 		DeleteButtonID,
 		&ButtonOptions{

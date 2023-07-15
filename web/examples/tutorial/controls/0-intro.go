@@ -18,14 +18,13 @@ type IntroPanel struct {
 }
 
 func NewIntroPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &IntroPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "")
+	p := new(IntroPanel)
+	p.Init(p, ctx, parent, "")
 	return p
 }
 
-func (p *IntroPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *IntroPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 
 	textBox := NewTextbox(p, "textField")
 	textBox.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))

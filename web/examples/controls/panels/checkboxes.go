@@ -31,13 +31,12 @@ func (p *CheckboxPanel) DoAction(ctx context.Context, a action.Params) {
 }
 
 func NewCheckboxPanel(ctx context.Context, parent page.ControlI) {
-	p := &CheckboxPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "checkboxPanel")
+	p := new(CheckboxPanel)
+	p.Init(p, ctx, parent, "checkboxPanel")
 }
 
-func (p *CheckboxPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, "checkboxPanel")
+func (p *CheckboxPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, "checkboxPanel")
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
 			ID:           "checkbox1-ff",

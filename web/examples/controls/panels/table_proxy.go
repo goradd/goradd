@@ -21,13 +21,12 @@ type TableProxyPanel struct {
 }
 
 func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
-	p := &TableProxyPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "tableProxyPanel")
+	p := new(TableProxyPanel)
+	p.Init(p, ctx, parent, "tableProxyPanel")
 }
 
-func (p *TableProxyPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *TableProxyPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 
 	p.AddControls(ctx,
 		ProxyCreator{
@@ -110,9 +109,8 @@ type ProjectPanel struct {
 }
 
 func NewProjectPanel(parent page.ControlI) *ProjectPanel {
-	p := &ProjectPanel{}
-	p.Self = p
-	p.Init(parent, "personPanel")
+	p := new(ProjectPanel)
+	p.Init(p, parent, "personPanel")
 
 	return p
 }

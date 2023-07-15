@@ -9,21 +9,20 @@ import (
 
 type Recaptcha3 struct {
 	page.ControlBase
-	SiteKey string
+	SiteKey   string
 	SecretKey string
 }
 
 // NewRecaptcha3 creates a new recaptcha widget
 func NewRecaptcha3(parent page.ControlI, id string) *Recaptcha3 {
 	b := new(Recaptcha3)
-	b.Self = b
-	b.Init(parent, id)
+	b.Init(b, parent, id)
 	return b
 }
 
 // Init is called by subclasses of Button to initialize the button control structure.
-func (r *Recaptcha3) Init(parent page.ControlI, id string) {
-	r.ControlBase.Init(parent, id)
+func (r *Recaptcha3) Init(self any, parent page.ControlI, id string) {
+	r.ControlBase.Init(self, parent, id)
 	r.SetShouldAutoRender(true)
 
 }
@@ -37,6 +36,6 @@ grecaptcha.ready(function() {
 	});
 });
 </script>`, r.SiteKey, r.ID())
-	_,err = io.WriteString(w, s)
+	_, err = io.WriteString(w, s)
 	return
 }

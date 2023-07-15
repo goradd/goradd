@@ -150,7 +150,7 @@ func (p *Page) runPage(ctx context.Context, w http2.ResponseWriter, isNew bool) 
 	return
 }
 
-// Returns the form for the page
+// Form returns the form for the page.
 func (p *Page) Form() FormI {
 	return p.form
 }
@@ -291,6 +291,7 @@ func (p *Page) addControl(control ControlI) {
 	p.controlRegistry[id] = control
 
 	if control.Parent() == nil {
+		_ = control.(FormI)
 		if f, ok := control.(FormI); ok {
 			if p.form != nil {
 				panic("The Form object for the page has already been set.")

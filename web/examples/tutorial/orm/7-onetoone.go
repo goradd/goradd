@@ -14,25 +14,22 @@ type OneOnePanel struct {
 }
 
 func NewOneOnePanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &OneOnePanel{}
-	p.Self = p
-	p.Init(ctx, parent, "")
+	p := new(OneOnePanel)
+	p.Init(p, ctx, parent, "")
 	return p
 }
 
-func (p *OneOnePanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *OneOnePanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 }
-
 
 func init() {
 	page.RegisterControl(&OneOnePanel{})
 
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 7, "onetoone", "One-to-One References", NewOneOnePanel,
-		[]string {
+		[]string{
 			sys.SourcePath(),
 			filepath.Join(dir, "7-onetoone.tpl.got"),
 		})
 }
-

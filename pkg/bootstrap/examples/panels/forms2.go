@@ -10,26 +10,23 @@ import (
 )
 
 // shared
-const (
-)
+const ()
 
 type Forms2Panel struct {
 	control.Panel
 }
 
-
 func NewForms2Panel(ctx context.Context, parent page.ControlI) {
-	p := &Forms2Panel{}
-	p.Self = p
-	p.Init(ctx, parent, "textboxPanel")
+	p := new(Forms2Panel)
+	p.Init(p, ctx, parent, "textboxPanel")
 
 }
 
-func (p *Forms2Panel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *Forms2Panel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.Panel.AddControls(ctx,
 		FormGroupCreator{
-			Label:"Name",
+			Label: "Name",
 			Child: TextboxCreator{
 				ID: "nameText",
 				ControlOptions: page.ControlOptions{
@@ -38,52 +35,50 @@ func (p *Forms2Panel) Init(ctx context.Context, parent page.ControlI, id string)
 			},
 		},
 		FormGroupCreator{
-			Label:"Street",
+			Label: "Street",
 			Child: TextboxCreator{
 				ID: "streetText",
 			},
 		},
 		FormGroupCreator{
-			Label:"City",
+			Label: "City",
 			Child: TextboxCreator{
 				ID: "cityText",
 			},
 		},
 		FormGroupCreator{
-			Label:"State",
+			Label: "State",
 			Child: TextboxCreator{
 				ColumnCount: 2,
-				MaxLength: 2,
-				ID: "stateText",
+				MaxLength:   2,
+				ID:          "stateText",
 			},
 		},
 		FormGroupCreator{
-			Label:"Zip",
+			Label: "Zip",
 			Child: TextboxCreator{
 				ColumnCount: 10,
-				MaxLength: 10,
-				ID: "zipText",
+				MaxLength:   10,
+				ID:          "zipText",
 			},
 		},
 
-		ButtonCreator {
-			ID: "ajaxButton",
-			Text: "Submit Ajax",
-			OnSubmit:action.Ajax(p.ID(), AjaxSubmit),
+		ButtonCreator{
+			ID:       "ajaxButton",
+			Text:     "Submit Ajax",
+			OnSubmit: action.Ajax(p.ID(), AjaxSubmit),
 		},
-		ButtonCreator {
-			ID: "serverButton",
-			Text: "Submit Server",
-			OnSubmit:action.Server(p.ID(), ServerSubmit),
+		ButtonCreator{
+			ID:       "serverButton",
+			Text:     "Submit Server",
+			OnSubmit: action.Server(p.ID(), ServerSubmit),
 		},
 	)
 }
 
-
 func init() {
 	examples.RegisterPanel("forms2", "Forms 2", NewForms2Panel, 2)
-	page.RegisterControl(new (Forms2Panel))
+	page.RegisterControl(new(Forms2Panel))
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }
-

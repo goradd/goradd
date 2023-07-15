@@ -22,20 +22,19 @@ type Link struct {
 // NewLink creates a new standard html link
 func NewLink(parent page.ControlI, id string) *Link {
 	b := new(Link)
-	b.Self = b
-	b.Init(parent, id)
+	b.Init(b, parent, id)
 	return b
 }
 
 // Init is called by subclasses of Link to initialize the link control structure.
-func (l *Link) Init(parent page.ControlI, id string) {
-	l.ControlBase.Init(parent, id)
+func (l *Link) Init(self any, parent page.ControlI, id string) {
+	l.ControlBase.Init(self, parent, id)
 	l.Tag = "a"
 	l.SetAttribute("href", "#") // default link to hash tag by convention
 }
 
 func (l *Link) this() LinkI {
-	return l.Self.(LinkI)
+	return l.Self().(LinkI)
 }
 
 // SetLabel sets the text that appears between the a tags.

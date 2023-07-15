@@ -22,13 +22,12 @@ type TableSelectPanel struct {
 }
 
 func NewTableSelectPanel(ctx context.Context, parent page.ControlI) {
-	p := &TableSelectPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "tableSelectPanel")
+	p := new(TableSelectPanel)
+	p.Init(p, ctx, parent, "tableSelectPanel")
 }
 
-func (p *TableSelectPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, "tableSelectPanel")
+func (p *TableSelectPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, "tableSelectPanel")
 
 	// In this first example, we create a small table pre-filled with data
 	var items = []map[string]string{

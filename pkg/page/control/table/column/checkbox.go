@@ -53,7 +53,7 @@ func (c *CheckboxColumn) Init() {
 }
 
 func (c *CheckboxColumn) this() CheckboxColumnI {
-	return c.Self.(CheckboxColumnI)
+	return c.Self().(CheckboxColumnI)
 }
 
 // SetShowCheckAll will cause the CheckAll checkbox to appear in the header. You must show at least one header

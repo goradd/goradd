@@ -53,14 +53,13 @@ type ImageCapture struct {
 // NewImageCapture creates a new image capture panel.
 func NewImageCapture(parent page.ControlI, id string) *ImageCapture {
 	i := &ImageCapture{}
-	i.Self = i
-	i.Init(parent, id)
+	i.Init(i, parent, id)
 	return i
 }
 
 // Init is called by subclasses.
-func (i *ImageCapture) Init(parent page.ControlI, id string) {
-	i.Panel.Init(parent, id)
+func (i *ImageCapture) Init(self any, parent page.ControlI, id string) {
+	i.Panel.Init(self, parent, id)
 	i.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "/js/image-capture.js"), false, nil)
 	i.typ = "jpeg"
 	i.quality = 0.92
@@ -82,7 +81,7 @@ func (i *ImageCapture) Init(parent page.ControlI, id string) {
 }
 
 func (i *ImageCapture) this() ImageCaptureI {
-	return i.Self.(ImageCaptureI)
+	return i.Self().(ImageCaptureI)
 }
 
 func (i *ImageCapture) canvasID() string {

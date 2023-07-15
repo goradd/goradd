@@ -28,9 +28,11 @@ type IndexForm struct {
 }
 
 func (f *IndexForm) Init(ctx context.Context, formID string) {
-	f.FormBase.Init(ctx, formID)
-	f.AddRelatedFiles()
+	f.FormBase.Init(f, ctx, formID)
+}
 
+func (f *IndexForm) CreateControls(ctx context.Context) {
+	f.FormBase.CreateControls(ctx)
 	f.AddControls(ctx,
 		PanelCreator{
 			ID: "detailPanel",
@@ -49,6 +51,7 @@ func (f *IndexForm) AddRelatedFiles() {
 }
 
 func (f *IndexForm) LoadControls(ctx context.Context) {
+	f.FormBase.LoadControls(ctx)
 	if pageID, ok := page.GetContext(ctx).FormValue("pageID"); ok {
 		// pageID is a category and integer id combined
 		parts := strings.Split(pageID, "-")

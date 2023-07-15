@@ -21,6 +21,12 @@ import(
 	"goradd-project/gen/{{dd.DbKey}}/model/node"
 )
 
+// {{= panelName }}I defines virtual functions for the {{= panelName }}.
+type {{= panelName }}I interface {
+    control.PanelI
+    // add virtual functions here if needed
+}
+
 // {{= panelName }} is a panel of static controls that shows the content of a {{= t.GoName }} object.
 type {{= panelName }} struct {
 	control.Panel
@@ -30,15 +36,19 @@ type {{= panelName }} struct {
 // New{{= panelName }} returns a panel of static controls that displays the content of a {{= t.GoName }} object.
 func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
-    p.Self = p
-	p.Init(ctx, parent, id)
+	p.Init(p, ctx, parent, id)
 	return p
 }
 
 // Init initializes the panel. It should be called by any derived objects.
-func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *{{= panelName }}) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.CreateControls(ctx)
+}
+
+// this returns the panel as an interface for calls to virtual functions.
+func (p *{{= panelName }}) this() {{= panelName }}I {
+	return p.Self().({{= panelName }}I)
 }
 
 // CreateControls is the place to create the controls that will be displayed by the panel

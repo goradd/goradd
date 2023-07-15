@@ -40,13 +40,12 @@ func (c SelectedProvider) IsChecked(data interface{}) bool {
 }
 
 func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
-	p := &TableCheckboxPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "checkboxTablePanel")
+	p := new(TableCheckboxPanel)
+	p.Init(p, ctx, parent, "checkboxTablePanel")
 }
 
-func (p *TableCheckboxPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, "checkboxTablePanel")
+func (p *TableCheckboxPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, "checkboxTablePanel")
 	p.AddControls(ctx,
 		PagedTableCreator{
 			ID:             "table1",

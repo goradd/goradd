@@ -84,13 +84,12 @@ const (
 // NewNavbar returns a newly created Bootstrap Navbar object
 func NewNavbar(parent page.ControlI, id string) *Navbar {
 	b := &Navbar{}
-	b.Self = b
-	b.Init(parent, id)
+	b.Init(b, parent, id)
 	return b
 }
 
-func (b *Navbar) Init(parent page.ControlI, id string) {
-	b.ControlBase.Init(parent, id)
+func (b *Navbar) Init(self any, parent page.ControlI, id string) {
+	b.ControlBase.Init(self, parent, id)
 	b.Tag = "nav"
 	b.style = NavbarDark // default
 	b.background = BackgroundColorDark
@@ -104,7 +103,7 @@ func (b *Navbar) Init(parent page.ControlI, id string) {
 }
 
 func (b *Navbar) this() NavbarI {
-	return b.Self.(NavbarI)
+	return b.Self().(NavbarI)
 }
 
 func (b *Navbar) SetNavbarStyle(style NavbarStyle) NavbarI {
