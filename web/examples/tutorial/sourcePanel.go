@@ -23,14 +23,13 @@ type SourcePanel struct {
 }
 
 func NewSourcePanel(parent page.ControlI, id string) *SourcePanel {
-	p := &SourcePanel{}
-	p.Self = p
-	p.Init(parent, id)
+	p := new(SourcePanel)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (p *SourcePanel) Init(parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *SourcePanel) Init(self any, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.ButtonPanel = NewPanel(p, "buttonPanel")
 	p.FilePanel = NewFilePanel(p) // we will be doing our own escaping
 }

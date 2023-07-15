@@ -35,14 +35,13 @@ type ItemListPanel struct {
 }
 
 func NewItemListPanel(parent page.ControlI, id string) *ItemListPanel {
-	p := &ItemListPanel{}
-	p.Self = p
-	p.Init(parent, id)
+	p := new(ItemListPanel)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (p *ItemListPanel) Init(parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *ItemListPanel) Init(self any, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.ParentForm().AddStyleSheetFile(path.Join(config.AssetPrefix, "goradd", "css", "item-list-panel.css"), nil)
 	p.FilterPanel = NewPanel(p, p.ID()+"-filter")
 	p.ScrollPanel = NewPanel(p, p.ID()+"-scroller")
@@ -74,7 +73,7 @@ func (p *ItemListPanel) Load(ctx context.Context) {
 }
 
 func (p *ItemListPanel) this() ItemListPanelI {
-	return p.Self.(ItemListPanelI)
+	return p.Self().(ItemListPanelI)
 }
 
 func (c *ItemListPanel) DrawingAttributes(ctx context.Context) html5tag.Attributes {

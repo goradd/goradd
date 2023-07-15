@@ -14,9 +14,8 @@ type WatcherPanel struct {
 }
 
 func NewWatcherPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &WatcherPanel{}
-	p.Self = p
-	p.Panel.Init(parent, "")
+	p := new(WatcherPanel)
+	p.Panel.Init(p, parent, "")
 	return p
 }
 

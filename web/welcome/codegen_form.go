@@ -22,12 +22,11 @@ type CodegenForm struct {
 }
 
 func (f *CodegenForm) Init(ctx context.Context, formID string) {
-	f.FormBase.Init(ctx, formID)
-	f.AddRelatedFiles()
-	f.createControls(ctx)
+	f.FormBase.Init(f, ctx, formID)
 }
 
-func (f *CodegenForm) createControls(ctx context.Context) {
+func (f *CodegenForm) CreateControls(ctx context.Context) {
+	f.FormBase.CreateControls(ctx)
 	control.NewPanel(f, "infoPanel")
 }
 
@@ -39,6 +38,7 @@ func (f *CodegenForm) DoAction(ctx context.Context, a action.Params) {
 }
 
 func (f *CodegenForm) LoadControls(ctx context.Context) {
+	f.FormBase.LoadControls(ctx)
 	v, _ := page.GetContext(ctx).FormValue("cmd")
 	switch v {
 	case "codegen":

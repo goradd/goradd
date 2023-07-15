@@ -14,14 +14,13 @@ type EnumsPanel struct {
 }
 
 func NewEnumsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &EnumsPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "")
+	p := new(EnumsPanel)
+	p.Init(p, ctx, parent, "")
 	return p
 }
 
-func (p *EnumsPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *EnumsPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 }
 
 func init() {

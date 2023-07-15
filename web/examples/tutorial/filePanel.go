@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 )
 
-
 type FilePanel struct {
 	Panel
 	File string
@@ -14,9 +13,8 @@ type FilePanel struct {
 }
 
 func NewFilePanel(parent page.ControlI) *FilePanel {
-	p := &FilePanel{}
-	p.Self = p
-	p.Panel.Init(parent, "filePanel")
+	p := new(FilePanel)
+	p.Panel.Init(p, parent, "filePanel")
 	return p
 }
 

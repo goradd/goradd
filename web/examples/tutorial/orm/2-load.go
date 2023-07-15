@@ -14,25 +14,22 @@ type LoadPanel struct {
 }
 
 func NewLoadPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &LoadPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "")
+	p := new(LoadPanel)
+	p.Init(p, ctx, parent, "")
 	return p
 }
 
-func (p *LoadPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *LoadPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 }
-
 
 func init() {
 	page.RegisterControl(&LoadPanel{})
 
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 2, "load", "Loading Individual Records", NewLoadPanel,
-		[]string {
+		[]string{
 			sys.SourcePath(),
 			filepath.Join(dir, "2-load.tpl.got"),
 		})
 }
-

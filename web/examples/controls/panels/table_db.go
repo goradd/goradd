@@ -19,13 +19,12 @@ type TableDbPanel struct {
 }
 
 func NewTableDbPanel(ctx context.Context, parent page.ControlI) {
-	p := &TableDbPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "tableDbPanel")
+	p := new(TableDbPanel)
+	p.Init(p, ctx, parent, "tableDbPanel")
 }
 
-func (p *TableDbPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *TableDbPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.AddControls(ctx,
 		PagedTableCreator{
 			ID:             "table1",

@@ -34,14 +34,13 @@ type {{= panelName }} struct {
 // New{{= panelName }} creates a new edit panel for {{= t.GoName }} objects.
 func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
-    p.Self = p
-	p.Init(ctx, parent, id)
+	p.Init(p, ctx, parent, id)
 	return p
 }
 
 // Init initializes a panel and should be called by derived panels.
-func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.{{= panelName }}Base.Init(parent, id)
+func (p *{{= panelName }}) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.{{= panelName }}Base.Init(self, parent, id)
 	p.CreateControls(ctx)
 }
 

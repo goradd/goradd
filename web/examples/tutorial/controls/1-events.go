@@ -19,14 +19,13 @@ type EventsPanel struct {
 }
 
 func NewEventsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &EventsPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "")
+	p := new(EventsPanel)
+	p.Init(p, ctx, parent, "")
 	return p
 }
 
-func (p *EventsPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *EventsPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 
 	textBox1 := NewTextbox(p, "textBox1")
 	textBox1.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))

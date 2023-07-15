@@ -29,10 +29,10 @@ func TestAliasColumn_Serialize(t *testing.T) {
 			ID: "table",
 			Columns: table.Columns(
 				AliasColumnCreator{
-					ID:       "a1",
-					Alias:    "DataOption",
-					Title:    "Alias",
-					Sortable: true,
+					ID:            "a1",
+					Alias:         "DataOption",
+					Title:         "Alias",
+					SortDirection: table.SortAscending,
 					ColumnOptions: table.ColumnOptions{
 						CellAttributes:   nil,
 						HeaderAttributes: nil,

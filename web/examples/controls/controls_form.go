@@ -37,8 +37,11 @@ type controlEntry struct {
 var controls []controlEntry
 
 func (f *ControlsForm) Init(ctx context.Context, formID string) {
-	f.FormBase.Init(ctx, formID)
+	f.FormBase.Init(f, ctx, formID)
+}
 
+func (f *ControlsForm) CreateControls(ctx context.Context) {
+	f.FormBase.CreateControls(ctx)
 	f.AddControls(ctx,
 		UnorderedListCreator{
 			ID:           ControlsFormListID,
@@ -57,6 +60,7 @@ func (f *ControlsForm) AddRelatedFiles() {
 
 func (f *ControlsForm) LoadControls(ctx context.Context) {
 	var createF createFunction
+	f.FormBase.LoadControls(ctx)
 	if _, ok := page.GetContext(ctx).FormValue("testing"); ok {
 		f.SetAttribute("novalidate", true) // bypass html validation for testing
 	}

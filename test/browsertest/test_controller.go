@@ -53,13 +53,12 @@ type TestController struct {
 
 func NewTestController(parent page.ControlI, id string) *TestController {
 	p := new(TestController)
-	p.Self = p
-	p.Init(parent, id)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (p *TestController) Init(parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *TestController) Init(self any, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.Tag = "pre"
 	p.stepChannel = make(chan stepItemType, 1)
 	p.markerChannel = make(chan string, 1000)

@@ -81,7 +81,7 @@ type FormBase struct {
 
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
 func (f *FormBase) Init(self any, _ context.Context, id string) {
-	var p = &Page{}
+	var p = new(Page)
 	p.Init()
 
 	f.page = p
@@ -624,8 +624,12 @@ func init() {
 // NewMockForm creates a form that should be used as a parent of a control when unit testing the control.
 func NewMockForm() *MockForm {
 	f := new(MockForm)
-	f.FormBase.Init(f, nil, "MockFormID")
+	f.Init(nil, "MockFormID")
 	return f
+}
+
+func (f *MockForm) Init(ctx context.Context, id string) {
+	f.FormBase.Init(f, ctx, id)
 }
 
 func (f *MockForm) AddRelatedFiles() {

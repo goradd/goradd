@@ -18,14 +18,13 @@ type ModalPanel struct {
 }
 
 func NewModalPanel(ctx context.Context, parent page.ControlI) {
-	p := &ModalPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "modalPanel")
+	p := new(ModalPanel)
+	p.Init(p, ctx, parent, "modalPanel")
 
 }
 
-func (p *ModalPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *ModalPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.Panel.AddControls(ctx,
 		ButtonCreator{
 			ID:       "popupButton",

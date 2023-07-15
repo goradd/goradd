@@ -291,6 +291,7 @@ func (p *Page) addControl(control ControlI) {
 	p.controlRegistry[id] = control
 
 	if control.Parent() == nil {
+		_ = control.(FormI)
 		if f, ok := control.(FormI); ok {
 			if p.form != nil {
 				panic("The Form object for the page has already been set.")

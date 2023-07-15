@@ -16,23 +16,21 @@ type OneManyPanel struct {
 }
 
 func NewOneManyPanel(ctx context.Context, parent page.ControlI) page.ControlI {
-	p := &OneManyPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "")
+	p := new(OneManyPanel)
+	p.Init(p, ctx, parent, "")
 	return p
 }
 
-func (p *OneManyPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *OneManyPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 }
-
 
 func init() {
 	page.RegisterControl(&OneManyPanel{})
 
 	dir := sys.SourceDirectory()
 	tutorial.RegisterTutorialPage("orm", 6, "onetomany", "One-to-Many References", NewOneManyPanel,
-		[]string {
+		[]string{
 			sys.SourcePath(),
 			filepath.Join(dir, "6-onetomany.tpl.got"),
 		})
@@ -67,7 +65,6 @@ func (p *OneManyPanel) addRecordSimpler(ctx context.Context) string {
 	address.Save(ctx)
 	return address.ID()
 }
-
 
 func (p *OneManyPanel) addMany(ctx context.Context) string {
 	person := model.NewPerson()

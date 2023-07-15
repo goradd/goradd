@@ -15,6 +15,10 @@ type pagedTableTestForm struct {
 	control.FormBase
 }
 
+func (f *pagedTableTestForm) Init(ctx context.Context, id string) {
+	f.FormBase.Init(f, ctx, id)
+}
+
 func (*pagedTableTestForm) RowAttributes(row int, data interface{}) html5tag.Attributes {
 	return html5tag.NewAttributes().AddValues("a", "b")
 }
@@ -35,9 +39,8 @@ func TestPagedTable_Serialize(t *testing.T) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 
-	f := &pagedTableTestForm{}
-	f.Self = f
-	f.FormBase.Init(context.Background(), "MockFormId")
+	f := new(pagedTableTestForm)
+	f.Init(context.Background(), "MockFormId")
 
 	f.AddControls(context.Background(),
 		PagedTableCreator{
