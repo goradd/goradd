@@ -20,6 +20,12 @@ import(
 	"goradd-project/gen/{{dd.DbKey}}/panelbase"
 )
 
+// {{= panelName }}I defines virtual functions for the {{= panelName }}.
+type {{= panelName }}I interface {
+	panelbase.{{= panelName }}BaseI
+    // add virtual functions here if needed
+}
+
 // {{= panelName }} is a panel of editable controls that will edit a {{= t.GoName }} object.
 type {{= panelName }} struct {
 	panelbase.{{= panelName }}Base
@@ -37,6 +43,11 @@ func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *
 func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
 	p.{{= panelName }}Base.Init(parent, id)
 	p.CreateControls(ctx)
+}
+
+// this returns the panel as an interface for calls to virtual functions.
+func (p *{{= panelName }}) this() {{= panelName }}I {
+	return p.Self().({{= panelName }}I)
 }
 
 {{: editCreateControls.tmpl }}

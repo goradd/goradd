@@ -34,14 +34,13 @@ type ListGroup struct {
 }
 
 func NewListGroup(parent page.ControlI, id string) *ListGroup {
-	l := &ListGroup{}
-	l.Self = l
-	l.Init(parent, id)
+	l := new(ListGroup)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *ListGroup) Init(parent page.ControlI, id string) {
-	l.UnorderedList.Init(parent, id)
+func (l *ListGroup) Init(self any, parent page.ControlI, id string) {
+	l.UnorderedList.Init(self, parent, id)
 	l.Tag = "div"
 	l.SetItemTag("a") // default to anchor tags. Change it to something else if needed.
 	l.AddClass("list-group")

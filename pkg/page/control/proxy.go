@@ -56,20 +56,19 @@ type Proxy struct {
 
 // NewProxy creates a new proxy. The parent must be the wrapping control of the objects that the proxy will manage.
 func NewProxy(parent page.ControlI, id string) *Proxy {
-	p := &Proxy{}
-	p.Self = p
-	p.Init(parent, id)
+	p := new(Proxy)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (p *Proxy) Init(parent page.ControlI, id string) {
-	p.ControlBase.Init(parent, id)
+func (p *Proxy) Init(self any, parent page.ControlI, id string) {
+	p.ControlBase.Init(self, parent, id)
 	p.SetShouldAutoRender(true)
 	p.SetActionValue(javascript.JsCode(`goradd.proxyVal(event)`))
 }
 
 func (p *Proxy) this() ProxyI {
-	return p.Self.(ProxyI)
+	return p.Self().(ProxyI)
 }
 
 // OnSubmit is a shortcut for adding a click event handler that is particular to buttons. It debounces the click, to

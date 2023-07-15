@@ -28,19 +28,18 @@ type IntegerTextbox struct {
 
 func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 	t := &IntegerTextbox{}
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (t *IntegerTextbox) Init(parent page.ControlI, id string) {
-	t.Textbox.Init(parent, id)
+func (t *IntegerTextbox) Init(self any, parent page.ControlI, id string) {
+	t.Textbox.Init(self, parent, id)
 	t.ValidateWith(IntValidator{})
 	t.SetAttribute("inputmode", "numeric") // set inputmode for mobile input, but do it here so programmer could cancel this if desired.
 }
 
 func (t *IntegerTextbox) this() IntegerI {
-	return t.Self.(IntegerI)
+	return t.Self().(IntegerI)
 }
 
 // SetMinValue creates a validator that makes sure the value of the text box is at least the

@@ -40,14 +40,13 @@ func RowSelectedEvent() *event.Event {
 
 // NewSelectTable creates a new SelectTable, which is a table with clickable rows.
 func NewSelectTable(parent page.ControlI, id string) *SelectTable {
-	t := &SelectTable{}
-	t.Self = t
-	t.Init(parent, id)
+	t := new(SelectTable)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (t *SelectTable) Init(parent page.ControlI, id string) {
-	t.Table.Init(parent, id)
+func (t *SelectTable) Init(self any, parent page.ControlI, id string) {
+	t.Table.Init(self, parent, id)
 	t.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "/js/goradd-scrollIntoView.js"), false, nil)
 	t.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "/js/table-select.js"), false, nil)
 	t.SetAttribute("tabindex", 0) // Make the entire table focusable and selectable. This can be overridden later if needed.
@@ -55,7 +54,7 @@ func (t *SelectTable) Init(parent page.ControlI, id string) {
 }
 
 func (t *SelectTable) this() SelectTableI {
-	return t.Self.(SelectTableI)
+	return t.Self().(SelectTableI)
 }
 
 // RowAttributes is an override to return the rows identified by an id.

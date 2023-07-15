@@ -34,13 +34,12 @@ type Dropdown struct {
 
 func NewDropdown(parent page.ControlI, id string) *Dropdown {
 	l := &Dropdown{}
-	l.Self = l
-	l.Init(parent, id)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *Dropdown) Init(parent page.ControlI, id string) {
-	l.UnorderedList.Init(parent, id)
+func (l *Dropdown) Init(self any, parent page.ControlI, id string) {
+	l.UnorderedList.Init(self, parent, id)
 	l.Tag = "div"
 	l.buttonAttributes = html5tag.NewAttributes()
 	l.menuAttributes = html5tag.NewAttributes()
@@ -53,7 +52,7 @@ func (l *Dropdown) Init(parent page.ControlI, id string) {
 
 // this() supports object oriented features by giving easy access to the virtual function interface.
 func (l *Dropdown) this() DropdownI {
-	return l.Self.(DropdownI)
+	return l.Self().(DropdownI)
 }
 
 func (l *Dropdown) SetAsNavItem(asNavItem bool) DropdownI {

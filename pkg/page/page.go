@@ -150,7 +150,7 @@ func (p *Page) runPage(ctx context.Context, w http2.ResponseWriter, isNew bool) 
 	return
 }
 
-// Returns the form for the page
+// Form returns the form for the page.
 func (p *Page) Form() FormI {
 	return p.form
 }

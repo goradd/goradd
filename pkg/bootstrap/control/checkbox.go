@@ -19,8 +19,7 @@ type Checkbox struct {
 
 func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 	c := &Checkbox{}
-	c.Self = c
-	c.Init(parent, id)
+	c.Init(c, parent, id)
 	config.LoadBootstrap(c.ParentForm())
 	return c
 }

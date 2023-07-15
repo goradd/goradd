@@ -17,8 +17,7 @@ type IntegerTextbox struct {
 
 func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 	t := new(IntegerTextbox)
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 

@@ -19,14 +19,13 @@ type PagedTable struct {
 }
 
 func NewPagedTable(parent page.ControlI, id string) *PagedTable {
-	t := &PagedTable{}
-	t.Self = t
-	t.Init(parent, id)
+	t := new(PagedTable)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (t *PagedTable) Init(parent page.ControlI, id string) {
-	t.Table.Init(parent, id)
+func (t *PagedTable) Init(self any, parent page.ControlI, id string) {
+	t.Table.Init(self, parent, id)
 	t.PagedControl.SetPageSize(0) // use the application default
 }
 

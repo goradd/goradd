@@ -14,6 +14,6 @@ type FormBase struct {
 }
 
 // Init initializes the form.
-func (f *FormBase) Init(ctx context.Context, id string) {
-	f.FormBase.Init(ctx, id)
+func (f *FormBase) Init(self any, ctx context.Context, id string) {
+	f.FormBase.Init(self, ctx, id)
 }

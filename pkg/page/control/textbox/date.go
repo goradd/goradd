@@ -31,14 +31,13 @@ type DateTextbox struct {
 // NewDateTextbox creates a new DateTextbox textbox.
 func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
 	d := &DateTextbox{}
-	d.Self = d
-	d.Init(parent, id)
+	d.Init(d, parent, id)
 	return d
 }
 
 // Init initializes the control.
-func (d *DateTextbox) Init(parent page.ControlI, id string) {
-	d.Textbox.Init(parent, id)
+func (d *DateTextbox) Init(self any, parent page.ControlI, id string) {
+	d.Textbox.Init(self, parent, id)
 	d.ValidateWith(DateValidator{})
 	d.formats = []string{time2.UsDateTime}
 }

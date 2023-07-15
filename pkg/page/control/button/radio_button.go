@@ -20,13 +20,12 @@ type RadioButton struct {
 // NewRadioButton creates a new radio button
 func NewRadioButton(parent page.ControlI, id string) *RadioButton {
 	c := &RadioButton{}
-	c.Self = c
-	c.Init(parent, id)
+	c.Init(c, parent, id)
 	return c
 }
 
 func (c *RadioButton) this() RadioButtonI {
-	return c.Self.(RadioButtonI)
+	return c.Self().(RadioButtonI)
 }
 
 // SetGroup sets the name of the group that the control will belong to. Set all the radio buttons

@@ -27,18 +27,17 @@ type CheckboxBase struct {
 }
 
 // Init initializes a checkbox base class. It is called by checkbox implementations.
-func (c *CheckboxBase) Init(parent page.ControlI, id string) {
-	c.ControlBase.Init(parent, id)
+func (c *CheckboxBase) Init(self any, parent page.ControlI, id string) {
+	c.ControlBase.Init(self, parent, id)
 
 	c.Tag = "input"
 	c.IsVoidTag = true
 	c.LabelMode = page.DefaultCheckboxLabelDrawingMode
-	//c.SetHasFor(true)
 	c.SetAttribute("autocomplete", "off") // fixes an html quirk
 }
 
 func (c *CheckboxBase) this() CheckboxI {
-	return c.Self.(CheckboxI)
+	return c.Self().(CheckboxI)
 }
 
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the

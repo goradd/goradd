@@ -52,7 +52,7 @@ type {{= panelName }} struct {
 }
 
 func (p *{{= panelName }}) this() {{= panelName }}I {
-	return p.Self.({{= panelName }}I)
+	return p.Self().({{= panelName }}I)
 }
 
 }}

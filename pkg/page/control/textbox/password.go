@@ -21,14 +21,13 @@ type PasswordTextbox struct {
 // NewPasswordTextbox creates a new PasswordTextbox
 func NewPasswordTextbox(parent page.ControlI, id string) *PasswordTextbox {
 	t := &PasswordTextbox{}
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 
 // Init is called by the framework to initialize the control. Only subclasses need to call it.
-func (t *PasswordTextbox) Init(parent page.ControlI, id string) {
-	t.Textbox.Init(parent, id)
+func (t *PasswordTextbox) Init(self any, parent page.ControlI, id string) {
+	t.Textbox.Init(self, parent, id)
 	t.SetAttribute("autocomplete", "off")
 	t.SetType(PasswordType)
 	// Indicate to goradd.js to always post this ajax value

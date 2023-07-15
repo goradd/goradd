@@ -20,9 +20,6 @@ import (
 
 type FormI interface {
 	ControlI
-	// Init initializes the base structures of the form. Do this before adding controls to the form.
-	// Note that this signature is different from that of the Init function in FormBase.
-	Init(ctx context.Context, id string)
 	PageDrawingFunction() PageDrawFunc
 
 	AddHeadTags()
@@ -38,9 +35,27 @@ type FormI interface {
 	PopLocation(ctx context.Context, fallback string)
 
 	// Lifecycle calls
+
+	// Init is called by the framework immediately after the form structure is instantiated for the first time
+	// when responding to a route.
+	// It should initialize its member variables and call its embeded Formbase.Init function, passing its
+	// accessor variable as the self parameter.
+	Init(ctx context.Context, id string)
+
+	// Run is called by the framework after a form is created for the first time, or recreated for an Ajax call.
+	// It is a good place to validate credentials and any incoming form variables.
 	Run(ctx context.Context)
+
+	// CreateControls is called by the framework after a form is created for the first time. It is the place to
+	// add controls to the form.
 	CreateControls(ctx context.Context)
+
+	// LoadControls is called after CreateControls and is the place to query the database and load up the value of any
+	// controls in the form.
 	LoadControls(ctx context.Context)
+
+	// Exit is called after the page is drawn, just before it is saved in the page cache. Its the place to do any last
+	// minute local variable initializations.
 	Exit(ctx context.Context, err error)
 
 	updateValues(ctx context.Context)
@@ -65,7 +80,7 @@ type FormBase struct {
 }
 
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
-func (f *FormBase) Init(_ context.Context, id string) {
+func (f *FormBase) Init(self any, _ context.Context, id string) {
 	var p = &Page{}
 	p.Init()
 
@@ -74,13 +89,13 @@ func (f *FormBase) Init(_ context.Context, id string) {
 		panic("Forms must have an id assigned")
 	}
 
-	f.ControlBase.Init(nil, id)
+	f.ControlBase.Init(self, nil, id)
 	f.Tag = "form"
 	f.this().AddRelatedFiles()
 }
 
 func (f *FormBase) this() FormI {
-	return f.Self.(FormI)
+	return f.Self().(FormI)
 }
 
 // AddRelatedFiles adds related javascript and style sheet files. This is the default to get the minimum goradd installation working.,
@@ -603,14 +618,13 @@ type MockForm struct {
 }
 
 func init() {
-	RegisterControl(&MockForm{})
+	RegisterControl(new(MockForm))
 }
 
 // NewMockForm creates a form that should be used as a parent of a control when unit testing the control.
 func NewMockForm() *MockForm {
-	f := &MockForm{}
-	f.Self = f
-	f.FormBase.Init(nil, "MockFormID")
+	f := new(MockForm)
+	f.FormBase.Init(f, nil, "MockFormID")
 	return f
 }
 

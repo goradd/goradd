@@ -23,19 +23,18 @@ type Fieldset struct {
 // NewFieldset creates a new Fieldset.
 func NewFieldset(parent page.ControlI, id string) *Fieldset {
 	p := &Fieldset{}
-	p.Self = p
-	p.Init(parent, id)
+	p.Init(p, parent, id)
 	return p
 }
 
 // Init is called by subclasses of Fieldset.
-func (c *Fieldset) Init(parent page.ControlI, id string) {
-	c.Panel.Init(parent, id)
+func (c *Fieldset) Init(self any, parent page.ControlI, id string) {
+	c.Panel.Init(self, parent, id)
 	c.Tag = "fieldset"
 }
 
 func (c *Fieldset) this() FieldsetI {
-	return c.Self.(FieldsetI)
+	return c.Self().(FieldsetI)
 }
 
 // DrawingAttributes is called by the framework.

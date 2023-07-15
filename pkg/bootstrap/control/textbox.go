@@ -17,8 +17,7 @@ type Textbox struct {
 
 func NewTextbox(parent page.ControlI, id string) *Textbox {
 	t := new(Textbox)
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 

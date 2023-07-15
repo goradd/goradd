@@ -26,19 +26,18 @@ type RadioList struct {
 
 func NewRadioList(parent page.ControlI, id string) *RadioList {
 	l := &RadioList{}
-	l.Self = l
-	l.Init(parent, id)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *RadioList) Init(parent page.ControlI, id string) {
-	l.RadioList.Init(parent, id)
+func (l *RadioList) Init(self any, parent page.ControlI, id string) {
+	l.RadioList.Init(self, parent, id)
 	l.SetLabelDrawingMode(html5tag.LabelAfter)
 	l.SetRowClass("row")
 }
 
 func (l *RadioList) this() RadioListI {
-	return l.Self.(RadioListI)
+	return l.Self().(RadioListI)
 }
 
 func (l *RadioList) SetIsInline(i bool) {
