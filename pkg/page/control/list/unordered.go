@@ -44,13 +44,12 @@ const (
 // NewUnorderedList creates a new ul type list.
 func NewUnorderedList(parent page.ControlI, id string) *UnorderedList {
 	l := &UnorderedList{}
-	l.Self = l
-	l.Init(parent, id)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *UnorderedList) Init(parent page.ControlI, id string) {
-	l.ControlBase.Init(parent, id)
+func (l *UnorderedList) Init(self any, parent page.ControlI, id string) {
+	l.ControlBase.Init(self, parent, id)
 	l.List = NewList(l)
 	l.Tag = "ul"
 	l.itemTag = "li"
@@ -58,7 +57,7 @@ func (l *UnorderedList) Init(parent page.ControlI, id string) {
 
 // this() supports object oriented features by giving easy access to the virtual function interface.
 func (l *UnorderedList) this() UnorderedListI {
-	return l.Self.(UnorderedListI)
+	return l.Self().(UnorderedListI)
 }
 
 // SetItemTag sets the tag that will be used for items in the list. By default this is "li".

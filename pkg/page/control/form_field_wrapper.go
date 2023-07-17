@@ -50,13 +50,12 @@ type FormFieldWrapper struct {
 
 func NewFormFieldWrapper(parent page.ControlI, id string) *FormFieldWrapper {
 	p := &FormFieldWrapper{}
-	p.Self = p
-	p.Init(parent, id)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (c *FormFieldWrapper) Init(parent page.ControlI, id string) {
-	c.ControlBase.Init(parent, id)
+func (c *FormFieldWrapper) Init(self any, parent page.ControlI, id string) {
+	c.ControlBase.Init(self, parent, id)
 	c.Tag = "div"
 	c.subtag = "div"
 	c.labelAttributes = html5tag.NewAttributes().
@@ -71,7 +70,7 @@ func (c *FormFieldWrapper) Init(parent page.ControlI, id string) {
 }
 
 func (c *FormFieldWrapper) this() FormFieldWrapperI {
-	return c.Self.(FormFieldWrapperI)
+	return c.Self().(FormFieldWrapperI)
 }
 
 // SetFor associates the form field with a sub control. The relatedId
@@ -324,8 +323,7 @@ func (f FormFieldWrapperCreator) Create(ctx context.Context, parent page.Control
 	return c
 }
 
-// Init is called by implementations of a FormFieldWrapper to initialize
-// the creator. You do not normally need to call this.
+// Init is called by implementations of a FormFieldWrapper to initialize the creator.
 func (f FormFieldWrapperCreator) Init(ctx context.Context, c FormFieldWrapperI) {
 	c.ApplyOptions(ctx, f.ControlOptions)
 	c.SetText(f.Label)

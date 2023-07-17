@@ -72,14 +72,13 @@ type Dialog struct {
 
 // NewDialog creates a new dialog.
 func NewDialog(parent page.ControlI, id string) *Dialog {
-	d := &Dialog{}
-	d.Self = d
-	d.Init(parent, id) // parent is always the form
+	d := new(Dialog)
+	d.Init(d, parent, id) // parent is always the form
 	return d
 }
 
 // Init is called by subclasses of the dialog.
-func (d *Dialog) Init(parent page.ControlI, id string) {
+func (d *Dialog) Init(self any, parent page.ControlI, id string) {
 	// Our strategy here is to create a dialog overlay that is a container for the currently shown dialogs. This
 	// container is owned by the form itself, even if sub-controls create the dialog.
 	var overlay *control.Panel
@@ -96,7 +95,7 @@ func (d *Dialog) Init(parent page.ControlI, id string) {
 	}
 
 	// Make the overlay our parent
-	d.Panel.Init(overlay, id)
+	d.Panel.Init(self, overlay, id)
 	d.Tag = "div"
 
 	d.titleBarID = d.ID() + "-title"
@@ -290,7 +289,7 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 }
 
 // DoPrivateAction is called by the framework and will respond to the DialogClose action sent by any close buttons on the
-// page to close the dialog. You do not normally need to call this.
+// page to close the dialog.
 func (d *Dialog) DoPrivateAction(_ context.Context, a action.Params) {
 	switch a.ID {
 	case ClosedAction:

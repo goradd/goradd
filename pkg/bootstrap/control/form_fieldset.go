@@ -30,14 +30,13 @@ type FormFieldset struct {
 }
 
 func NewFormFieldset(parent page.ControlI, id string) *FormFieldset {
-	p := &FormFieldset{}
-	p.Self = p
-	p.Init(parent, id)
+	p := new(FormFieldset)
+	p.Init(p, parent, id)
 	return p
 }
 
-func (c *FormFieldset) Init(parent page.ControlI, id string) {
-	c.Panel.Init(parent, id)
+func (c *FormFieldset) Init(self any, parent page.ControlI, id string) {
+	c.Panel.Init(self, parent, id)
 	c.Tag = "fieldset"
 	c.legendAttributes = html5tag.NewAttributes()
 	c.legendAttributes.AddClass("pt-0") // helps with alignment. Remove if needed
@@ -47,7 +46,7 @@ func (c *FormFieldset) Init(parent page.ControlI, id string) {
 }
 
 func (c *FormFieldset) this() FormFieldsetI {
-	return c.Self.(FormFieldsetI)
+	return c.Self().(FormFieldsetI)
 }
 
 func (c *FormFieldset) LegendAttributes() html5tag.Attributes {

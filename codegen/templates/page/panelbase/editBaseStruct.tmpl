@@ -2,6 +2,8 @@
 
 {{
 
+// {{= panelName }}I is the interface corresponding to a {{= panelName }}.
+// Its primary purpose is to allow you to create a derived object and override the default methods.
 type {{= panelName }}I interface {
 {{g
     for _,col := range t.Columns {
@@ -50,7 +52,7 @@ type {{= panelName }} struct {
 }
 
 func (p *{{= panelName }}) this() {{= panelName }}I {
-	return p.Self.({{= panelName }}I)
+	return p.Self().({{= panelName }}I)
 }
 
 }}

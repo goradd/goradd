@@ -21,13 +21,12 @@ type ActionsPanel struct {
 
 func NewActionsPanel(ctx context.Context, parent page.ControlI) page.ControlI {
 	p := &ActionsPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "")
+	p.Init(p, ctx, parent, "")
 	return p
 }
 
-func (p *ActionsPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *ActionsPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 
 	textbox1 := NewTextbox(p, "textbox1")
 	textbox1.On(event.Input(), action.Javascript("event.target.value = event.target.value.toUpperCase()"))

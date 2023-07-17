@@ -25,13 +25,12 @@ type DataPager struct {
 
 func NewDataPager(parent page.ControlI, id string, pagedControl control.PagedControlI) *DataPager {
 	d := new(DataPager)
-	d.Self = d
-	d.Init(parent, id, pagedControl)
+	d.Init(d, parent, id, pagedControl)
 	return d
 }
 
-func (d *DataPager) Init(parent page.ControlI, id string, pagedControl control.PagedControlI) {
-	d.DataPager.Init(parent, id, pagedControl)
+func (d *DataPager) Init(self any, parent page.ControlI, id string, pagedControl control.PagedControlI) {
+	d.DataPager.Init(self, parent, id, pagedControl)
 	d.SetLabels(`<span aria-hidden="true">&laquo;</span><span class="visually-hidden">Previous</span>`,
 		`<span aria-hidden="true">&raquo;</span> <span class="visually-hidden">Next</span>`)
 	d.ButtonStyle = ButtonStyleOutlineSecondary
@@ -40,7 +39,7 @@ func (d *DataPager) Init(parent page.ControlI, id string, pagedControl control.P
 }
 
 func (d *DataPager) this() DataPagerI {
-	return d.Self.(DataPagerI)
+	return d.Self().(DataPagerI)
 }
 
 func (d *DataPager) DrawingAttributes(ctx context.Context) html5tag.Attributes {
@@ -185,7 +184,7 @@ func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page
 }
 
 // Init is called by implementations of Buttons to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 	ctrl.(*DataPager).ButtonStyle = c.ButtonStyle
 	ctrl.(*DataPager).HighlightStyle = c.HighlightStyle

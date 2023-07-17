@@ -94,6 +94,7 @@ type DataLoader interface {
 // ControlI is the interface that all controls must support. The functions are implemented by the
 // ControlBase methods. See the ControlBase method implementation for a description of each method.
 type ControlI interface {
+	base.BaseI
 	ID() string
 	control() *ControlBase
 
@@ -333,8 +334,10 @@ type ControlBase struct {
 	// encoded is used during the serialization process to prevent encoding a control multiple times.
 	encoded bool
 
+	// dataConnector automates the transfer of data between a data store and the control.
 	dataConnector DataConnector
 
+	// watchedKeys are the notification keys that will cause the control to refresh.
 	watchedKeys map[string]string
 
 	// anything added here needs to be also added to the GOB encoder!
@@ -347,10 +350,17 @@ type ControlBase struct {
 // calls this superclass function. This Init function sets up a parent-child relationship with the given parent
 // control.
 //
+// The self object is the control that is being initialized. This sets up the ability to override functions and treat them
+// as virtual functions.
+//
 // The id given will be used as the id in the corresponding HTML tag, and should be unique on the page.
 // Leave blank for the system to create a unique id for you.
+//
+// The parent is the parent control of the control being initialized, which usually corresponds to the html object
+// enclosing the control.
 // A nil parent is for top level controls, primarily Forms.
-func (c *ControlBase) Init(parent ControlI, id string) {
+func (c *ControlBase) Init(self any, parent ControlI, id string) {
+	c.Base.Init(self)
 	c.attributes = html5tag.NewAttributes()
 	if parent == nil {
 		c.id = id
@@ -365,7 +375,7 @@ func (c *ControlBase) Init(parent ControlI, id string) {
 // this supports object-oriented features by giving easy access to the virtual function interface.
 // Subclasses should provide a duplicate. Calls that implement chaining should return the result of this function.
 func (c *ControlBase) this() ControlI {
-	return c.Self.(ControlI)
+	return c.Self().(ControlI)
 }
 
 // Restore is called by the framework for control implemenatations.
@@ -415,7 +425,7 @@ func (c *ControlBase) Draw(ctx context.Context, w io.Writer) {
 	c.this().DrawPreRender(ctx, w)
 
 	if !config.Minify && GetContext(ctx).RequestMode() != Ajax {
-		if _, err := fmt.Fprintf(w, "<!-- ControlBase Type:%s, Id:%s -->\n", c.Type(), c.ID()); err != nil {
+		if _, err := fmt.Fprintf(w, "<!-- ControlBase Type:%s, Id:%s -->\n", c.TypeOf(), c.ID()); err != nil {
 			panic(err)
 		}
 	}
@@ -1435,7 +1445,7 @@ func (c *ControlBase) writeState(ctx context.Context) {
 		c.this().MarshalState(state)
 		stateKey := c.ParentForm().ID() + ":" + c.ID()
 		if state.Len() > 0 {
-			state.Set(sessionControlTypeState, c.Type()) // so we can make sure the type is the same when we read, in situations where control Ids are dynamic
+			state.Set(sessionControlTypeState, c.TypeOf().String()) // so we can make sure the type is the same when we read, in situations where control Ids are dynamic
 			i := session.Get(ctx, sessionControlStates)
 			if i == nil {
 				stateStore = new(stateStoreType)
@@ -1471,7 +1481,7 @@ func (c *ControlBase) readState(ctx context.Context) {
 				// Indicates This particular item was not stored correctly
 			}
 
-			if typ := state.Get(sessionControlTypeState).(string); typ != c.Type() {
+			if typ := state.Get(sessionControlTypeState).(string); typ != c.TypeOf().String() {
 				return // types are not equal, ids must have changed
 			}
 
@@ -1984,7 +1994,7 @@ type Creator interface {
 	Create(ctx context.Context, parent ControlI) ControlI
 }
 
-// AddControls adds sub-controls to a control using a Create function
+// AddControls adds sub-controls to a control using Creator objects
 func (c *ControlBase) AddControls(ctx context.Context, creators ...Creator) {
 	for _, creator := range creators {
 		creator.Create(ctx, c)

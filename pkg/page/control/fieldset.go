@@ -23,19 +23,18 @@ type Fieldset struct {
 // NewFieldset creates a new Fieldset.
 func NewFieldset(parent page.ControlI, id string) *Fieldset {
 	p := &Fieldset{}
-	p.Self = p
-	p.Init(parent, id)
+	p.Init(p, parent, id)
 	return p
 }
 
 // Init is called by subclasses of Fieldset.
-func (c *Fieldset) Init(parent page.ControlI, id string) {
-	c.Panel.Init(parent, id)
+func (c *Fieldset) Init(self any, parent page.ControlI, id string) {
+	c.Panel.Init(self, parent, id)
 	c.Tag = "fieldset"
 }
 
 func (c *Fieldset) this() FieldsetI {
-	return c.Self.(FieldsetI)
+	return c.Self().(FieldsetI)
 }
 
 // DrawingAttributes is called by the framework.
@@ -45,7 +44,7 @@ func (c *Fieldset) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	return a
 }
 
-// DrawTag is called by the framework.
+// DrawTag is called by the framework to draw the html for the control.
 func (c *Fieldset) DrawTag(ctx context.Context, w io.Writer) {
 	var ctrl string
 
@@ -76,7 +75,7 @@ type FieldsetCreator struct {
 	page.ControlOptions
 }
 
-// Create is called by the framework to create the panel. You do not normally need to call this.
+// Create is called by the framework to create the panel.
 func (c FieldsetCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewFieldset(parent, c.ID)
 	if c.Legend != "" {

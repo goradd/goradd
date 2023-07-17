@@ -17,8 +17,7 @@ type PhoneTextbox struct {
 
 func NewPhoneTextbox(parent page.ControlI, id string) *PhoneTextbox {
 	t := new(PhoneTextbox)
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 

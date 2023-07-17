@@ -35,14 +35,13 @@ type ButtonColumn struct {
 
 // NewButtonColumn creates a new button column.
 func NewButtonColumn() *ButtonColumn {
-	i := ButtonColumn{}
-	i.Self = &i
-	i.Init()
-	return &i
+	i := new(ButtonColumn)
+	i.Init(i)
+	return i
 }
 
-func (c *ButtonColumn) Init() {
-	c.ColumnBase.Init(c)
+func (c *ButtonColumn) Init(self table.ColumnI) {
+	c.ColumnBase.Init(self)
 	c.buttonHtml = `&#9998` // default to a standard pencil icon
 	c.buttonAttributes = html5tag.NewAttributes().
 		AddClass("gr-transparent-btn") // style so button part does not show, only the icon

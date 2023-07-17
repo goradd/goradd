@@ -20,8 +20,7 @@ type JsUnitForm struct {
 }
 
 func (f *JsUnitForm) Init(ctx context.Context, formID string) {
-	f.FormBase.Init(ctx, formID)
-	f.AddRelatedFiles()
+	f.FormBase.Init(f, ctx, formID)
 
 	f.Results = NewPanel(f, "results")
 

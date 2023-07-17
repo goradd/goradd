@@ -1,8 +1,9 @@
 // const.tmpl
 
 {{
-const (
 
+// The ids of the editable objects.
+const (
 {{g
     for _,col := range t.Columns {
         cd := t.ControlDescription(col)
@@ -29,6 +30,5 @@ const (
     }
 
 }}
-
 )
 }}

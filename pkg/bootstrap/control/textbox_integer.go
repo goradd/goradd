@@ -17,8 +17,7 @@ type IntegerTextbox struct {
 
 func NewIntegerTextbox(parent page.ControlI, id string) *IntegerTextbox {
 	t := new(IntegerTextbox)
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 
@@ -80,7 +79,7 @@ func (c IntegerTextboxCreator) Create(ctx context.Context, parent page.ControlI)
 }
 
 // Init is called by implementations of Textboxes to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c IntegerTextboxCreator) Init(ctx context.Context, ctrl IntegerTextboxI) {
 	// Reuse subclass
 	sub := textbox.IntegerTextboxCreator{

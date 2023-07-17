@@ -19,13 +19,12 @@ type SelectListPanel struct {
 }
 
 func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
-	p := &SelectListPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "selectListPanel")
+	p := new(SelectListPanel)
+	p.Init(p, ctx, parent, "selectListPanel")
 
 }
 
-func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id string) {
+func (p *SelectListPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
 	itemList := []list.ListValue{
 		{"First", 1},
 		{"Second", 2},
@@ -36,7 +35,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 		{"Seventh", 7},
 		{"Eighth", 8},
 	}
-	p.Panel.Init(parent, id)
+	p.Panel.Init(self, parent, id)
 
 	p.AddControls(ctx,
 		FormGroupCreator{
@@ -104,7 +103,7 @@ func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id str
 func (p *SelectListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case ButtonSubmit:
-		GetFormFieldset(p, "checklist1-fs").SetInstructions(
+		GetFormFieldset(p, "checklist1-ff").SetInstructions(
 			strings.Join(GetCheckboxList(p, "checklist1").SelectedIds(), ","))
 	}
 }

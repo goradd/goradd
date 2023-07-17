@@ -35,19 +35,18 @@ const (
 // NewOrderedList creates a new ordered list (ol tag).
 func NewOrderedList(parent page.ControlI, id string) *OrderedList {
 	t := &OrderedList{}
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (l *OrderedList) Init(parent page.ControlI, id string) {
-	l.UnorderedList.Init(parent, id)
+func (l *OrderedList) Init(self any, parent page.ControlI, id string) {
+	l.UnorderedList.Init(self, parent, id)
 	l.Tag = "ol"
 }
 
 // this() supports object oriented features by giving easy access to the virtual function interface.
 func (l *OrderedList) this() OrderedListI {
-	return l.Self.(OrderedListI)
+	return l.Self().(OrderedListI)
 }
 
 // SetNumberType sets the top level number style for the list. Choose from the OrderedListNumberType* constants.

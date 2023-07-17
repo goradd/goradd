@@ -1,6 +1,7 @@
 package page
 
 import (
+	"fmt"
 	"hash/fnv"
 	"reflect"
 )
@@ -27,14 +28,14 @@ func RegisterControl(i ControlI) {
 	if n == "" {
 		panic("type problem")
 	}
-	_,_ = hash.Write([]byte(ControlRegistrySalt))
-	_,_ = hash.Write([]byte(typ.PkgPath()))
-	_,_ = hash.Write([]byte(typ.Name()))
+	_, _ = hash.Write([]byte(ControlRegistrySalt))
+	_, _ = hash.Write([]byte(typ.PkgPath()))
+	_, _ = hash.Write([]byte(typ.Name()))
 	id := hash.Sum64()
-	if t,ok := controlRegistry[id]; ok {
+	if t, ok := controlRegistry[id]; ok {
 		panic("The control registry has detected a collision. " +
 			t.Name() + " has collided with " + typ.Name() + ". " +
-		"This is a very rare situation, but needs " +
+			"This is a very rare situation, but needs " +
 			"to be fixed. To fix it, change the ControlRegistrySalt value, and also change the " +
 			"PageCacheVersionID")
 	}
@@ -43,8 +44,7 @@ func RegisterControl(i ControlI) {
 }
 
 func controlRegistryID(i ControlI) uint64 {
-	val := reflect.Indirect(reflect.ValueOf(i))
-	typ := val.Type()
+	typ := i.TypeOf()
 	id, ok := controlRegistryIds[typ]
 	if !ok {
 		panic("ControlBase type is not registered: " + typ.String())
@@ -53,18 +53,20 @@ func controlRegistryID(i ControlI) uint64 {
 }
 
 func createRegisteredControl(registryID uint64, p *Page) ControlI {
-	typ := controlRegistry[registryID]
+	var typ reflect.Type
+	var ok bool
+	if typ, ok = controlRegistry[registryID]; !ok {
+		panic(fmt.Errorf("attempting to decode a control type that is not registered: %d", registryID))
+	}
 	v := reflect.New(typ)
 	c := v.Interface().(ControlI)
-	c.control().Self = c
+	c.control().Base.Init(c)
 	c.control().page = p
 	return c
 }
 
-func controlIsRegistered(i interface{}) bool {
+func controlIsRegistered(i ControlI) bool {
 	typ := reflect.Indirect(reflect.ValueOf(i)).Type()
-	_,ok := controlRegistryIds[typ]
+	_, ok := controlRegistryIds[typ]
 	return ok
 }
-
-

@@ -29,20 +29,19 @@ type FloatTextbox struct {
 
 func NewFloatTextbox(parent page.ControlI, id string) *FloatTextbox {
 	t := &FloatTextbox{}
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 
 // Init is called by the framework, and subclasses of the FloatTextbox.
-func (t *FloatTextbox) Init(parent page.ControlI, id string) {
-	t.Textbox.Init(parent, id)
+func (t *FloatTextbox) Init(self any, parent page.ControlI, id string) {
+	t.Textbox.Init(self, parent, id)
 	t.ValidateWith(FloatValidator{})
 	t.SetAttribute("inputmode", "decimal") // set inputmode for mobile input, but do it here so programmer could cancel this if desired.
 }
 
 func (t *FloatTextbox) this() FloatI {
-	return t.Self.(FloatI)
+	return t.Self().(FloatI)
 }
 
 func (t *FloatTextbox) SetMinValue(minValue float64, invalidMessage string) FloatI {
@@ -201,7 +200,7 @@ func (c FloatTextboxCreator) Create(ctx context.Context, parent page.ControlI) p
 }
 
 // Init is called by implementations of Textboxes to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c FloatTextboxCreator) Init(ctx context.Context, ctrl FloatI) {
 	if c.MinValue != nil {
 		ctrl.SetMinValue(c.MinValue.Value, c.MinValue.InvalidMessage)

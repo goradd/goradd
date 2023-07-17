@@ -76,14 +76,13 @@ type FileSelect struct {
 // NewFileSelect creates a new file select button.
 func NewFileSelect(parent page.ControlI, id string) *FileSelect {
 	c := &FileSelect{}
-	c.Self = c
-	c.Init(parent, id)
+	c.Init(c, parent, id)
 	return c
 }
 
 // Init is called by subclasses of Button to initialize the button control structure.
-func (b *FileSelect) Init(parent page.ControlI, id string) {
-	b.ControlBase.Init(parent, id)
+func (b *FileSelect) Init(self any, parent page.ControlI, id string) {
+	b.ControlBase.Init(self, parent, id)
 	b.Tag = "input"
 	b.SetAttribute("type", "file")
 	b.On(event.Change().Private(), action.Ajax(b.ID(), fileSelectChangeAction))
@@ -220,7 +219,7 @@ func (c FileSelectCreator) Create(ctx context.Context, parent page.ControlI) pag
 }
 
 // Init is called by implementations of controls to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c FileSelectCreator) Init(ctx context.Context, ctrl FileSelectI) {
 	if c.OnChange != nil {
 		ctrl.On(event.Change(), c.OnChange)

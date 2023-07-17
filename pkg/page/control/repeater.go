@@ -37,23 +37,22 @@ type RepeaterHtmler interface {
 
 // NewRepeater creates a new Repeater
 func NewRepeater(parent page.ControlI, id string) *Repeater {
-	r := &Repeater{}
-	r.Self = r
-	r.Init(parent, id)
+	r := new(Repeater)
+	r.Init(r, parent, id)
 	return r
 }
 
 // Init is an internal function that enables the object-oriented pattern of calling virtual functions used by the
 // goradd controls.
-func (r *Repeater) Init(parent page.ControlI, id string) {
-	r.ControlBase.Init(parent, id)
+func (r *Repeater) Init(self any, parent page.ControlI, id string) {
+	r.ControlBase.Init(self, parent, id)
 	r.Tag = "div"
 }
 
 // this returns the RepeaterI interface for calling into "virtual" functions. This allows us to call functions defined
 // by a subclass.
 func (r *Repeater) this() RepeaterI {
-	return r.Self.(RepeaterI)
+	return r.Self().(RepeaterI)
 }
 
 // SetItemHtmler sets the htmler that provides the html for each item in the repeater.

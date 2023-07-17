@@ -118,7 +118,6 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 			panic("form not found for path: " + gCtx.URL.Path)
 		} else {
 			form = reflect.New(info.typ).Interface().(FormI)
-			form.control().Self = form
 			form.Init(ctx, info.formID)
 		}
 		page = form.Page()

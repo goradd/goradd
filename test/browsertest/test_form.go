@@ -48,10 +48,8 @@ type TestForm struct {
 }
 
 func (form *TestForm) Init(ctx context.Context, formID string) {
-	form.FormBase.Init(ctx, formID)
+	form.FormBase.Init(form, ctx, formID)
 	//f.Page().SetDrawFunction(LoginPageTmpl)
-	form.AddRelatedFiles()
-	form.createControls(ctx)
 	form.WatchChannel(ctx, "redraw")
 	testFormPageState = form.Page().StateID()
 
@@ -62,7 +60,8 @@ func (form *TestForm) Init(ctx context.Context, formID string) {
 	}
 }
 
-func (form *TestForm) createControls(ctx context.Context) {
+func (form *TestForm) CreateControls(ctx context.Context) {
+	form.FormBase.CreateControls(ctx)
 	form.Controller = NewTestController(form, "controller")
 
 	list.NewSelectList(form, "test-list").
@@ -82,6 +81,7 @@ func (form *TestForm) createControls(ctx context.Context) {
 }
 
 func (form *TestForm) LoadControls(ctx context.Context) {
+	form.FormBase.LoadControls(ctx)
 	tests.Range(func(k string, v interface{}) bool {
 		list.GetSelectList(form, "test-list").Add(k, k)
 		return true

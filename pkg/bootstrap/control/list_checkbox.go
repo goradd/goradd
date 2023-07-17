@@ -32,20 +32,19 @@ type CheckboxList struct {
 }
 
 func NewCheckboxList(parent page.ControlI, id string) *CheckboxList {
-	l := &CheckboxList{}
-	l.Self = l
-	l.Init(parent, id)
+	l := new(CheckboxList)
+	l.Init(l, parent, id)
 	return l
 }
 
-func (l *CheckboxList) Init(parent page.ControlI, id string) {
-	l.CheckboxList.Init(parent, id)
+func (l *CheckboxList) Init(self any, parent page.ControlI, id string) {
+	l.CheckboxList.Init(self, parent, id)
 	l.SetLabelDrawingMode(html5tag.LabelAfter)
 	l.SetRowClass("row")
 }
 
 func (l *CheckboxList) this() CheckboxListI {
-	return l.Self.(CheckboxListI)
+	return l.Self().(CheckboxListI)
 }
 
 func (l *CheckboxList) SetIsInline(i bool) {

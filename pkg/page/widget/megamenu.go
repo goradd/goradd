@@ -41,23 +41,22 @@ type MegaMenuI interface {
 
 func NewMegaMenu(parent page.ControlI, id string) *MegaMenu {
 	l := &MegaMenu{}
-	l.Self = l
-	l.Init(parent, id)
+	l.Init(l, parent, id)
 	pxy := control.NewProxy(l, l.ID()+"-pxy")
 	pxy.On(event.Click(), action.Trigger(l.ID(), MegaMenuSelectEvent, javascript.JsCode("g$(event.target).data('grAv')")))
 
 	return l
 }
 
-func (l *MegaMenu) Init(parent page.ControlI, id string) {
-	l.ControlBase.Init(parent, id)
+func (l *MegaMenu) Init(self any, parent page.ControlI, id string) {
+	l.ControlBase.Init(self, parent, id)
 	l.List = list.NewList(l)
 	l.Tag = "nav"
 }
 
 // this() supports object oriented features by giving easy access to the virtual function interface.
 func (l *MegaMenu) this() MegaMenuI {
-	return l.Self.(MegaMenuI)
+	return l.Self().(MegaMenuI)
 }
 
 func (l *MegaMenu) getProxy() *control.Proxy {

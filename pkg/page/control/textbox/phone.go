@@ -21,18 +21,17 @@ type PhoneTextbox struct {
 // multi will allow the textbox to accept multiple email addresses separated by a comma.
 func NewPhoneTextbox(parent page.ControlI, id string) *PhoneTextbox {
 	t := &PhoneTextbox{}
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 
-func (t *PhoneTextbox) Init(parent page.ControlI, id string) {
-	t.Textbox.Init(parent, id)
+func (t *PhoneTextbox) Init(self any, parent page.ControlI, id string) {
+	t.Textbox.Init(self, parent, id)
 	t.SetType(TelType)
 }
 
 func (t *PhoneTextbox) this() PhoneI {
-	return t.Self.(PhoneI)
+	return t.Self().(PhoneI)
 }
 
 func (t *PhoneTextbox) Validate(ctx context.Context) bool {

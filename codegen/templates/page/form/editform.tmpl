@@ -2,7 +2,8 @@
 
 // The master template for the EditForm classes
 
-// Variables used below
+// The below variables are used by the EditForm templates
+
 var title  = t.GoName
 var formName = title + "EditForm"
 var tableKebab = strings2.CamelToKebab(t.GoName)
@@ -11,6 +12,7 @@ var listFormPath = path.Join("/goradd/form/",dd.DbKey,tableKebab + "-list")
 {{: editFormImport.tmpl }}
 {{: editFormConst.tmpl }}
 {{: editFormStruct.tmpl }}
+{{: editFormInitLifecycle.tmpl }}
 {{: editFormRun.tmpl }}
 {{: editFormAddFiles.tmpl }}
 {{: editFormCreateControls.tmpl }}

@@ -153,7 +153,7 @@ func (c *ColumnBase) init(self ColumnI) {
 }
 
 func (c *ColumnBase) this() ColumnI {
-	return c.Self.(ColumnI)
+	return c.Self().(ColumnI)
 }
 
 // ID returns the id of the column

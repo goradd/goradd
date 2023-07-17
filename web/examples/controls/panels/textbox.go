@@ -18,13 +18,12 @@ type TextboxPanel struct {
 }
 
 func NewTextboxPanel(ctx context.Context, parent page.ControlI) {
-	p := &TextboxPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "textboxPanel")
+	p := new(TextboxPanel)
+	p.Init(p, ctx, parent, "textboxPanel")
 }
 
-func (p *TextboxPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *TextboxPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, "textboxPanel")
 
 	p.Panel.AddControls(ctx,
 		FormFieldWrapperCreator{

@@ -21,14 +21,13 @@ type DateTimeSpan struct {
 // NewDateTimeSpan create a new DateTimeSpan.
 func NewDateTimeSpan(parent page.ControlI, id string) *DateTimeSpan {
 	s := new(DateTimeSpan)
-	s.Self = s
-	s.Init(parent, id)
+	s.Init(s, parent, id)
 	return s
 }
 
-// Init is called by subclasses to initialize the parent. You do not normally need to call this.
-func (s *DateTimeSpan) Init(parent page.ControlI, id string) {
-	s.Span.Init(parent, id)
+// Init is called by subclasses to initialize the parent.
+func (s *DateTimeSpan) Init(self any, parent page.ControlI, id string) {
+	s.Span.Init(self, parent, id)
 	s.format = config.DefaultDateTimeFormat
 }
 

@@ -83,14 +83,13 @@ type Textbox struct {
 // NewTextbox creates a new GoRADD Textbox control.
 func NewTextbox(parent page.ControlI, id string) *Textbox {
 	t := &Textbox{}
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 
 // Init initializes a Textbox. Normally you will not call this directly.
-func (t *Textbox) Init(parent page.ControlI, id string) {
-	t.ControlBase.Init(parent, id)
+func (t *Textbox) Init(self any, parent page.ControlI, id string) {
+	t.ControlBase.Init(self, parent, id)
 
 	t.Tag = "input"
 	t.IsVoidTag = true
@@ -99,7 +98,7 @@ func (t *Textbox) Init(parent page.ControlI, id string) {
 }
 
 func (t *Textbox) this() TextboxI {
-	return t.Self.(TextboxI)
+	return t.Self().(TextboxI)
 }
 
 // ValidateWith adds a Validater to the validator list.
@@ -472,7 +471,7 @@ func (c TextboxCreator) Create(ctx context.Context, parent page.ControlI) page.C
 }
 
 // Init is called by implementations of Textboxes to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c TextboxCreator) Init(ctx context.Context, ctrl TextboxI) {
 	if c.Placeholder != "" {
 		ctrl.SetPlaceholder(c.Placeholder)

@@ -219,25 +219,28 @@ type DataPager struct {
 // NewDataPager creates a new DataPager
 func NewDataPager(parent page.ControlI, id string, pagedControl PagedControlI) *DataPager {
 	d := &DataPager{}
-	d.Self = d
-	d.Init(parent, id, pagedControl)
+	d.Init(d, parent, id, pagedControl)
 	return d
 }
 
 // Init is called by subclasses of a DataPager to initialize the data pager. You do not normally need
 // to call this.
-func (d *DataPager) Init(parent page.ControlI, id string, pagedControl PagedControlI) {
-	d.ControlBase.Init(parent, id)
+func (d *DataPager) Init(self any, parent page.ControlI, id string, pagedControl PagedControlI) {
+	d.ControlBase.Init(self, parent, id)
 	d.Tag = "div"
 	d.LabelForNext = d.GT("Next")
 	d.LabelForPrevious = d.GT("Previous")
 	d.maxPageButtons = DefaultMaxPagerButtons
-	pagedControl.AddDataPager(d.Self.(DataPagerI))
+	pagedControl.AddDataPager(d.this())
 	d.pagedControlID = pagedControl.ID()
 	pxy := NewProxy(d, d.proxyID())
 	pxy.On(event.Click().Bubbles(), action.Ajax(d.ID(), PageClick))
 	d.SetAttribute("role", "tablist")
 	d.PagedControl().SetPageNum(1)
+}
+
+func (d *DataPager) this() DataPagerI {
+	return d.Self().(DataPagerI)
 }
 
 func (d *DataPager) proxyID() string {
@@ -255,7 +258,7 @@ func (d *DataPager) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	return a
 }
 
-// Action is called by the framework to respond to actions.
+// DoAction is called by the framework to respond to actions.
 func (d *DataPager) DoAction(_ context.Context, params action.Params) {
 	switch params.ID {
 	case PageClick:
@@ -385,7 +388,7 @@ func (d *DataPager) CalcBunch() (pageStart, pageEnd int) {
 	}
 }
 
-// PreRender is called by the framework to load data into the paged control just before drawing.
+// DrawPreRender is called by the framework to load data into the paged control just before drawing.
 func (d *DataPager) DrawPreRender(ctx context.Context, w io.Writer) {
 	d.ControlBase.DrawPreRender(ctx, w)
 	p := d.PagedControl()
@@ -401,13 +404,13 @@ func (d *DataPager) DrawPreRender(ctx context.Context, w io.Writer) {
 
 // DrawInnerHtml is called by the framework to draw the control's inner html.
 func (d *DataPager) DrawInnerHtml(_ context.Context, w io.Writer) {
-	h := d.Self.(DataPagerI).PreviousButtonsHtml()
+	h := d.this().PreviousButtonsHtml()
 	pageStart, pageEnd := d.CalcBunch()
 	for i := pageStart; i <= pageEnd; i++ {
-		h += d.Self.(DataPagerI).PageButtonsHtml(i)
+		h += d.this().PageButtonsHtml(i)
 	}
 
-	h += d.Self.(DataPagerI).NextButtonsHtml()
+	h += d.this().NextButtonsHtml()
 	page.WriteString(w, h)
 }
 
@@ -435,7 +438,7 @@ func (d *DataPager) PreviousButtonsHtml() string {
 	h := prev
 	pageStart, _ := d.CalcBunch()
 	if pageStart != 1 {
-		h += d.Self.(DataPagerI).PageButtonsHtml(1)
+		h += d.this().PageButtonsHtml(1)
 		h += `<span class="ellipsis">&hellip;</span>`
 	}
 	return h
@@ -467,7 +470,7 @@ func (d *DataPager) NextButtonsHtml() string {
 
 	h := next
 	if pageEnd != pageCount {
-		h += d.Self.(DataPagerI).PageButtonsHtml(pageCount) + h
+		h += d.this().PageButtonsHtml(pageCount) + h
 		h = `<span class="ellipsis">&hellip;</span>` + h
 	}
 	return h
@@ -606,7 +609,7 @@ func (c DataPagerCreator) Create(ctx context.Context, parent page.ControlI) page
 }
 
 // Init is called by implementations of Buttons to initialize a control with the
-// creator. You do not normally need to call this.
+// creator.
 func (c DataPagerCreator) Init(ctx context.Context, ctrl DataPagerI) {
 	if c.MaxPageButtons > 0 {
 		ctrl.SetMaxPageButtons(c.MaxPageButtons)

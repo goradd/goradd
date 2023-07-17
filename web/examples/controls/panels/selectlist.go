@@ -17,13 +17,12 @@ type SelectListPanel struct {
 }
 
 func NewSelectListPanel(ctx context.Context, parent page.ControlI) {
-	p := &SelectListPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "selectListPanel")
+	p := new(SelectListPanel)
+	p.Init(p, ctx, parent, "selectListPanel")
 }
 
-func (p *SelectListPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *SelectListPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 
 	itemList := []list.ListValue{
 		{"First", 1},

@@ -21,13 +21,12 @@ type TableProxyPanel struct {
 }
 
 func NewTableProxyPanel(ctx context.Context, parent page.ControlI) {
-	p := &TableProxyPanel{}
-	p.Self = p
-	p.Init(ctx, parent, "tableProxyPanel")
+	p := new(TableProxyPanel)
+	p.Init(p, ctx, parent, "tableProxyPanel")
 }
 
-func (p *TableProxyPanel) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *TableProxyPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 
 	p.AddControls(ctx,
 		ProxyCreator{
@@ -110,9 +109,8 @@ type ProjectPanel struct {
 }
 
 func NewProjectPanel(parent page.ControlI) *ProjectPanel {
-	p := &ProjectPanel{}
-	p.Self = p
-	p.Init(parent, "personPanel")
+	p := new(ProjectPanel)
+	p.Init(p, parent, "personPanel")
 
 	return p
 }
@@ -144,7 +142,7 @@ func testTableProxyCol(t *browsertest.TestForm) {
 type ProjectPanelCreator struct {
 }
 
-// Create is called by the framework to create the panel. You do not normally need to call this.
+// Create is called by the framework to create the panel.
 func (c ProjectPanelCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewProjectPanel(parent)
 	return ctrl

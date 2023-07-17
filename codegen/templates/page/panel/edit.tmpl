@@ -20,20 +20,33 @@ import(
 	"goradd-project/gen/{{dd.DbKey}}/panelbase"
 )
 
+// {{= panelName }}I defines virtual functions for the {{= panelName }}.
+type {{= panelName }}I interface {
+	panelbase.{{= panelName }}BaseI
+    // add virtual functions here if needed
+}
+
+// {{= panelName }} is a panel of editable controls that will edit a {{= t.GoName }} object.
 type {{= panelName }} struct {
 	panelbase.{{= panelName }}Base
 }
 
+// New{{= panelName }} creates a new edit panel for {{= t.GoName }} objects.
 func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
-    p.Self = p
-	p.Init(ctx, parent, id)
+	p.Init(p, ctx, parent, id)
 	return p
 }
 
-func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.{{= panelName }}Base.Init(parent, id)
+// Init initializes a panel and should be called by derived panels.
+func (p *{{= panelName }}) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.{{= panelName }}Base.Init(self, parent, id)
 	p.CreateControls(ctx)
+}
+
+// this returns the panel as an interface for calls to virtual functions.
+func (p *{{= panelName }}) this() {{= panelName }}I {
+	return p.Self().({{= panelName }}I)
 }
 
 {{: editCreateControls.tmpl }}
@@ -76,7 +89,7 @@ func (p *{{= panelName }}) Refresh() {
 
 // Reload loads the controls with data found in the database, over-writing any changes made to the internal data object.
 func (p *{{= panelName }}) Reload(ctx context.Context) {
-    p.{{= panelName }}Base.Reload(ctx)
+    _ = p.{{= panelName }}Base.Reload(ctx)
 }
 
 
@@ -97,7 +110,8 @@ func (p *{{= panelName }}) BindData(ctx context.Context, s control.DataManagerI)
 }
 
 /*
-If you add additional non-exported members to the struct, you should serialize them and deserialize them below.
+If you add additional non-exported members to the struct (as in, their names start with a lower-case letter),
+you should serialize them and deserialize them below.
 Pointers will need to be checked for nil before serializing.
 Errors should panic.
 

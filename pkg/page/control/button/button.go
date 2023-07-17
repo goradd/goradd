@@ -41,21 +41,20 @@ type Button struct {
 // Detect clicks by assigning an action to the OnClick method.
 func NewButton(parent page.ControlI, id string) *Button {
 	b := new(Button)
-	b.Self = b
-	b.Init(parent, id)
+	b.Init(b, parent, id)
 	return b
 }
 
 // Init is called by subclasses of Button to initialize the button control structure.
-func (b *Button) Init(parent page.ControlI, id string) {
-	b.ControlBase.Init(parent, id)
+func (b *Button) Init(self any, parent page.ControlI, id string) {
+	b.ControlBase.Init(self, parent, id)
 	b.Tag = "button"
 	b.SetAttribute("type", "button")
 	b.SetValidationType(event.ValidateForm) // default to validate the entire form. Can be changed after creation.
 }
 
 func (b *Button) this() ButtonI {
-	return b.Self.(ButtonI)
+	return b.Self().(ButtonI)
 }
 
 // SetLabel is an alias for SetText on buttons. Standard buttons do not normally have separate labels.
@@ -144,8 +143,7 @@ func (c ButtonCreator) Create(ctx context.Context, parent page.ControlI) page.Co
 	return ctrl
 }
 
-// Init is called by implementations of Buttons to initialize a control with the
-// creator. You do not normally need to call this.
+// Init is called by implementations of Buttons to initialize a control with the creator.
 func (c ButtonCreator) Init(ctx context.Context, ctrl ButtonI) {
 	ctrl.SetLabel(c.Text)
 	if c.OnSubmit != nil {

@@ -5,22 +5,20 @@
 // New{{= panelName }} creates and returns a new {{= panelName }} panel.
 func New{{= panelName }}(ctx context.Context, parent page.ControlI, id string) *{{= panelName}} {
     p := new({{= panelName }})
-    p.Self = p
-	p.Init(ctx, parent, id)
+	p.Init(p, ctx, parent, id)
 	return p
 }
 
 // Init initializes the {{= panelName }}. Call this when creating a derivative type of {{= panelName }}.
-func (p *{{= panelName }}) Init(ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(parent, id)
+func (p *{{= panelName }}) Init(self any, ctx context.Context, parent page.ControlI, id string) {
+	p.Panel.Init(self, parent, id)
 	p.CreateControls(ctx)
 	session.Remove(ctx, "{{= t.LcGoName }}EditID")
 	session.Remove(ctx, "{{= t.LcGoName }}DetailID")
 }
 
 func init() {
-    // Registers the control type with the framework.
-    page.RegisterControl(&{{= panelName }}{})
+    page.RegisterControl(&{{= panelName }}{}) // Register the control with the framework.
 }
 
 

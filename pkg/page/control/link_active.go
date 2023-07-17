@@ -27,18 +27,17 @@ type ActiveLink struct {
 // NewActiveLink creates a new standard html link
 func NewActiveLink(parent page.ControlI, id string) *ActiveLink {
 	b := new(ActiveLink)
-	b.Self = b
-	b.Init(parent, id)
+	b.Init(b, parent, id)
 	return b
 }
 
 // Init is called by subclasses of ActiveLink to initialize the link control structure.
-func (l *ActiveLink) Init(parent page.ControlI, id string) {
-	l.Link.Init(parent, id)
+func (l *ActiveLink) Init(self any, parent page.ControlI, id string) {
+	l.Link.Init(self, parent, id)
 }
 
 func (l *ActiveLink) this() ActiveLinkI {
-	return l.Self.(ActiveLinkI)
+	return l.Self().(ActiveLinkI)
 }
 
 // SetIsActive sets the active state of the control. When active, the ActiveAttributes will be
@@ -124,8 +123,7 @@ func (c ActiveLinkCreator) Create(ctx context.Context, parent page.ControlI) pag
 	return ctrl
 }
 
-// Init is called by implementations of ActiveLinks to initialize a control with the
-// creator. You do not normally need to call this.
+// Init is called by implementations of ActiveLinks to initialize a control with the creator.
 func (c ActiveLinkCreator) Init(ctx context.Context, ctrl ActiveLinkI) {
 	sub := LinkCreator{
 		ID:             c.ID,

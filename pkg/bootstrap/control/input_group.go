@@ -15,31 +15,28 @@ type InputGroup struct {
 	grctl.Panel
 }
 
-
 // NewInputGroup creates a new input group
 func NewInputGroup(parent page.ControlI, id string) *InputGroup {
 	b := new(InputGroup)
-	b.Self = b
-	b.Init(parent, id)
+	b.Init(b, parent, id)
 	return b
 }
 
-func (g *InputGroup) Init(parent page.ControlI, id string) {
-	g.Panel.Init(parent, id)
+func (g *InputGroup) Init(self any, parent page.ControlI, id string) {
+	g.Panel.Init(self, parent, id)
 	config.LoadBootstrap(g.ParentForm())
 }
 
 func (g *InputGroup) this() InputGroupI {
-	return g.Self.(InputGroupI)
+	return g.Self().(InputGroupI)
 }
-
 
 type InputGroupCreator struct {
 	// ID is the control id
-	ID string
+	ID      string
 	Prepend []page.Creator
-	Child page.Creator
-	Append []page.Creator
+	Child   page.Creator
+	Append  []page.Creator
 	page.ControlOptions
 }
 
@@ -53,7 +50,7 @@ func (c InputGroupCreator) Create(ctx context.Context, parent page.ControlI) pag
 	if c.Prepend != nil {
 		children = append(children,
 			grctl.PanelCreator{
-				Children:       c.Prepend,
+				Children: c.Prepend,
 				ControlOptions: page.ControlOptions{
 					Class: "input-group-prepend",
 				},
@@ -64,7 +61,7 @@ func (c InputGroupCreator) Create(ctx context.Context, parent page.ControlI) pag
 	if c.Append != nil {
 		children = append(children,
 			grctl.PanelCreator{
-				Children:       c.Append,
+				Children: c.Append,
 				ControlOptions: page.ControlOptions{
 					Class: "input-group-append",
 				},
@@ -77,7 +74,6 @@ func (c InputGroupCreator) Create(ctx context.Context, parent page.ControlI) pag
 	return ctrl
 }
 
-
 func init() {
-	page.RegisterControl(new (InputGroup))
+	page.RegisterControl(new(InputGroup))
 }

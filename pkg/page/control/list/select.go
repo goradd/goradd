@@ -37,20 +37,19 @@ type SelectList struct {
 // NewSelectList creates a new select list
 func NewSelectList(parent page.ControlI, id string) *SelectList {
 	t := &SelectList{}
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 
 // Init is called by subclasses.
-func (l *SelectList) Init(parent page.ControlI, id string) {
-	l.ControlBase.Init(parent, id)
+func (l *SelectList) Init(self any, parent page.ControlI, id string) {
+	l.ControlBase.Init(self, parent, id)
 	l.List = NewList(l.this())
 	l.Tag = "select"
 }
 
 func (l *SelectList) this() SelectListI {
-	return l.Self.(SelectListI)
+	return l.Self().(SelectListI)
 }
 
 // Validate is called by the framework to validate the contents of the control. For a SelectList,

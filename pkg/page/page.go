@@ -150,7 +150,7 @@ func (p *Page) runPage(ctx context.Context, w http2.ResponseWriter, isNew bool) 
 	return
 }
 
-// Returns the form for the page
+// Form returns the form for the page.
 func (p *Page) Form() FormI {
 	return p.form
 }
@@ -247,7 +247,7 @@ func (p *Page) GetControl(id string) ControlI {
 // controls created with control creators.
 //
 // If the control does not exist, or is not of the given type, it will return a nil object of the given type.
-// Be sure to use a pointer to a control type.
+// Be sure to use a pointer to a control type as the template type.
 //
 // Example:
 //
@@ -291,6 +291,7 @@ func (p *Page) addControl(control ControlI) {
 	p.controlRegistry[id] = control
 
 	if control.Parent() == nil {
+		_ = control.(FormI)
 		if f, ok := control.(FormI); ok {
 			if p.form != nil {
 				panic("The Form object for the page has already been set.")
@@ -327,7 +328,7 @@ func (p *Page) Title() string {
 	return p.title
 }
 
-// Call SetTitle to set the content of the <title> tag to be output in the head of the page.
+// SetTitle sets the content of the <title> tag.
 func (p *Page) SetTitle(title string) {
 	p.title = title
 }

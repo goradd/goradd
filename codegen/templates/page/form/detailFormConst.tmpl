@@ -3,14 +3,15 @@
 {{
 // {{= title }}DetailFormPath specifies the URL that will access this form.
 const {{= title }}DetailFormPath = "/goradd/forms/{{= dd.DbKey }}/{{= tableKebab }}-detail"
-// {{= title }}DetailFormID is the html id to use in the html form object.
+// {{= title }}DetailFormID is the id of the html form object.
 const {{= title }}DetailFormID = "{{= tableKebab }}-detail-form"
-
+// {{= title }}DetailPanelID is the id of the panel that contains the content of the detail form.
 const {{= title }}DetailPanelID = "{{= t.DefaultHtmlID()}}-detail-panel"
+// {{= title }}OkButtonID is the id of the OK button that will navigate back to the list form.
 const {{= title }}OkButtonID = "ok-button"
 
 const (
-    {{= title }}OkAction = iota + 1
+    {{= title }}OkAction = iota + 1 // the action triggered by the OK button
 )
 
 }}

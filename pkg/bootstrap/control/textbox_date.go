@@ -19,8 +19,7 @@ type DateTextbox struct {
 
 func NewDateTextbox(parent page.ControlI, id string) *DateTextbox {
 	t := new(DateTextbox)
-	t.Self = t
-	t.Init(parent, id)
+	t.Init(t, parent, id)
 	return t
 }
 

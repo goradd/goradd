@@ -17,15 +17,16 @@ type Application struct {
 	// Your own vars, methods and overrides
 }
 
-// MakeApplication creates the application object and related objects
-// You can potentially read command line params and make other versions of the app for testing purposes
+// MakeApplication creates the application object and related objects.
+//
+// You can potentially read command line params and make other versions of the app for testing purposes.
 func MakeApplication() *Application {
 	a := new(Application)
 	a.Init()
 	return a
 }
 
-// Init initializations the application object.
+// Init initializes the application object.
 func (a *Application) Init() {
 	a.Application.Init(a)
 }
@@ -206,5 +207,17 @@ func (a *Application) PutContext(r *http.Request) *http.Request {
 	r = r.WithContext(ctx)
 	// be sure to call the superclass version so the goradd framework can operate
 	return a.Application.PutContext(r)
+}
+
+// ServeRequestHandler is the last handler on the default call chain.
+// The default below returns a simple not found error.
+// By default, this handler is never reached, because of the html root handler registered in
+// goradd-project/web/embedder.go. You will need to modify or delete that handler
+// to reach this handler.
+func (a *Application) ServeRequestHandler() http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		http.NotFound(w, r)
+	}
+	return http.HandlerFunc(fn)
 }
 */

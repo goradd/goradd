@@ -12,6 +12,7 @@ import (
     "context"
 )
 
+// {{= t.GoName }} represents an item in the {{= t.DbName }} table in the database.
 type {{= t.GoName }} struct {
 	{{= strings2.LcFirst(t.GoName) }}Base
 }

@@ -46,19 +46,18 @@ const (
 )
 
 func NewModal(parent page.ControlI, id string) *Modal {
-	d := &Modal{}
-	d.Self = d
-	d.Init(parent, id)
+	d := new(Modal)
+	d.Init(d, parent, id)
 	return d
 }
 
-func (m *Modal) Init(parent page.ControlI, id string) {
+func (m *Modal) Init(self any, parent page.ControlI, id string) {
 
 	if id == "" {
 		panic("Modals must have an id")
 	}
 
-	m.Panel.Init(parent, id)
+	m.Panel.Init(self, parent, id)
 	m.Tag = "div"
 	m.SetShouldAutoRender(true)
 
@@ -78,7 +77,7 @@ func (m *Modal) Init(parent page.ControlI, id string) {
 }
 
 func (m *Modal) this() ModalI {
-	return m.Self.(ModalI)
+	return m.Self().(ModalI)
 }
 
 func (m *Modal) SetTitle(t string) {
@@ -337,9 +336,8 @@ type TitleBar struct {
 }
 
 func NewTitleBar(parent page.ControlI, id string) *TitleBar {
-	d := &TitleBar{}
-	d.Self = d
-	d.Panel.Init(parent, id)
+	d := new(TitleBar)
+	d.Panel.Init(d, parent, id)
 	return d
 }
 

@@ -17,8 +17,7 @@ type Checkbox struct {
 // NewCheckbox creates a new checkbox control.
 func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 	c := &Checkbox{}
-	c.Self = c
-	c.CheckboxBase.Init(parent, id)
+	c.CheckboxBase.Init(c, parent, id)
 	return c
 }
 

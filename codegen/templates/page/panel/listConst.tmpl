@@ -16,7 +16,7 @@ const (
 )
 
 // {{= t.LcGoName }}ListEditWithDialog controls whether the edit panel is displayed in a popup dialog,
-// or in a separate edit page
+// or in a separate edit page.
 const {{= t.LcGoName }}ListEditWithDialog = true
 
 // {{= t.LcGoName }}ListShowEditColumn controls whether an edit column is shown. If the column is shown, then
@@ -29,13 +29,13 @@ const {{= t.LcGoName }}ListShowEditColumn = true
 const {{= t.LcGoName }}ListTapZoom = true
 
 
-// {{= t.LcGoName }}ListShowDataPager sets whether to use a data pager or instead just show all items
+// {{= t.LcGoName }}ListShowDataPager sets whether to use a data pager or instead just show all items.
 const {{= t.LcGoName }}ListShowDataPager = true
 
 // {{= t.LcGoName }}ListShowFilterBar sets whether to show the filter bar
 const {{= t.LcGoName }}ListShowFilterBar = true
 
-// sub-panel IDs
+// Sub-panel IDs.
 const (
     {{= t.LcGoName }}FilterTextID = "{{= kebabPanelName}}-filter-text"
     {{= t.LcGoName }}PagerID = "{{= kebabPanelName}}-pager"
@@ -43,7 +43,7 @@ const (
     {{= t.LcGoName }}NewButtonID = "{{= kebabPanelName}}-new-button"
 )
 
-// column IDs
+// Column IDs.
 const (
 {{for _,col := range t.Columns }}
      {{= lcPanelName }}{{= col.GoName }}ColID = "{{= strings2.CamelToKebab(col.GoName) }}-col"
