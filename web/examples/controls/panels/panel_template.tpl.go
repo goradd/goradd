@@ -69,6 +69,9 @@ func GetHtmlPanel(c page.ControlI, id string) *HtmlPanel {
 }
 
 // NewPanelTemplatePanel creates an example panel for the template panel.
+//
+// This is just for the examples code. You would not normally need to create this extra function. Just directly
+// call NewHtmlPanel, or whatever you call it in the "control" macro you define in the template.
 func NewPanelTemplatePanel(ctx context.Context, parent page.ControlI) {
 	NewHtmlPanel(parent, "htmlPanel")
 }
