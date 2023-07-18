@@ -7,6 +7,7 @@ func init() {
 	controls.RegisterPanel("textbox", "Textboxes", NewTextboxPanel)
 	controls.RegisterPanel("checkbox", "Checkboxes and Radio Buttons", NewCheckboxPanel)
 	controls.RegisterPanel("selectlist", "Selection Lists", NewSelectListPanel)
+	controls.RegisterPanel("paneltemp", "Panel Template", NewPanelTemplatePanel)
 	controls.RegisterPanel("table", "Tables", NewTablePanel)
 	controls.RegisterPanel("tablecheckbox", "Tables - CheckboxList Column", NewTableCheckboxPanel)
 	controls.RegisterPanel("tabledb", "Tables - Database Columns", NewTableDbPanel)
