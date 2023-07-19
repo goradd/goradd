@@ -32,16 +32,16 @@ import (
 //	   return b
 //	 }
 //
-//	 func (a* Bird) PrintCall () {
+//	 func (a *Bird) PrintCall () {
 //		  fmt.Print(a.this().Call())
 //	 }
 //
 //	 // Call can be overridden by a subclass.
-//	 func (a* Bird) Call () string {
+//	 func (a *Bird) Call () string {
 //	   return "chirp"
 //	 }
 //
-//	 func (a* Bird) this() BirdI {
+//	 func (a *Bird) this() BirdI {
 //	   return a.Self().(BirdI)
 //	 }
 //
@@ -59,7 +59,7 @@ import (
 //	   return d
 //	 }
 //
-//	 func (a* Duck) Call () string {
+//	 func (a *Duck) Call () string {
 //	   return "quack"
 //	 }
 //
@@ -69,6 +69,8 @@ import (
 //
 // Be careful when using GobDecode() to restore an encoded object. To restore virtual function ability, you should
 // call Init() on the object after it is decoded.
+//
+
 type Base struct {
 	self any
 }
@@ -111,12 +113,51 @@ type BaseI interface {
 	String() string
 }
 
-// Embedded returns the embedded BaseI structure of type T that is embedded in o.
+// Embedded returns the structure of type T that is embedded in o.
 //
-// T should be a pointer to the embedded structure and be public. The returned structure will bypass
-// virtual functions that are defined in o and call functions directly on the embedded structure.
+// T should be a pointer type to the embedded structure and be public. The returned structure will bypass
+// virtual functions that are defined in o and call functions directly on the embedded structure. It will also
+// have access to all the private members of o.
 //
 // Will panic if T is not found in o.
+//
+// Another way to do this, and perhaps better in certain circumstances, is to create a private method
+// on both the object and interface to the object that simply returns the object.
+//
+// For example. using the Bird-Duck example:
+//
+//	type BirdI interface {
+//	  BaseI
+//	  Call() string
+//	  self() *Bird
+//	}
+//
+//  func (a* Bird) self() *Bird {
+//	  return a
+//	}
+//
+// This can be very helpful in special situations, like if you want access to private members from recursive structures.
+//
+// For example:
+//
+//   type Bird struct {
+//     Base
+//     chicks []BirdI
+//     wasFed bool
+//	 }
+//
+//
+// You can do this:
+//
+//    func (a *Bird) FeedChicks () string {
+//	    for chick := range a.self().chicks {
+//	      chick.self().wasFed = true
+//      }
+//	  }
+//
+// And the FeedChicks() function will work on any type of Bird class, without having to expose the internals of Birds,
+// or create more private methods on the Bird interface just to get access to the internals of Bird.
+//
 func Embedded[T BaseI](o BaseI) T {
 	var t T
 	typ := reflect.TypeOf(t)
