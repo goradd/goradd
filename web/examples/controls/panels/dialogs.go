@@ -21,7 +21,7 @@ const (
 )
 
 func NewDialogsPanel(ctx context.Context, parent page.ControlI) {
-	p := &DialogsPanel{}
+	p := new(DialogsPanel)
 	p.Init(p, ctx, parent, "checkboxPanel")
 }
 

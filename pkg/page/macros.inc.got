@@ -125,6 +125,9 @@ func (ctrl *{{form}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error
 }
 {{end renderFormTemplate}}
 
+{{# renderControlTemplate renders the template for the given control type.
+    Define the "control" macro as the control type that the template is attached to.
+}}
 {{define renderControlTemplate}}
 package {{put package}}
 
@@ -142,6 +145,10 @@ func (ctrl *{{control}}) DrawTemplate(ctx context.Context, _w io.Writer) (err er
 }
 {{end renderControlTemplate}}
 
+{{# renderResource will draw the defined template at a given url route.
+    Define the "route" macro as the url that will draw the template.
+    The template should include every part of the web page, including the DOCTYPE and html tags.
+}}
 {{define renderResource}}
 package {{put package}}
 
@@ -152,7 +159,7 @@ import (
 )
 
 func init() {
-    http.RegisterDrawFunc("{{> filename}}",
+    http.RegisterDrawFunc("{{> route}}",
         func(ctx context.Context, _w io.Writer) (err error) {
 {{
 {{put template}}
@@ -162,3 +169,61 @@ func init() {
         })
 }
 {{end renderResource}}
+
+{{# renderPanel will render the defined template in a panel with the name defined by "control".
+    This is a convenience template for creating a div that simply needs to draw
+    some content.
+}}
+
+{{define renderPanel}}
+package {{put package}}
+
+import (
+    "context"
+    "io"
+    "github.com/goradd/goradd/pkg/page/control"
+
+    {{put? imports}}
+)
+
+type {{control }} struct {
+	control.Panel
+}
+
+// New{{control }} creates a new {{control }} panel control.
+func New{{control }}(parent page.ControlI, id string) control.PanelI {
+	p := new({{control}})
+	p.Panel.Init(p, parent, id)
+	return p
+}
+
+// DrawTemplate draws the template defined in the template file for the {{control}} control.
+func (ctrl *{{control }}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
+{{
+{{put template}}
+}}
+	return
+}
+
+func init() {
+	page.RegisterControl(new({{control }}))
+}
+
+// {{control }}Creator creates a div control that draws a template.
+// Pass it to AddControls or as a child of a parent control.
+type {{control }}Creator struct {
+    ID string
+}
+
+// Create is called by the framework to create the panel.
+func (c {{control }}Creator) Create(_ context.Context, parent page.ControlI) page.ControlI {
+	ctrl := New{{control }}(parent, c.ID)
+	return ctrl
+}
+
+// Get{{control}} is a convenience method to return the {{control}} with the given id from the page.
+func Get{{control }} (c page.ControlI, id string) *{{control }} {
+	return c.Page().GetControl(id).(*{{control }})
+}
+
+{{end renderPanel}}
