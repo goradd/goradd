@@ -1,4 +1,5 @@
-// Package base defines
+// Package base describes the Base struct, which provides virtual functions and inheritance similar to
+// that of C++ and Java.
 package base
 
 import (
@@ -6,7 +7,8 @@ import (
 	"reflect"
 )
 
-// Base is a base structure to embed in objects that can call its functions as virtual functions.
+// Base is a base structure to embed in objects that can call its functions as virtual functions. It provides support
+// for a pattern of inheritance that is similar to C++ or Java.
 //
 // Virtual functions are functions that provide a default implementation but that can be overridden by a subclass.
 // For some, the lack of virtual function support in Go is a benefit, as some claim virtual functions contribute to poor architecture.
@@ -126,38 +128,36 @@ type BaseI interface {
 //
 // For example. using the Bird-Duck example:
 //
-//	type BirdI interface {
-//	  BaseI
-//	  Call() string
-//	  self() *Bird
-//	}
+//		type BirdI interface {
+//		  BaseI
+//		  Call() string
+//		  self() *Bird
+//		}
 //
-//  func (a* Bird) self() *Bird {
-//	  return a
-//	}
+//	 func (a* Bird) self() *Bird {
+//		  return a
+//		}
 //
 // This can be very helpful in special situations, like if you want access to private members from recursive structures.
 //
 // For example:
 //
-//   type Bird struct {
-//     Base
-//     chicks []BirdI
-//     wasFed bool
-//	 }
-//
+//	  type Bird struct {
+//	    Base
+//	    chicks []BirdI
+//	    wasFed bool
+//		 }
 //
 // You can do this:
 //
-//    func (a *Bird) FeedChicks () string {
-//	    for chick := range a.self().chicks {
-//	      chick.self().wasFed = true
-//      }
-//	  }
+//	   func (a *Bird) FeedChicks () string {
+//		    for chick := range a.self().chicks {
+//		      chick.self().wasFed = true
+//	     }
+//		  }
 //
 // And the FeedChicks() function will work on any type of Bird class, without having to expose the internals of Birds,
 // or create more private methods on the Bird interface just to get access to the internals of Bird.
-//
 func Embedded[T BaseI](o BaseI) T {
 	var t T
 	typ := reflect.TypeOf(t)
