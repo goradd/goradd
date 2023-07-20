@@ -1,21 +1,36 @@
 //detailFormTpl.tmpl
 
-// The master template for the EditForm template file. In other words, we are generating a got template.
+// The master template for the DetailForm template file. In other words, we are generating a got template.
 
 var formName = t.GoName + "DetailForm"
 
 {{
 {{begin *strict*}}
+{{#
+    This is the template file that generates the content for the {{end *strict*}}{{= formName}}{{begin *strict*}} form.
+}}
+{{end *strict*}}
+
+{{# Add additional import specifications if needed below.}}
 {{define imports}}{{end imports}}
+
+{{# Add additional items to the head tag in the html if needed below.}}
 {{< headTags }}{{end headTags}}
+
+{{# Define the text of the <title> head tag here. }}
 {{< title }}{{end title}}
+
+{{# Define any special attributes to go in the body tag here. }}
 {{< bodyAttributes }}{{end bodyAttributes}}
 {{< form }}{{end *strict*}}{{= formName}}{{begin *strict*}}{{end form}}
+
+{{# Specify the content of the form here.}}
 {{define template }}
 {{draw {{end *strict*}}{{= t.DefaultHtmlID()}}{{begin *strict*}}-detail-panel }}
 {{draw ok-button }}
 {{end template}}
 
+{{# renderFormTemplate draws the template based on the definitions above. }}
 {{renderFormTemplate}}
 {{end *strict*}}
 }}

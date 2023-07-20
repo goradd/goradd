@@ -104,6 +104,7 @@ import (
 )
 
 
+// AddHeadTags adds items that will appear in the head tag of the html page.
 func (ctrl *{{form}}) AddHeadTags()  {
     ctrl.FormBase.AddHeadTags()
     if "{{put? title}}" != "" {
@@ -116,7 +117,7 @@ func (ctrl *{{form}}) AddHeadTags()  {
     ctrl.Page().BodyAttributes = `{{put? bodyAttributes}}`
 }
 
-
+// DrawTemplate draws the content of the matching form's template file.
 func (ctrl *{{form}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
 {{put template}}
@@ -137,6 +138,7 @@ import (
     {{put? imports}}
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *{{control}}) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 {{
 {{put template}}
@@ -188,6 +190,7 @@ import (
 
 type {{control }} struct {
 	control.Panel
+	{{put? vars}}
 }
 
 // New{{control }} creates a new {{control }} panel control.

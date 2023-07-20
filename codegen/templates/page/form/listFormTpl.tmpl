@@ -5,16 +5,34 @@
 var formName = t.GoName + "ListForm"
 
 {{
+
 {{begin *strict*}}
+{{#
+    This is the template file that generates the content for the {{end *strict*}}{{= formName}}{{begin *strict*}} form.
+}}
+{{end *strict*}}
+{{begin *strict*}}
+{{# Add additional import specifications if needed below.}}
 {{define imports}}{{end imports}}
+
+{{# Add additional items to the head tag in the html if needed below.}}
 {{< headTags }}{{end headTags}}
+
+{{# Define the text of the <title> head tag here. }}
 {{< title }}{{end title}}
+
+{{# Define any special attributes to go in the body tag here. }}
 {{< bodyAttributes }}{{end bodyAttributes}}
+
+{{# Specify the content of the form here.}}
 {{< form }}{{end *strict*}}{{= formName}}{{begin *strict*}}{{end form}}
+
+{{# Specify the content of the form here.}}
 {{define template }}
 {{draw list-panel }}
 {{end template}}
 
+{{# renderFormTemplate draws the template based on the definitions above. }}
 {{renderFormTemplate}}
 {{end *strict*}}
 }}
