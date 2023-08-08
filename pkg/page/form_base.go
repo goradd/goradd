@@ -440,7 +440,7 @@ func (f *FormBase) DrawHeaderTags(ctx context.Context, w io.Writer) {
 				attributes = html5tag.NewAttributes()
 			}
 			attributes.Set("src", path)
-			attributes.Set("type", "application/javascript")
+			attributes.Set("type", "text/javascript")
 			WriteString(w, html5tag.RenderTag("script", attributes, ""))
 			return true
 		})
@@ -474,7 +474,7 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, w io.Writer) (err er
 			attributes = html5tag.NewAttributes()
 		}
 		attributes.Set("src", path)
-		attributes.Set("type", "application/javascript")
+		attributes.Set("type", "text/javascript")
 		if _, err = io.WriteString(w, html5tag.RenderTag("script", attributes, "")+"\n"); err != nil {
 			return false
 		}
