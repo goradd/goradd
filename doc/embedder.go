@@ -1,4 +1,4 @@
-// Package doc contains documentation as Markdown files for the
+// Package doc contains documentation as Markdown files.
 package doc
 
 import (

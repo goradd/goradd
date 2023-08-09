@@ -1,3 +1,6 @@
+// Package config contains configurable default values for various aspects of goradd.
+//
+// To change these values, set them from within an init() function in your application.
 package config
 
 import "time"

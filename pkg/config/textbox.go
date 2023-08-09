@@ -10,7 +10,7 @@ type Sanitizer interface {
 	Sanitize(string) string
 }
 
-// GlobalSanitizer is used by textboxes to sanitize user input before it is stored
+// GlobalSanitizer is used by control.Textbox controls to sanitize user input before it is stored
 var GlobalSanitizer Sanitizer
 
 // BlueMondaySanitizer is a sanitizer based on microcosm-cc/bluemonday. BlueMonday is designed to sanitize input

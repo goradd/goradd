@@ -1,10 +1,10 @@
-// Package auth provides on possible authentication framework based on username and password.
+// Package auth provides one possible authentication framework based on username and password.
 // To use it, call RegisterAuthenticationService and pass it a structure that will handle the various
 // routines for authentication.
 //
 // On the client side, you send an auth operation to the auth endpoint by sending 2 form values:
-// 1) An "op" value, which is the operation to perform. See OpHello, etc. for possible values
-// 2) A "msg" value, which gets passed on the auth service you provide.
+//  1. An "op" value, which is the operation to perform. See OpHello, etc. for possible values
+//  2. A "msg" value, which gets passed on the auth service you provide.
 //
 // You coordinate between your client and your service on how to encode your messages. A common way would be
 // to use json, but its up to you to do the encoding and decoding on either end.

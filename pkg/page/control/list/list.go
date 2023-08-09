@@ -1,4 +1,4 @@
-// Package list contains list-type controls. This includes select lists, as well hierarchical lists.
+// Package list contains list-type controls. This includes select lists and hierarchical lists.
 package list
 
 import (
