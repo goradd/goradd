@@ -9,6 +9,9 @@ const {{= title }}DetailFormID = "{{= tableKebab }}-detail-form"
 const {{= title }}DetailPanelID = "{{= t.DefaultHtmlID()}}-detail-panel"
 // {{= title }}OkButtonID is the id of the OK button that will navigate back to the list form.
 const {{= title }}OkButtonID = "ok-button"
+// {{= title }}DetailSessionID is the session id that saves the id passed between the list form and the detail form.
+// Set this id in the session before going to this form.
+const {{= title }}DetailSessionID = "{{= title }}DetailSessionID"
 
 const (
     {{= title }}OkAction = iota + 1 // the action triggered by the OK button
