@@ -126,6 +126,7 @@ type ControlI interface {
 
 	// html and css
 
+	SetTag(tag string) ControlI
 	SetAttribute(name string, val interface{}) ControlI
 	Attribute(string) string
 	HasAttribute(string) bool
@@ -392,6 +393,12 @@ func (c *ControlBase) ID() string {
 
 // Extract the control from an interface. This is for package private use, when called through the interface.
 func (c *ControlBase) control() *ControlBase {
+	return c
+}
+
+// SetTag sets the tag name displayed in the html object.
+func (c *ControlBase) SetTag(tag string) ControlI {
+	c.Tag = tag
 	return c
 }
 

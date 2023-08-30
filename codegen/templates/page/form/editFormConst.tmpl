@@ -9,6 +9,10 @@ const {{= title }}EditFormID = "{{= tableKebab }}-edit-form"
 // {{= title }}EditPanelID is the id of the html panel object that contains the content of the edit form.
 const {{= title }}EditPanelID = "{{= t.DefaultHtmlID()}}-edit-panel"
 
+// {{= title }}EditSessionID is the session id that saves the id passed between the list form and the edit form.
+// Set this id in the session before going to this form.
+const {{= title }}EditSessionID = "{{= title }}EditSessionID"
+
 // These constants are the ids of the buttons that appear on the bottom of the edit panel
 const (
     {{= title }}SaveButtonID = "save-button"
