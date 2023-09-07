@@ -6,6 +6,7 @@ import (
 
 func MakeRootCommand() *cobra.Command {
 	var overwrite bool
+	var dependencies bool
 	var step int
 	var browser bool
 	var headless bool
@@ -21,12 +22,13 @@ func MakeRootCommand() *cobra.Command {
 		Short: "Install the goradd-project directory in the current working directory",
 		Long:  `Install the goradd-project directory in the current working directory. Use the -r flag to force replacement of the directory.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			install(step, overwrite)
+			install(step, overwrite, dependencies)
 		},
 	}
 
 	cmdInstall.Flags().BoolVarP(&overwrite, "replace", "r", false, "Previous directories will be deleted first without asking. Use with extreme caution.")
 	cmdInstall.Flags().IntVarP(&step, "step", "s", 0, "For debugging the tests, this will execute only the given step. 0 means execute the entire test process.")
+	cmdInstall.Flags().BoolVarP(&dependencies, "dependencies", "d", false, "Install just the dependencies. If you already have a goradd-project directory, call this from inside that directory.")
 
 	var cmdTest = &cobra.Command{
 		Use:   "test",
