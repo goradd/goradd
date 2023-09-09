@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/goradd/goradd/pkg/config"
 	strings2 "github.com/goradd/goradd/pkg/strings"
@@ -40,14 +41,22 @@ func RegisterAssetDirectory(prefix string, fsys fs.FS) {
 		var data []byte
 		if data, err = fs.ReadFile(fsys, p2); err != nil {
 			return err
-		} else {
-			// CRC it
-			c := crc64.Checksum(data, crcTable)
-			e := strconv.FormatInt(int64(c), 36)
-			s := path.Join(prefix, p2)
-			cacheBuster[s] = e
-			return nil
 		}
+
+		// CRC it
+		c := crc64.Checksum(data, crcTable)
+		e := strconv.FormatInt(int64(c), 36)
+		s := path.Join(prefix, p2)
+		if strings.HasSuffix(s, GZipSuffix) {
+			s = strings.TrimSuffix(s, GZipSuffix)
+		} else if strings.HasSuffix(s, BrotliSuffix) {
+			s = strings.TrimSuffix(s, BrotliSuffix)
+		}
+		if _, ok := cacheBuster[s]; !ok {
+			cacheBuster[s] = e
+		}
+		return nil
+
 	}); err != nil {
 		panic("failed walking the asset directory " + prefix + ": " + err.Error())
 	}

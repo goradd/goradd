@@ -29,6 +29,10 @@ import (
 //
 // Files found will be sent to any registered file processors if the extension matches one of the
 // processors (see RegisterFileProcessor).
+
+const BrotliSuffix = ".br"
+const GZipSuffix = ".gz"
+
 type FileSystemServer struct {
 	// Fsys is the file system being served.
 	Fsys fs.FS
@@ -94,9 +98,9 @@ func (f FileSystemServer) serveStaticFile(w http.ResponseWriter, r *http.Request
 	if values, ok := r.Header["Accept-Encoding"]; ok {
 		for _, value1 := range values {
 			for _, value := range strings.Split(value1, ",") {
-				if value == "gzip" {
+				if strings.TrimSpace(value) == "gzip" {
 					acceptsGzip = true
-				} else if value == "br" {
+				} else if strings.TrimSpace(value) == "br" {
 					acceptsBr = true
 				}
 			}
@@ -104,14 +108,14 @@ func (f FileSystemServer) serveStaticFile(w http.ResponseWriter, r *http.Request
 	}
 
 	// Check for compressed versions
-	if foundPath := p + ".br"; acceptsBr && f.pathExists(foundPath) {
+	if foundPath := p + BrotliSuffix; acceptsBr && f.pathExists(foundPath) {
 		if err := f.servePath(w, r, p, foundPath, "br"); err != nil {
 			log.Error(err)
 			return false
 		}
 		return true
 	}
-	if foundPath := p + ".gz"; acceptsGzip && f.pathExists(foundPath) {
+	if foundPath := p + GZipSuffix; acceptsGzip && f.pathExists(foundPath) {
 		if err := f.servePath(w, r, p, foundPath, "gzip"); err != nil {
 			log.Error(err)
 			return false
@@ -127,14 +131,14 @@ func (f FileSystemServer) serveStaticFile(w http.ResponseWriter, r *http.Request
 		return true
 	}
 
-	if foundPath := p + ".br"; f.pathExists(foundPath) {
+	if foundPath := p + BrotliSuffix; f.pathExists(foundPath) {
 		if err := f.serveDecompressedBrotli(w, r, p, foundPath); err != nil {
 			log.Error(err)
 			return false
 		}
 		return true
 	}
-	if foundPath := p + ".gz"; f.pathExists(foundPath) {
+	if foundPath := p + GZipSuffix; f.pathExists(foundPath) {
 		if err := f.serveDecompressedGzip(w, r, p, foundPath); err != nil {
 			log.Error(err)
 			return false
