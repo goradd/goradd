@@ -6,7 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 	mysql2 "github.com/goradd/goradd/pkg/orm/db/sql/mysql"
 	"github.com/goradd/goradd/pkg/orm/db/sql/pgsql"
-	"github.com/jackc/pgx/v5"
+	pgx "github.com/jackc/pgx/v5"
 )
 
 // Initialize the databases that the application will use through the database query interfaces
