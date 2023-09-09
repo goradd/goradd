@@ -13,8 +13,8 @@ github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813 h1:Uc+IZ7gYqAf/rSG
 github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813/go.mod h1:P+oSoE9yhSRvsmYyZsshflcR6ePWYLql6UU1amW13IM=
 github.com/go-sql-driver/mysql v1.7.0 h1:ueSltNNllEqE3qcWBTD0iQd3IpL/6U+mJxLkazJ7YPc=
 github.com/go-sql-driver/mysql v1.7.0/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
-github.com/goradd/gofile v1.0.3 h1:jb2j1iziIxRXPdUJZ5Yw1IOrmCPiWZRRyzzAyldbZHE=
-github.com/goradd/gofile v1.0.3/go.mod h1:4TsIuXHttWRaCxzvOp3GjFX6cNA+kEWUEmMt6k900xk=
+github.com/goradd/gofile v1.1.0 h1:QmY+7mz0T7trhOr3QvBZYcC4ou1tXKe7KRo5KbZZyoQ=
+github.com/goradd/gofile v1.1.0/go.mod h1:8VifamRAKP2899hvudKNPiYwLMgglekCXXVXAQn0G44=
 github.com/goradd/got v1.1.0 h1:gDbsnCPWffFm7bsfNfyMKxPckZaa9EDCNDtJGDQGqm8=
 github.com/goradd/got v1.1.0/go.mod h1:D8fhxk8mb6VaGTNr2dupP43dND4OFsCfBgHEHLWZCqI=
 github.com/goradd/html5tag v1.0.1 h1:o+DloUZ6h1f5aPRXIwFLsjIrkNaLzwf+fNH9pLGd0UE=
