@@ -9,5 +9,5 @@
 //
 //   - Useful utility controls
 //
-//     See the [button], [textbox], [list], [table] and [dialog] packages for controls specific to these common types.
+//     See the [textbox], [button], [list], [table] and [dialog] packages for controls specific to these common types.
 package control
