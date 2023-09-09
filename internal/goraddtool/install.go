@@ -13,9 +13,10 @@ import (
 	"path/filepath"
 )
 
+const initCmd = "go mod init goradd-project" // Create go.mod file
+
 var commands = []string{
-	"go mod init goradd-project",                                 // Create go.mod file
-	"go mod tidy",                                                // Setup go.mod file
+	"go mod tidy", // Setup go.mod file
 	"go install github.com/goradd/got/...@latest",                // Template processor
 	"go install golang.org/x/tools/cmd/goimports@latest",         // For auto-fixing of import declarations
 	"go install github.com/goradd/gofile/...@latest",             // For deployment
@@ -23,7 +24,12 @@ var commands = []string{
 }
 
 // install will copy the project and tmp directories to the cwd
-func install(step int, overwrite bool) {
+func install(step int, overwrite bool, dependencies bool) {
+	if dependencies {
+		depInstall()
+		return
+	}
+
 	loadCwd()
 
 	switch step {
@@ -57,7 +63,7 @@ func copyInstall(overwrite bool) {
 				scanner.Scan()
 				in := scanner.Text()
 				if in != "y" {
-					os.Exit(0)
+					return
 				}
 			}
 			err = os.RemoveAll(dest)
@@ -87,17 +93,27 @@ func copyInstall(overwrite bool) {
 		log.Fatal("could not walk install directory: " + err.Error())
 	}
 
+	err = os.Chdir(filepath.Join(cwd, "goradd-project"))
+	if err != nil {
+		log.Fatal("could not change to the goradd-project directory: " + err.Error())
+		os.Exit(1)
+	}
+
+	c := initCmd
+	fmt.Print("Executing " + c + " ")
+	var res []byte
+	res, err = sys2.ExecuteShellCommand(c)
+	fmt.Println(string(res))
 }
 
+// depInstall installs the dependencies.
+//
+// Since some dependencies are contained in the go.mod file, this should be run from the same
+// directory as the go.mod file.
 func depInstall() {
 	var err error
 
 	// install binary commands
-	err = os.Chdir(filepath.Join(cwd, "goradd-project"))
-	if err != nil {
-		log.Fatal("could not change to the goradd-project directory: " + err.Error())
-	}
-
 	for _, c := range commands {
 		var res []byte
 		fmt.Print("Executing " + c + " ")
