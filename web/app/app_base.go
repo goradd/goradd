@@ -294,7 +294,7 @@ func RegisterStaticPath(
 		UseCacheBuster: useCacheBuster,
 		Hide:           hide}
 	http2.RegisterPrefixHandler(path, fs)
-	grlog.Infof("Registering static path %s to %s", path, directory)
+	grlog.FrameworkInfof("Registering static path %s to %s", path, directory)
 }
 
 // ServeAppMux serves up the http2.AppMuxer, which handles REST calls,
@@ -349,7 +349,7 @@ func WebsocketMessengerHandler(w http.ResponseWriter, r *http.Request) {
 // AccessLogHandler simply logs requests.
 func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		grlog.Info("Serving: ", r.RequestURI)
+		grlog.FrameworkInfo("Serving: ", r.RequestURI)
 		next.ServeHTTP(w, r)
 	}
 	return http.HandlerFunc(fn)

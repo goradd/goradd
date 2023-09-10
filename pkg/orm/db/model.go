@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/gedex/inflector"
+	"github.com/goradd/goradd/pkg/log"
 	. "github.com/goradd/goradd/pkg/orm/query"
 	"github.com/goradd/goradd/pkg/stringmap"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/kenshaw/snaker"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -132,25 +132,25 @@ func (m *Model) importEnumTable(desc TableDescription) *EnumTable {
 	var ok bool
 	if opt := desc.Options[LiteralNameOption]; opt != nil {
 		if t.LiteralName, ok = opt.(string); !ok {
-			log.Print("Error in option for table " + desc.Name + ": literalName is not a string")
+			log.Warning("Error in option for table " + desc.Name + ": literalName is not a string")
 		}
 	}
 
 	if opt := desc.Options[LiteralPluralOption]; opt != nil {
 		if t.LiteralPlural, ok = opt.(string); !ok {
-			log.Print("Error in option for table " + desc.Name + ": literalPlural is not a string")
+			log.Warning("Error in option for table " + desc.Name + ": literalPlural is not a string")
 		}
 	}
 
 	if opt := desc.Options[GoNameOption]; opt != nil {
 		if t.GoName, ok = opt.(string); !ok {
-			log.Print("Error in option for table " + desc.Name + ": goName is not a string")
+			log.Warning("Error in option for table " + desc.Name + ": goName is not a string")
 		}
 	}
 
 	if opt := desc.Options[GoPluralOption]; opt != nil {
 		if t.GoPlural, ok = opt.(string); !ok {
-			log.Print("Error in option for table " + desc.Name + ": goPlural is not a string")
+			log.Warning("Error in option for table " + desc.Name + ": goPlural is not a string")
 		}
 	}
 
@@ -168,7 +168,7 @@ func (m *Model) importEnumTable(desc TableDescription) *EnumTable {
 	names := t.FieldNames
 
 	if len(t.Values) == 0 {
-		log.Print("Warning: enum table " + t.DbName + " has no data entries. Specify constants by adding entries to this table.")
+		log.Warning("enum table " + t.DbName + " has no data entries. Specify constants by adding entries to this table.")
 	}
 
 	r := regexp.MustCompile("[^a-zA-Z0-9_]+")
@@ -210,32 +210,32 @@ func (m *Model) importTable(desc TableDescription) *Table {
 	var ok bool
 	if opt := desc.Options[LiteralNameOption]; opt != nil {
 		if t.LiteralName, ok = opt.(string); !ok {
-			log.Print("Error in option for table " + desc.Name + ": literalName is not a string")
+			log.Warning("Error in option for table " + desc.Name + ": literalName is not a string")
 		}
 	}
 
 	if opt := desc.Options[LiteralPluralOption]; opt != nil {
 		if t.LiteralPlural, ok = opt.(string); !ok {
-			log.Print("Error in option for table " + desc.Name + ": literalPlural is not a string")
+			log.Warning("Error in option for table " + desc.Name + ": literalPlural is not a string")
 		}
 	}
 
 	if opt := desc.Options[GoNameOption]; opt != nil {
 		if t.GoName, ok = opt.(string); !ok {
-			log.Print("Error in option for table " + desc.Name + ": goName is not a string")
+			log.Warning("Error in option for table " + desc.Name + ": goName is not a string")
 		}
 	}
 
 	if opt := desc.Options[GoPluralOption]; opt != nil {
 		if t.GoPlural, ok = opt.(string); !ok {
-			log.Print("Error in option for table " + desc.Name + ": goPlural is not a string")
+			log.Warning("Error in option for table " + desc.Name + ": goPlural is not a string")
 		}
 	}
 
 	t.LcGoName = strings.ToLower(t.GoName[:1]) + t.GoName[1:]
 
 	if t.GoName == t.GoPlural {
-		log.Print("Error: table " + t.DbName + " is using a plural name. Change it to a singular name or assign a singular and plural go name in the comments.")
+		log.Warning("table " + t.DbName + " is using a plural name. Change it to a singular name or assign a singular and plural go name in the comments.")
 		return nil
 	}
 
@@ -248,7 +248,7 @@ func (m *Model) importTable(desc TableDescription) *Table {
 			if newCol.IsPk {
 				pkCount++
 				if pkCount > 1 {
-					log.Print("Error: table " + t.DbName + " has multiple primary keys.")
+					log.Warning("table " + t.DbName + " has multiple primary keys.")
 					return nil
 				}
 			}
@@ -310,7 +310,7 @@ func (m *Model) importReverseReferences(td *Table) {
 			// Check for name conflicts
 			for _, col2 := range td2.Columns {
 				if goName == col2.GoName {
-					log.Printf("Error: table %s has a field name %s that is the same as the %s table that is referring to it. Either change these names, or provide an alternate goName in the options.", td2.GoName, goName, td.GoName)
+					log.Warningf("table %s has a field name %s that is the same as the %s table that is referring to it. Either change these names, or provide an alternate goName in the options.", td2.GoName, goName, td.GoName)
 				}
 			}
 
@@ -367,14 +367,14 @@ func (m *Model) makeManyManyRef(
 	var num string
 	for {
 		if conflicts, msg := sourceTable.HasGetterName(goName + num); conflicts {
-			log.Printf("*** Warning: ManyToMany column %s:%s creates a name that %s", assnTable, column2, msg)
+			log.Warningf("ManyToMany column %s:%s creates a name that %s", assnTable, column2, msg)
 			num = fmt.Sprintf("%d", i)
 			i++
 			continue
 		}
 		goName = goName + num
 		if num != "" {
-			log.Printf("*** Renaming to %s", goName)
+			log.Warningf("Renaming to %s", goName)
 		}
 		break
 	}
@@ -385,14 +385,14 @@ func (m *Model) makeManyManyRef(
 	num = ""
 	for {
 		if conflicts, msg := sourceTable.HasGetterName(goPlural + num); conflicts {
-			log.Printf("*** Warning: ManyToMany column %s:%s creates a name that %s", assnTable, column2, msg)
+			log.Warningf("ManyToMany column %s:%s creates a name that %s", assnTable, column2, msg)
 			num = fmt.Sprintf("%d", i)
 			i++
 			continue
 		}
 		goPlural = goPlural + num
 		if num != "" {
-			log.Printf("*** Renaming to %s", goPlural)
+			log.Warningf("Renaming to %s", goPlural)
 		}
 		break
 	}
@@ -458,7 +458,7 @@ func (m *Model) importColumn(desc ColumnDescription) *Column {
 	var ok bool
 	if opt := desc.Options[GoNameOption]; opt != nil {
 		if c.GoName, ok = opt.(string); !ok {
-			log.Printf("Error in option for column " + desc.Name + ": goName is not a string")
+			log.Warningf("Error in option for column " + desc.Name + ": goName is not a string")
 		}
 	}
 
@@ -467,13 +467,13 @@ func (m *Model) importColumn(desc ColumnDescription) *Column {
 	var err error
 	if opt := desc.Options[MinOption]; opt != nil {
 		if c.MinValue, err = getMinOption(c.MinValue, opt); err != nil {
-			log.Printf("Error in 'min' option for column %s: %s", desc.Name, err.Error())
+			log.Warningf("Error in 'min' option for column %s: %s", desc.Name, err.Error())
 		}
 	}
 
 	if opt := desc.Options[MaxOption]; opt != nil {
 		if c.MaxValue, err = getMaxOption(c.MaxValue, opt); err != nil {
-			log.Printf("Error in 'max' option for column %s: %s", desc.Name, err.Error())
+			log.Warningf("Error in 'max' option for column %s: %s", desc.Name, err.Error())
 		}
 	}
 
@@ -484,7 +484,7 @@ func (m *Model) importForeignKeys(desc TableDescription) {
 	t := m.Table(desc.Name)
 	if t != nil {
 		if t.PrimaryKeyColumn() == nil {
-			log.Printf("*** Error: table %s must have a primary key if it has a foreign key.", desc.Name)
+			log.Warningf("table %s must have a primary key if it has a foreign key.", desc.Name)
 		} else {
 			for _, col := range desc.Columns {
 				m.importForeignKey(t, col)

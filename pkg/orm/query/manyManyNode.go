@@ -3,7 +3,7 @@ package query
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 
@@ -126,7 +126,7 @@ func (n *ManyManyNode) databaseKey() string {
 
 func (n *ManyManyNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "MM: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())
+	log.FrameworkDebug(tabs + "MM: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())
 }
 
 // Return the name as a captialized object name

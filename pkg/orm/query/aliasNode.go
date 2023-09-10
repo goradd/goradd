@@ -3,7 +3,7 @@ package query
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 
@@ -39,7 +39,6 @@ func (n *AliasNode) databaseKey() string {
 	return ""
 }
 
-
 // Equals returns true if the given node points to the same alias value as receiver.
 func (n *AliasNode) Equals(n2 NodeI) bool {
 	if a, ok := n2.(*AliasNode); ok {
@@ -50,7 +49,7 @@ func (n *AliasNode) Equals(n2 NodeI) bool {
 
 func (n *AliasNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "Alias: " + n.alias)
+	log.FrameworkDebug(tabs + "Alias: " + n.alias)
 }
 
 // Return the name as a capitalized object name
@@ -70,7 +69,6 @@ func (n *AliasNode) GobEncode() (data []byte, err error) {
 	data = buf.Bytes()
 	return
 }
-
 
 func (n *AliasNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)

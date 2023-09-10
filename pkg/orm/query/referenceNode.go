@@ -3,7 +3,7 @@ package query
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 
@@ -114,7 +114,7 @@ func (n *ReferenceNode) databaseKey() string {
 
 func (n *ReferenceNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "R: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + " AS " + n.GetAlias())
+	log.FrameworkDebug(tabs + "R: " + n.dbTable + "." + n.dbColumn + "." + n.refTable + " AS " + n.GetAlias())
 }
 
 // Return the name as a capitalized object name

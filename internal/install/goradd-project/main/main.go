@@ -2,6 +2,7 @@ package main
 
 // The spaces in this import block serve to prevent goimports from rearranging the order of the files.
 import (
+	"github.com/goradd/goradd/pkg/log"
 	_ "goradd-project/config" // Initialize required variables. This MUST come first.
 	config2 "goradd-project/config"
 
@@ -24,6 +25,7 @@ var tlsKeyFile = flag.String("keyFile", "", "Path to key file for tls.")
 var tlsCertFile = flag.String("certFile", "", "Path to cert file for tls.")
 
 var proxyPath = flag.String("proxyPath", "", "The url path to the application.")
+var logLevel = flag.Int("logLevel", 0, "The logging level. See the log package for details.")
 
 // Create other flags you might care about here
 
@@ -63,4 +65,5 @@ func useFlags() {
 	if *tlsCertFile != "" {
 		config2.TLSCertFile = *tlsCertFile
 	}
+	log.SetLoggingLevel(*logLevel)
 }

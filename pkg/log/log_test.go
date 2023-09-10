@@ -17,20 +17,29 @@ func (l *loggerTest) Log(err string) {
 }
 
 func setLoggers() {
+	CreateDefaultLoggers()
 	SetLogger(FrameworkDebugLog, &logger)
 	SetLogger(InfoLog, &logger)
 	SetLogger(WarningLog, &logger)
 	SetLogger(ErrorLog, &logger)
 	SetLogger(DebugLog, &logger)
+	SetLogger(SqlLog, &logger)
+
+	// test deleting log
+	SetLogger(FrameworkInfoLog, nil)
 }
 
 func TestSetLogger(t *testing.T) {
+	SetLoggingLevel(SqlLog)
 	setLoggers()
-	FrameworkDebug("debug")
-	assert.EqualValues(t, "debug", logger.err)
 
+	// should be empty
+	FrameworkDebug("debug")
+	assert.EqualValues(t, "", logger.err)
+
+	// should be empty
 	FrameworkDebugf("debugf")
-	assert.EqualValues(t, "debugf", logger.err)
+	assert.EqualValues(t, "", logger.err)
 
 	Info("debug2")
 	assert.EqualValues(t, "debug2", logger.err)
@@ -61,4 +70,20 @@ func TestSetLogger(t *testing.T) {
 
 	Printf(WarningLog, "warn2")
 	assert.EqualValues(t, "warn2", logger.err)
+
+	Sql("sql")
+	assert.EqualValues(t, "sql", logger.err)
+
+	logger.err = ""
+
+	// should be empty
+	FrameworkInfo("info")
+	assert.EqualValues(t, "", logger.err)
+
+	// should be empty
+	FrameworkInfof("info")
+	assert.EqualValues(t, "", logger.err)
+
+	assert.True(t, HasLogger(SqlLog))
+	assert.False(t, HasLogger(FrameworkInfoLog))
 }

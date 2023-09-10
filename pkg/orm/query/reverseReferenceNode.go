@@ -3,7 +3,7 @@ package query
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 
@@ -53,14 +53,14 @@ func NewReverseReferenceNode(
 	isArray bool,
 ) *ReverseReferenceNode {
 	n := &ReverseReferenceNode{
-		dbKey:      dbKey,
-		dbTable:    dbTable,
+		dbKey:       dbKey,
+		dbTable:     dbTable,
 		dbKeyColumn: dbKeyColumn,
-		dbColumn:   dbColumn,
-		goPropName: goName,
-		refTable:   refTable,
-		refColumn:  refColumn,
-		isArray:    isArray,
+		dbColumn:    dbColumn,
+		goPropName:  goName,
+		refTable:    refTable,
+		refColumn:   refColumn,
+		isArray:     isArray,
 	}
 	return n
 }
@@ -96,7 +96,6 @@ func (n *ReverseReferenceNode) isExpander() bool {
 	return true
 }
 
-
 // Equals is used internally by the framework to determine if two nodes are equal.
 func (n *ReverseReferenceNode) Equals(n2 NodeI) bool {
 	if tn, ok := n2.(TableNodeI); !ok {
@@ -118,10 +117,9 @@ func (n *ReverseReferenceNode) databaseKey() string {
 	return n.dbKey
 }
 
-
 func (n *ReverseReferenceNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "RR: " + n.dbTable + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())
+	log.FrameworkDebug(tabs + "RR: " + n.dbTable + "." + n.refTable + "." + n.refColumn + " AS " + n.GetAlias())
 }
 
 // Return the name as a captialized object name
@@ -134,17 +132,17 @@ func (n *ReverseReferenceNode) nodeType() NodeType {
 }
 
 type reverseReferenceNodeEncoded struct {
-	Alias string
-	Condition NodeI
-	Parent NodeI
-	DbKey string
-	DbTable string
+	Alias       string
+	Condition   NodeI
+	Parent      NodeI
+	DbKey       string
+	DbTable     string
 	DbKeyColumn string
-	DbColumn string
-	GoPropName string
-	RefTable string
-	RefColumn string
-	IsArray bool
+	DbColumn    string
+	GoPropName  string
+	RefTable    string
+	RefColumn   string
+	IsArray     bool
 }
 
 func (n *ReverseReferenceNode) GobEncode() (data []byte, err error) {
@@ -152,17 +150,17 @@ func (n *ReverseReferenceNode) GobEncode() (data []byte, err error) {
 	e := gob.NewEncoder(&buf)
 
 	s := reverseReferenceNodeEncoded{
-		Alias: n.alias,
-		Condition: n.condition,
-		Parent: n.parentNode,
-		DbKey: n.dbKey,
-		DbTable: n.dbTable,
+		Alias:       n.alias,
+		Condition:   n.condition,
+		Parent:      n.parentNode,
+		DbKey:       n.dbKey,
+		DbTable:     n.dbTable,
 		DbKeyColumn: n.dbKeyColumn,
-		DbColumn: n.dbColumn,
-		GoPropName: n.goPropName,
-		RefTable: n.refTable,
-		RefColumn: n.refColumn,
-		IsArray: n.isArray,
+		DbColumn:    n.dbColumn,
+		GoPropName:  n.goPropName,
+		RefTable:    n.refTable,
+		RefColumn:   n.refColumn,
+		IsArray:     n.isArray,
 	}
 
 	if err = e.Encode(s); err != nil {
@@ -172,7 +170,6 @@ func (n *ReverseReferenceNode) GobEncode() (data []byte, err error) {
 	data = buf.Bytes()
 	return
 }
-
 
 func (n *ReverseReferenceNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
@@ -198,11 +195,9 @@ func (n *ReverseReferenceNode) GobDecode(data []byte) (err error) {
 	return
 }
 
-
 func init() {
 	gob.Register(&ReverseReferenceNode{})
 }
-
 
 // ReverseReferenceNodeIsArray is used internally by the framework to determine if a node should create an array
 func ReverseReferenceNodeIsArray(n *ReverseReferenceNode) bool {
@@ -230,4 +225,3 @@ func ReverseReferenceNodeDbColumnName(n *ReverseReferenceNode) string {
 func ReverseReferenceNodeKeyColumnName(n *ReverseReferenceNode) string {
 	return n.dbKeyColumn
 }
-
