@@ -77,10 +77,12 @@ jobs:
       - name: Install goradd-test
         working-directory: ${{ github.workspace }}
         run: |
-          cp ${{ github.workspace }}/goradd-src/internal/ci/go.work .
           cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
           cd goradd-test
           go mod tidy
+          cd ..
+          go work init
+          go work use goradd-project goradd-test goradd-src
 
       - name: Codegen
         working-directory: ${{ github.workspace }}/goradd-test/codegen
