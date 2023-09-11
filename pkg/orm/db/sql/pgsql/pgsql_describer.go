@@ -3,6 +3,7 @@ package pgsql
 import (
 	"database/sql"
 	"fmt"
+	log2 "github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/orm/db"
 	sql2 "github.com/goradd/goradd/pkg/orm/db/sql"
 	. "github.com/goradd/goradd/pkg/orm/query"
@@ -94,7 +95,7 @@ func (m *DB) getRawTables(options Options) map[string]pgTable {
 		for _, fk := range foreignKeys[tableIndex] {
 			if fk.referencedColumnName.Valid && fk.referencedTableName.Valid {
 				if _, ok := table.fkMap[fk.columnName]; ok {
-					log.Printf("Warning: Column %s:%s multi-table foreign keys are not supported.", table.name, fk.columnName)
+					log2.Warningf("Column %s:%s multi-table foreign keys are not supported.", table.name, fk.columnName)
 					delete(table.fkMap, fk.columnName)
 				} else {
 					table.fkMap[fk.columnName] = fk
@@ -149,7 +150,7 @@ func (m *DB) getTables(schemas []string) ([]pgTable, []string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println(tableSchema + "." + tableName)
+		log2.FrameworkInfo("Importing schema for table ", tableSchema+"."+tableName)
 		schemaMap.Add(tableSchema)
 		table := pgTable{
 			name:    tableName,
@@ -160,7 +161,7 @@ func (m *DB) getTables(schemas []string) ([]pgTable, []string) {
 			indexes: []pgIndex{},
 		}
 		if table.options, table.comment, err = sql2.ExtractOptions(table.comment); err != nil {
-			log.Print("Error in comment options for table " + table.name + " - " + err.Error())
+			log2.Warning("Error in comment options for table " + table.name + " - " + err.Error())
 		}
 
 		tables = append(tables, table)
@@ -220,7 +221,7 @@ ORDER BY
 
 		if descr.Valid {
 			if col.options, col.comment, err = sql2.ExtractOptions(descr.String); err != nil {
-				log.Print("Error in table comment options for table " + table + ":" + col.name + " - " + err.Error())
+				log2.Warning("Error in table comment options for table " + table + ":" + col.name + " - " + err.Error())
 			}
 		}
 
@@ -457,11 +458,11 @@ func (m *DB) descriptionFromRawTables(rawTables map[string]pgTable, options Opti
 			continue
 		}
 		if strings.Contains(table.name, ".") {
-			log.Print("Error: Table " + table.schema + "." + table.name + " cannot contain a period in its name. Skipping.")
+			log2.Warning("table " + table.schema + "." + table.name + " cannot contain a period in its name. Skipping.")
 			continue
 		}
 		if strings.Contains(table.schema, ".") {
-			log.Print("Error: Schema " + table.schema + "." + table.name + " cannot contain a period in its schema name. Skipping.")
+			log2.Warning("schema " + table.schema + "." + table.name + " cannot contain a period in its schema name. Skipping.")
 			continue
 		}
 
@@ -518,7 +519,7 @@ func (m *DB) getTableDescription(t pgTable) db.TableDescription {
 	var pkCount int
 	for _, col := range t.columns {
 		if strings.Contains(col.name, ".") {
-			log.Print(`Error: Column "` + col.name + `" cannot contain a period in its name. Skipping.`)
+			log2.Warning(`column "` + col.name + `" cannot contain a period in its name. Skipping.`)
 			continue
 		}
 
@@ -634,33 +635,33 @@ func (m *DB) getColumnDescription(table pgTable, column pgColumn, isPk bool, isU
 func (m *DB) getManyManyDescription(t pgTable, enumTableSuffix string) (mm db.ManyManyDescription, ok bool) {
 	td := m.getTableDescription(t)
 	if len(td.Columns) != 2 {
-		log.Print("Error: table " + td.Name + " must have only 2 primary key columns.")
+		log2.Warning("table " + td.Name + " must have only 2 primary key columns.")
 		return
 	}
 	var typeIndex = -1
 	for i, cd := range td.Columns {
 		if !cd.IsPk {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " must be a primary key.")
+			log2.Warning("column " + td.Name + ":" + cd.Name + " must be a primary key.")
 			return
 		}
 
 		if cd.ForeignKey == nil {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " must be a foreign key.")
+			log2.Warning("column " + td.Name + ":" + cd.Name + " must be a foreign key.")
 			return
 		}
 
 		if cd.ForeignKey.DeleteAction != db.FKActionCascade {
-			log.Print("Warning: column " + td.Name + ":" + cd.Name + " has a DELETE action that is not CASCADE. You will need to manually delete the relationship before the associated object is deleted.")
+			log2.Warning("column " + td.Name + ":" + cd.Name + " has a DELETE action that is not CASCADE. You will need to manually delete the relationship before the associated object is deleted.")
 		}
 
 		if cd.IsNullable {
-			log.Print("Error: table " + td.Name + ":" + cd.Name + " cannot be nullable.")
+			log2.Warning("column " + td.Name + ":" + cd.Name + " cannot be nullable.")
 			return
 		}
 
 		if strings2.EndsWith(cd.ForeignKey.ReferencedTable, enumTableSuffix) {
 			if typeIndex != -1 {
-				log.Print("Error: table " + td.Name + ":" + " cannot have two foreign keys to enum tables.")
+				log2.Warning("error in table " + td.Name + ":" + " cannot have two foreign keys to enum tables.")
 				return
 			}
 			typeIndex = i
@@ -678,13 +679,13 @@ func (m *DB) getManyManyDescription(t pgTable, enumTableSuffix string) (mm db.Ma
 	mm.Column1 = td.Columns[idx1].Name
 	if opt := options["goName"]; opt != nil {
 		if mm.GoName1, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + t.name + ":" + t.columns[idx1].name + ": goName is not a string")
+			log2.Warning("Error in table comment for table " + t.name + ":" + t.columns[idx1].name + ": goName is not a string")
 			return
 		}
 	}
 	if opt := options["goPlural"]; opt != nil {
 		if mm.GoPlural1, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + t.name + ":" + t.columns[idx1].name + ": goPlural is not a string")
+			log2.Warning("Error in table comment for table " + t.name + ":" + t.columns[idx1].name + ": goPlural is not a string")
 			return
 		}
 	}
@@ -694,13 +695,13 @@ func (m *DB) getManyManyDescription(t pgTable, enumTableSuffix string) (mm db.Ma
 	mm.Column2 = td.Columns[idx2].Name
 	if opt := options["goName"]; opt != nil {
 		if mm.GoName2, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + t.name + ":" + t.columns[idx2].name + ": goName is not a string")
+			log2.Warning("Error in table comment for table " + t.name + ":" + t.columns[idx2].name + ": goName is not a string")
 			return
 		}
 	}
 	if opt := options["goPlural"]; opt != nil {
 		if mm.GoPlural2, ok = opt.(string); !ok {
-			log.Print("Error in table comment for table " + t.name + ":" + t.columns[idx2].name + ": goPlural is not a string")
+			log2.Warning("Error in table comment for table " + t.name + ":" + t.columns[idx2].name + ": goPlural is not a string")
 			return
 		}
 	}

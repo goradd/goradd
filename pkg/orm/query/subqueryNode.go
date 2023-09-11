@@ -3,7 +3,7 @@ package query
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 
@@ -61,10 +61,9 @@ func (n *SubqueryNode) databaseKey() string {
 	return ""
 }
 
-
 func (n *SubqueryNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "Subquery: ")
+	log.FrameworkDebug(tabs + "Subquery: ")
 }
 
 func (n *SubqueryNode) GobEncode() (data []byte, err error) {
@@ -81,7 +80,6 @@ func (n *SubqueryNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-
 func (n *SubqueryNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
@@ -94,11 +92,9 @@ func (n *SubqueryNode) GobDecode(data []byte) (err error) {
 	return
 }
 
-
 func init() {
 	gob.Register(&SubqueryNode{})
 }
-
 
 // SubqueryBuilder is used internally by the framework to return the internal query builder of the subquery
 func SubqueryBuilder(n *SubqueryNode) QueryBuilderI {

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"reflect"
 	"strings"
 	"time"
@@ -124,10 +124,9 @@ func (n *ValueNode) databaseKey() string {
 	return ""
 }
 
-
 func (n *ValueNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "Val: " + fmt.Sprint(n.value))
+	log.FrameworkDebug(tabs + "Val: " + fmt.Sprint(n.value))
 }
 
 // ValueNodeGetValue is used internally by the framework to get the node's internal value.
@@ -150,7 +149,6 @@ func (n *ValueNode) GobEncode() (data []byte, err error) {
 	data = buf.Bytes()
 	return
 }
-
 
 // GobDecode retrieves the node from storage
 func (n *ValueNode) GobDecode(data []byte) (err error) {

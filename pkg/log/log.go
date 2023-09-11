@@ -1,4 +1,18 @@
-// Package log provides logging support for the application and framework developers
+// Package log provides logging support for your application and the goradd framework developers.
+//
+// The logging package is fashioned after the slog package that was released in Go 1.21, but
+// has some notable differences. In particular, each log level is not just a level, but a separate
+// logger, so that you can create very different application responses depending on the log level
+// of the event being recorded. For example, if you would like to email certain logging events to
+// the sysop, you can create a particular logger for that log level.
+//
+// While developing the slog package, the Go developers did some performance testing, and
+// found that memory allocation was the slowest part of logging. So, they created *Attrs calls
+// that lazy-loaded the attributes and strings, essentially waiting to make sure that a Log call
+// was going to be used before turning an attribute into a string. This principal is attempted to
+// be used here as well, but will require some transition time.
+//
+// The default main.go file has a command line flag that calls SetLoggingLevel at startup time.
 package log
 
 import (
@@ -9,12 +23,30 @@ import (
 	"github.com/goradd/goradd/pkg/config"
 )
 
-const FrameworkDebugLog = 1 // Should only exist when debugging style logs are required for debugging the goradd framework itself.
-const InfoLog = 2           // Info log is designed to always exist. These would be messages we only need to check periodically to know the system is working correctly.
-const WarningLog = 3        // Should be sent to sysop periodically (daily perhaps?). Would generally be issues involving low resources.
-const ErrorLog = 4          // Should be sent to sysop immediately
-const SqlLog = 5            // For watching SQL statements as they are sent to the database driver
-const DebugLog = 10         // Debug log for the developer's application, separate from the goradd framework debug log
+// The log constants represent both a separate logger, and a log level.
+// Set the log level to turn on or off specific loggers.
+// These logging levels correspond roughly to slog's logging levels.
+const (
+	FrameworkDebugLog = -12 // Used by framework developers for debugging the framework
+	SqlLog            = -8  // Outputs the SQL from all SQL queries. This should be used carefully since sensitive information may appear in the logs.
+	DebugLog          = -4  // For use by the application for application level debugging
+	FrameworkInfoLog  = 0   // Used by the framework for logging normal application progress, typically a log of http calls. This is the default logging level.
+	InfoLog           = 1   // For use by the application to do any other info level logging. Set this logging level to turn off the frameworks info logs so that only the application info logs are reported.
+	WarningLog        = 4   // For use by the framework and the application for information that would need to be sent to the sysop periodically. Reports possible performance issues.
+	ErrorLog          = 8   // For use by the framework and application for information that should be sent to the sysop immediately.
+)
+
+// loggingLevel is the current logging level. It should only be changed at system startup.
+var loggingLevel = FrameworkInfoLog
+
+// loggers is the global map of loggers in use.
+var loggers = make(map[int]LoggerI)
+
+// SetLoggingLevel sets the current logger level. The current implementation is only suitable
+// to be set at startup time and not while the application is running.
+func SetLoggingLevel(l int) {
+	loggingLevel = l
+}
 
 // LoggerI is the interface for all loggers.
 type LoggerI interface {
@@ -47,20 +79,21 @@ func (l EmailLogger) Log(out string) {
 	// email.ErrorSend(l.EmailAddresses, "Error", out)
 }
 
-// Loggers is the global map of loggers in use.
-var Loggers = map[int]LoggerI{}
-
 // HasLogger returns true if the given logger is available.
 func HasLogger(id int) bool {
-	_, ok := Loggers[id]
+	_, ok := loggers[id]
 	return ok
 }
 
+// SetLogger sets the given logger id to the given logger.
+//
+// Use this function to set up the loggers at startup time.
+// Pass nil for a logger to delete it.
 func SetLogger(id int, l LoggerI) {
 	if l == nil {
-		delete(Loggers, id)
+		delete(loggers, id)
 	} else {
-		Loggers[id] = l
+		loggers[id] = l
 	}
 }
 
@@ -69,26 +102,31 @@ func Info(v ...interface{}) {
 	_print(InfoLog, v...)
 }
 
-// Infof prints formatted information to the Info logger.
+// Infof prints formatted information to the InfoLog logger.
 func Infof(format string, v ...interface{}) {
 	_printf(InfoLog, format, v...)
 }
 
 // FrameworkDebug is used by the framework to log debugging information.
 // This is mostly for development of the framework, but it can also be used to track down problems
-// in your own code. It becomes a no-op in the release build.
+// in your own code.
 func FrameworkDebug(v ...interface{}) {
-	if config.Debug {
-		_print(FrameworkDebugLog, v...)
-	}
+	_print(FrameworkDebugLog, v...)
 }
 
 // FrameworkDebugf is used by the framework to log formatted debugging information.
-// It becomes a no-op in the release build.
 func FrameworkDebugf(format string, v ...interface{}) {
-	if config.Debug {
-		_printf(FrameworkDebugLog, format, v...)
-	}
+	_printf(FrameworkDebugLog, format, v...)
+}
+
+// FrameworkInfo is used by the framework to log operational information.
+func FrameworkInfo(v ...interface{}) {
+	_print(FrameworkInfoLog, v...)
+}
+
+// FrameworkInfof is used by the framework to log formatted operational information.
+func FrameworkInfof(format string, v ...interface{}) {
+	_printf(FrameworkInfoLog, format, v...)
 }
 
 // Sql outputs the sql sent to the database driver.
@@ -111,7 +149,7 @@ func Error(v ...interface{}) {
 	_print(ErrorLog, v...)
 }
 
-// Error prints formmated information to the Error logger.
+// Errorf prints formmated information to the Error logger.
 func Errorf(format string, v ...interface{}) {
 	_printf(ErrorLog, format, v...)
 }
@@ -143,30 +181,38 @@ func Printf(logType int, format string, v ...interface{}) {
 }
 
 func _print(logType int, v ...interface{}) {
-	if l, ok := Loggers[logType]; ok && l != nil {
-		l.Log(fmt.Sprint(v...))
+	if loggingLevel <= logType {
+		if l, ok := loggers[logType]; ok && l != nil {
+			l.Log(fmt.Sprint(v...))
+		}
 	}
 }
 
 func _printf(logType int, format string, v ...interface{}) {
-	if l, ok := Loggers[logType]; ok && l != nil {
-		l.Log(fmt.Sprintf(format, v...))
+	if loggingLevel <= logType {
+		if l, ok := loggers[logType]; ok && l != nil {
+			l.Log(fmt.Sprintf(format, v...))
+		}
 	}
 }
 
-// CreateDefaultLoggers create's default loggers for the application.
-// After calling this, you can replace the loggers with your own, and
+// CreateDefaultLoggers creates default loggers for the application.
+// After calling this, you can replace the loggers with your own by calling SetLogger, and
 // add additional loggers to the logging array, or remove ones you don't use.
 func CreateDefaultLoggers() {
 	// make these strings the same size to improve the look of the log
-	Loggers[FrameworkDebugLog] = StandardLogger{log.New(os.Stdout,
+	loggers[FrameworkDebugLog] = StandardLogger{log.New(os.Stdout,
 		"Framework: ", log.Ldate|log.Lmicroseconds|log.Lshortfile)}
-	Loggers[InfoLog] = StandardLogger{log.New(os.Stdout,
+	loggers[SqlLog] = StandardLogger{log.New(os.Stdout,
+		"Framework: ", log.Ldate|log.Lmicroseconds|log.Lshortfile)}
+	loggers[FrameworkInfoLog] = StandardLogger{log.New(os.Stdout,
+		"Framework: ", log.Ldate|log.Lmicroseconds|log.Lshortfile)}
+	loggers[InfoLog] = StandardLogger{log.New(os.Stdout,
 		"Info:      ", log.Ldate|log.Lmicroseconds)}
-	Loggers[DebugLog] = StandardLogger{log.New(os.Stdout,
+	loggers[DebugLog] = StandardLogger{log.New(os.Stdout,
 		"Debug:     ", log.Ldate|log.Lmicroseconds|log.Lshortfile)}
-	Loggers[WarningLog] = StandardLogger{log.New(os.Stderr,
+	loggers[WarningLog] = StandardLogger{log.New(os.Stderr,
 		"Warning:   ", log.Ldate|log.Lmicroseconds|log.Llongfile)}
-	Loggers[ErrorLog] = StandardLogger{log.New(os.Stderr,
+	loggers[ErrorLog] = StandardLogger{log.New(os.Stderr,
 		"Error:     ", log.Ldate|log.Lmicroseconds|log.Llongfile)}
 }

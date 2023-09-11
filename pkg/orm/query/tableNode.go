@@ -3,7 +3,7 @@ package query
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 
@@ -99,7 +99,7 @@ func (n *TableNode) nodeType() NodeType {
 
 func (n *TableNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "Table: " + n.dbTable)
+	log.FrameworkDebug(tabs + "Table: " + n.dbTable)
 }
 
 func (n *TableNode) GobEncode() (data []byte, err error) {

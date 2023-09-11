@@ -15,12 +15,12 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        go: ['1.20']
+        go: ['1.20', '1.21']
     env:
       ROOT_DB_USER: root
       DB_USER: tester
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         path: goradd-src
 
@@ -66,10 +66,12 @@ jobs:
     - name: Install goradd-test
       working-directory: .
       run: |
-        cp ${{ github.workspace }}/goradd-src/internal/ci/go.work .
         cp -r ${{ github.workspace }}/goradd-src/internal/ci/goradd-test .
         cd goradd-test
         go mod tidy
+        cd ..
+        go work init
+        go work use goradd-project goradd-test goradd-src
 
     - name: Codegen
       working-directory: ./goradd-test/codegen

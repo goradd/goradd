@@ -3,7 +3,7 @@ package query
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 
@@ -14,7 +14,7 @@ type ColumnNodeI interface {
 	nodeLinkI
 }
 
-// A Column represents a table or field in a database structure, and is the leaf of a node tree or chain.
+// ColumnNode represents a table or field in a database structure, and is the leaf of a node tree or chain.
 type ColumnNode struct {
 	nodeAlias
 	nodeLink
@@ -127,7 +127,7 @@ func (n *ColumnNode) log(level int) {
 		alias = " as " + n.alias
 	}
 
-	log.Print(tabs + "Col: " + n.dbTable + "." + n.dbColumn + alias)
+	log.FrameworkDebug(tabs + "Col: " + n.dbTable + "." + n.dbColumn + alias)
 }
 
 // ColumnNodeGoType is used internally by the framework to return the go type corresponding to the given column.

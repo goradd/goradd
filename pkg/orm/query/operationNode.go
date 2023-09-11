@@ -3,7 +3,7 @@ package query
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
+	"github.com/goradd/goradd/pkg/log"
 	"strings"
 )
 
@@ -69,10 +69,10 @@ const (
 	OpNotNull = "NOT NULL"
 
 	// Our own custom operators for universal support
-	OpStartsWith = "StartsWith"
-	OpEndsWith   = "EndsWith"
-	OpContains   = "Contains"
-	OpDateAddSeconds   = "AddSeconds" // Adds the given number of seconds to a datetime
+	OpStartsWith     = "StartsWith"
+	OpEndsWith       = "EndsWith"
+	OpContains       = "Contains"
+	OpDateAddSeconds = "AddSeconds" // Adds the given number of seconds to a datetime
 )
 
 // String returns a string representation of the Operator type. For convenience, this also corresponds to the SQL
@@ -88,7 +88,7 @@ type OperationNode struct {
 	op           Operator
 	operands     []NodeI
 	functionName string // for function operations specific to the db driver
-	distinct bool // some aggregate queries, particularly count, allow this inside the function
+	distinct     bool   // some aggregate queries, particularly count, allow this inside the function
 }
 
 // NewOperationNode returns a new operation.
@@ -223,7 +223,7 @@ func (n *OperationNode) databaseKey() string {
 
 func (n *OperationNode) log(level int) {
 	tabs := strings.Repeat("\t", level)
-	log.Print(tabs + "Op: " + n.op.String())
+	log.FrameworkDebug(tabs + "Op: " + n.op.String())
 }
 
 func (n *OperationNode) GobEncode() (data []byte, err error) {
@@ -249,7 +249,6 @@ func (n *OperationNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-
 func (n *OperationNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
@@ -270,7 +269,6 @@ func (n *OperationNode) GobDecode(data []byte) (err error) {
 	}
 	return
 }
-
 
 func init() {
 	gob.Register(&OperationNode{})
