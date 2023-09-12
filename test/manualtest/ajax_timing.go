@@ -59,8 +59,8 @@ func (f *AjaxTimingForm) createControls(ctx context.Context) {
 	f.Txt1.SetColumnCount(30)
 	f.Txt1.SetPlaceholder("TextBox KeyUp Test")
 	f.Txt1.SetText("Change Me")
-	f.Txt1.On(event.Change(), action.Ajax(f.ID(), Txt1ChangeAction))
-	f.Txt1.On(event.KeyUp(), action.Ajax(f.ID(), Txt1KeyUpAction))
+	f.Txt1.On(event.Change(), action.Do(f.ID(), Txt1ChangeAction))
+	f.Txt1.On(event.KeyUp(), action.Do(f.ID(), Txt1KeyUpAction))
 
 	f.Txt1ChangeLabel = NewSpan(f, "vc")
 	f.Txt1ChangeLabel.SetText("Value after Change: ")
@@ -70,7 +70,7 @@ func (f *AjaxTimingForm) createControls(ctx context.Context) {
 
 	f.Chk = NewCheckbox(f, "cb")
 	f.Chk.SetText("CheckboxList Test")
-	f.Chk.On(event.Click(), action.Ajax(f.ID(), ChkChangeAction))
+	f.Chk.On(event.Click(), action.Do(f.ID(), ChkChangeAction))
 
 	f.ChkLabel = NewSpan(f, "cbv")
 	f.ChkLabel.SetText("Value after Click: ")
@@ -81,7 +81,7 @@ func (f *AjaxTimingForm) createControls(ctx context.Context) {
 
 	f.Btn = NewButton(f, "submit")
 	f.Btn.SetLabel("Submit")
-	f.Btn.On(event.Click(), action.Ajax(f.ID(), BtnClickAction))
+	f.Btn.On(event.Click(), action.Do(f.ID(), BtnClickAction))
 	f.Btn.SetValidationType(event.ValidateNone)
 }
 

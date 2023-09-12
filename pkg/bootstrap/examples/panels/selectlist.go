@@ -88,13 +88,13 @@ func (p *SelectListPanel) Init(self any, ctx context.Context, parent page.Contro
 		},
 		ButtonCreator{
 			ID:       "ajaxButton",
-			Text:     "Submit Ajax",
-			OnSubmit: action.Ajax("selectListPanel", ButtonSubmit),
+			Text:     "Submit Do",
+			OnSubmit: action.Do("selectListPanel", ButtonSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
-			OnSubmit: action.Ajax("selectListPanel", ButtonSubmit),
+			OnSubmit: action.Do("selectListPanel", ButtonSubmit),
 		},
 	)
 
@@ -156,6 +156,6 @@ func init() {
 	examples.RegisterPanel("lists", "Lists", NewSelectListPanel, 3)
 	page.RegisterControl(&SelectListPanel{})
 
-	browsertest.RegisterTestFunction("Bootstrap Select List Ajax Submit", testSelectListAjaxSubmit)
+	browsertest.RegisterTestFunction("Bootstrap Select List Do Submit", testSelectListAjaxSubmit)
 	browsertest.RegisterTestFunction("Bootstrap Select List Server Submit", testSelectListServerSubmit)
 }

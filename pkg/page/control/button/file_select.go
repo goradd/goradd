@@ -49,7 +49,7 @@ type FileSelectI interface {
 //
 // To get the list of files that have been selected, call FileInfo.
 // However, to get to the files that are being uploaded, you must do one of the following:
-//   - create an Ajax action on the UploadEvent event, and then call the Upload function, or
+//   - create an Do action on the UploadEvent event, and then call the Upload function, or
 //   - create a Server action on a submit button.
 //
 // In your DoAction handler, call FileHeaders on the FileSelect to retrieve the file headers.
@@ -85,7 +85,7 @@ func (b *FileSelect) Init(self any, parent page.ControlI, id string) {
 	b.ControlBase.Init(self, parent, id)
 	b.Tag = "input"
 	b.SetAttribute("type", "file")
-	b.On(event.Change().Private(), action.Ajax(b.ID(), fileSelectChangeAction))
+	b.On(event.Change().Private(), action.Do(b.ID(), fileSelectChangeAction))
 	b.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "file_select.js"), false, nil)
 }
 

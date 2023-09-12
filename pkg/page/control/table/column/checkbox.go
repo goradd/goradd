@@ -191,7 +191,7 @@ func (c *CheckboxColumn) AddActions(t page.ControlI) {
 		CheckboxColumnClick().
 		Selector(`input[data-gr-all]`).
 		Private(),
-		action.Ajax(c.ParentTable().ID()+"_"+c.ID(), table.ColumnAction).ActionValue(AllClickAction))
+		action.Do(c.ParentTable().ID()+"_"+c.ID(), table.ColumnAction).ActionValue(AllClickAction))
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.

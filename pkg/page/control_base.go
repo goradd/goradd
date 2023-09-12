@@ -1134,7 +1134,7 @@ func (c *ControlBase) ActionValue() interface{} {
 	return c.actionValue
 }
 
-// DoAction is called by the framework in response to a [action.Server] or [action.Ajax] action.
+// DoAction is called by the framework in response to an action created by [action.Do].
 // Forms and controls should implement this method to handle the action.
 // Typically, the Action function will first look at the id to know how to handle it.
 func (c *ControlBase) DoAction(ctx context.Context, a action.Params) {

@@ -44,7 +44,7 @@ func (p *SavePanel) Init(self any, dlg page.ControlI, id string) {
 	p.AddButton(p.GT("Save"), SaveButtonID, &ButtonOptions{
 		Validates: true,
 		IsPrimary: true,
-		OnClick:   action.Ajax(p.ID(), saveDlgSaveAction),
+		OnClick:   action.Do(p.ID(), saveDlgSaveAction),
 	})
 }
 

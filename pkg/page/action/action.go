@@ -17,22 +17,24 @@
 //
 // Callback Actions invoke the DoAction() function on GoRADD controls. There are currently two kinds of
 // Callback Actions:
-//   - [Server] and
-//   - [Ajax]
+//   - Ajax and
+//   - Post
 //
-// You specify the control id of the receiving control, and an integer representing the action. The DoAction()
-// function can then do whatever is needed on the server side.
-//
-// Server actions use the standard http Post method of html forms, and cause a page to completely refresh.
-// This is the method used in the early days of the web, and while it still works, it isn't as efficient
-// as Ajax actions. However, there are still specific times to use a Server action:
-//   - When starting a file upload. Currently, you must use a Server action for file uploads.
-//   - When debugging a problem with an Ajax action, it may be helpful to see if it works as a Server action.
+// Create a callback action by calling action.Do. By default, this will create an Ajax action. Call Post
+// on the resulting action to turn it into a Post action.
+// You specify the control id of the receiving control, and an integer representing the action. The DoAction
+// function of the control can then do whatever is needed on the server side.
 //
 // Ajax actions use the javascript XMLHttpRequest mechanism to pass data without a complete refresh.
 // In response to an Ajax action, a
-// control can call its Refresh() function to redraw just that control. If a Server action is working, but not
+// control can call its Refresh() function to redraw just that control. If a Post action is working, but not
 // an Ajax action, one thing to check is to make sure Refresh() is called if anything in a control changes.
+//
+// Post actions use the standard http Post method of html forms, and cause a page to completely refresh.
+// This is the method used in the early days of the web, and while it still works, it isn't as efficient
+// as Ajax actions. However, there are still specific times to use a Post action:
+//   - When starting a file upload. Currently, you must use a Post action for file uploads.
+//   - When debugging a problem with an Ajax action, it may be helpful to see if it works as a Post action.
 //
 // In addition to the action id, a Callback action can receive data that is sent with the action, data that is sent by
 // the control, and also data that is sent by the event that triggered the action. This data can be static data

@@ -105,12 +105,12 @@ func (p *TextboxPanel) Init(self any, ctx context.Context, parent page.ControlI,
 		ButtonCreator{
 			ID:       "ajaxButton",
 			Text:     "Submit Ajax",
-			OnSubmit: action.Ajax("textboxPanel", ButtonSubmit),
+			OnSubmit: action.Do("textboxPanel", ButtonSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
-			Text:     "Submit Server",
-			OnSubmit: action.Server("textboxPanel", ButtonSubmit),
+			Text:     "Submit Post",
+			OnSubmit: action.Do("textboxPanel", ButtonSubmit).Post(),
 		},
 	)
 }
@@ -122,7 +122,7 @@ func (p *TextboxPanel) DoAction(ctx context.Context, a action.Params) {
 }
 
 func init() {
-	browsertest.RegisterTestFunction("Textbox Ajax Submit", testTextboxAjaxSubmit)
+	browsertest.RegisterTestFunction("Textbox Do Submit", testTextboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Textbox Server Submit", testTextboxServerSubmit)
 	page.RegisterControl(&TextboxPanel{})
 }

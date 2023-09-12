@@ -176,7 +176,7 @@ func (t *Table) HideIfEmpty() bool {
 
 // MakeSortable makes a table sortable. It will attach sortable events and show the header if it's not shown.
 func (t *Table) MakeSortable() TableI {
-	t.On(ColumnSortEvent().Private(), action.Ajax(t.ID(), SortClick))
+	t.On(ColumnSortEvent().Private(), action.Do(t.ID(), SortClick))
 	if t.headerRowCount == 0 {
 		t.headerRowCount = 1
 	}
