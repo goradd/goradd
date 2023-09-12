@@ -391,6 +391,19 @@ func RestoreNewDialogFunction() {
 	newDialogFunc = defaultNewDialogFunc
 }
 
+// GetDialog returns the DialogI object corresponding to the given id. The id should be either the id of the
+// dialog object, or the DialogPanel inside the dialog object.
+func GetDialog(parent page.ControlI, id string) DialogI {
+	c := parent.Page().GetControl(id)
+
+	if dlg, ok := c.(DialogI); ok {
+		return dlg
+	} else if dlg, ok := c.(*DialogPanel); ok {
+		return dlg.Parent().(DialogI)
+	}
+	return nil
+}
+
 func init() {
 	page.RegisterControl(&Dialog{})
 }
