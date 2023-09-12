@@ -51,7 +51,7 @@ type DialogPanel struct {
 	control.Panel
 }
 
-// GetDialogPanel will return a new dialog panel if the given dialog panel does not already exist on the form,
+// GetDialogPanel returns a new dialog panel if the given dialog panel does not already exist on the form,
 // or it returns the dialog panel with the given id that already exists. isNew will indicate whether it
 // created a new dialog, or is returning an existing one.
 func GetDialogPanel(parent page.ControlI, id string) (dialogPanel *DialogPanel, isNew bool) {
@@ -65,6 +65,7 @@ func GetDialogPanel(parent page.ControlI, id string) (dialogPanel *DialogPanel, 
 	return dialogPanel, true
 }
 
+// Init is called by the framework to initialize the
 func (p *DialogPanel) Init(self any, parent page.ControlI, id string) {
 	p.Panel.Init(self, parent, id)
 	p.AddClass("gr-dlg-pnl") // Give the ability to provide a consistent style across the app to all panels in a dialog
@@ -80,7 +81,7 @@ func (p *DialogPanel) OnClose(a action.ActionI) {
 }
 
 // OnButton attaches an action handler that responds to button presses. The id of the pressed button will
-// be in the event value of the action.
+// be in the Event value of the action.
 func (p *DialogPanel) OnButton(a action.ActionI) {
 	p.getDialog().On(event.DialogButton(), a)
 }
@@ -149,48 +150,6 @@ func (p *DialogPanel) RemoveButton(id string) {
 // RemoveAllButtons removes all the buttons from the dialog
 func (p *DialogPanel) RemoveAllButtons() {
 	p.getDialog().RemoveAllButtons()
-}
-
-// Alert is used by the framework to create an alert type message dialog.
-//
-// If you specify no buttons, a close box in the corner will be created that will just close the dialog.
-//
-// If you specify one button, clicking it will close the dialog and be the same as the close button.
-//
-// If you specify more buttons, the first button will be the default button (the one pressed if the
-// user presses the return key) and you will need to detect the button by calling
-// OnButton(action) on the dialog panel returned.
-// You will also be responsible for calling Hide() on the dialog panel after detecting a button in this case.
-// You can detect a close button by calling OnClose(action).
-// Call SetDialogStyle on the result to control the look of the alert.
-func Alert(parent page.ControlI, title string, message string, hasClose bool, buttons ...string) *DialogPanel {
-	dialogPanel, _ := GetDialogPanel(parent, "gr-alert")
-	dialogPanel.SetText(message)
-	dialogPanel.RemoveAllButtons()
-	dialogPanel.SetHasCloseBox(hasClose)
-	dialogPanel.SetTitle(title)
-
-	switch len(buttons) {
-	case 0:
-		dialogPanel.SetHasCloseBox(true)
-	case 1:
-		dialogPanel.AddCloseButton(buttons[0], "")
-	default:
-		for _, l := range buttons {
-			dialogPanel.AddButton(l, "", nil)
-		}
-
-	}
-
-	dialogPanel.Show()
-	return dialogPanel
-}
-
-// YesNo is an alert that has just two buttons, a Yes and a No button.
-func YesNo(parent page.ControlI, title string, message string, resultAction action.ActionI) *DialogPanel {
-	p := Alert(parent, title, message, false, parent.GT("Yes"), parent.GT("No"))
-	p.OnButton(resultAction)
-	return p
 }
 
 func init() {
