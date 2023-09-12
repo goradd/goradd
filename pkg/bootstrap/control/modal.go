@@ -29,7 +29,7 @@ type ModalI interface {
 //   - Call NewModal()
 //   - Pass a ModalCreator object to the form's AddControls() function.
 //   - Since Modal implements dialog.DialogI, you can also call the dialog.Alert function. If you have previously
-//     called SetNewDialogFunction (see setupBootstrap in your project's config/goradd.go file), then that function
+//     called setupBootstrap() in your project's config/goradd.go file, then that function
 //     will call NewModal to create a Bootstrap style modal dialog.
 //
 // To use a custom template in a bootstrap modal, add a Panel child element or subclass of a panel
