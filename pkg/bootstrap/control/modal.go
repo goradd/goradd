@@ -23,9 +23,19 @@ type ModalI interface {
 	dialog.DialogI
 }
 
-// Modal is a bootstrap modal dialog.
+// Modal is a Bootstrap modal dialog control.
+//
+// To create Modal, you have a few options:
+//   - Call NewModal()
+//   - Pass a ModalCreator object to the form's AddControls() function.
+//   - Since Modal implements dialog.DialogI, you can also call the dialog.Alert function. If you have previously
+//     called SetNewDialogFunction (see setupBootstrap in your project's config/goradd.go file), then that function
+//     will call NewModal to create a Bootstrap style modal dialog.
+//
 // To use a custom template in a bootstrap modal, add a Panel child element or subclass of a panel
 // child element. To use the grid system, add the container-fluid class to that embedded panel.
+//
+// A modal dialog starts out hidden. Call Show() on the modal dialog to display it.
 type Modal struct {
 	control.Panel
 	isOpen bool
@@ -40,17 +50,20 @@ type Modal struct {
 	foundRight bool // utility for adding buttons. No need to serialize this.
 }
 
-// event codes
 const (
-	DialogClosed = iota + 10000
+	DialogClosed = iota + 10000 // The event code for a dialog that is closing
 )
 
+// NewModal creates a new Modal dialog control.
 func NewModal(parent page.ControlI, id string) *Modal {
 	d := new(Modal)
 	d.Init(d, parent, id)
 	return d
 }
 
+// Init is called by the framework to initialize a modal dialog.
+//
+// Subclasses should call Init after creating themselves.
 func (m *Modal) Init(self any, parent page.ControlI, id string) {
 
 	if id == "" {
@@ -80,6 +93,7 @@ func (m *Modal) this() ModalI {
 	return m.Self().(ModalI)
 }
 
+// SetTitle sets the content of the title of the modal dialog.
 func (m *Modal) SetTitle(t string) {
 	if m.titleBar.Title != t {
 		m.titleBar.Title = t
@@ -87,6 +101,7 @@ func (m *Modal) SetTitle(t string) {
 	}
 }
 
+// SetHasCloseBox determines if the modal has a close box in the upper corner which will close the dialog.
 func (m *Modal) SetHasCloseBox(h bool) {
 	if m.titleBar.HasCloseBox != h {
 		m.titleBar.HasCloseBox = h
@@ -94,6 +109,9 @@ func (m *Modal) SetHasCloseBox(h bool) {
 	}
 }
 
+// SetDialogStyle sets the style of the dialog.
+//
+// These styles are mapped to Bootstrap TextColor* styles.
 func (m *Modal) SetDialogStyle(style dialog.Style) {
 	var class string
 	switch style {
@@ -113,15 +131,18 @@ func (m *Modal) SetDialogStyle(style dialog.Style) {
 	m.titleBar.AddClass(class)
 }
 
+// SetBackdrop determines whether the modal dialog will close when clicking on the backdrop.
 func (m *Modal) SetBackdrop(b ModalBackdropType) {
 	m.backdrop = b
 	m.Refresh()
 }
 
+// Title returns the title of the dialog.
 func (m *Modal) Title() string {
 	return m.titleBar.Title
 }
 
+// AddTitlebarClass adds a css class to the class of the title bar.
 func (m *Modal) AddTitlebarClass(class string) {
 	m.titleBar.AddClass(class)
 }
@@ -209,16 +230,19 @@ func (m *Modal) AddButton(
 	m.buttonBar.Refresh()
 }
 
+// RemoveButton removes the button from the dialog with the given id.
 func (m *Modal) RemoveButton(id string) {
 	m.buttonBar.RemoveChild(m.ID() + "-btn-" + id)
 	m.buttonBar.Refresh()
 }
 
+// RemoveAllButtons removes all the buttons from the modal.
 func (m *Modal) RemoveAllButtons() {
 	m.buttonBar.RemoveChildren()
 	m.Refresh()
 }
 
+// SetButtonVisible sets the visible state of the button with the given id.
 func (m *Modal) SetButtonVisible(id string, visible bool) {
 	if ctrl := m.buttonBar.Child(m.ID() + "-btn-" + id); ctrl != nil {
 		ctrl.SetVisible(visible)
@@ -252,6 +276,7 @@ func (m *Modal) AddCloseButton(label string, id string) {
 	m.AddButton(label, id, &dialog.ButtonOptions{IsClose: true})
 }
 
+// DoPrivateAction is called by the framework to record that a dialog was closed.
 func (m *Modal) DoPrivateAction(_ context.Context, a action.Params) {
 	switch a.ID {
 	case DialogClosed:
@@ -259,6 +284,7 @@ func (m *Modal) DoPrivateAction(_ context.Context, a action.Params) {
 	}
 }
 
+// Show will cause the modal to appear.
 func (m *Modal) Show() {
 	if m.Parent() == nil {
 		m.SetParent(m.ParentForm()) // This is a saved modal which has previously been created and removed. Insert it back into the form.
@@ -269,16 +295,19 @@ func (m *Modal) Show() {
 	m.ParentForm().Response().ExecuteJavaScript(fmt.Sprintf("bootstrap.Modal.getInstance(document.getElementById('%s')).show();", m.ID()), page.PriorityLow)
 }
 
+// Hide will visibly hide the modal, but will keep its html and javascript code in the client.
 func (m *Modal) Hide() {
 	m.ParentForm().Response().ExecuteJavaScript(fmt.Sprintf("bootstrap.Modal.getInstance(document.getElementById('%s')).hide()", m.ID()), page.PriorityLow)
 }
 
+// closed is used by the framework to record that a dialog was closed.
 func (m *Modal) closed() {
 	m.isOpen = false
 	m.ResetValidation()
 	m.SetVisible(false)
 }
 
+// PutCustomScript is called by the framework to insert the javascript required to manage the Bootstrap modal.
 func (m *Modal) PutCustomScript(_ context.Context, response *page.Response) {
 
 	script := fmt.Sprintf(`
@@ -290,6 +319,7 @@ var m = new bootstrap.Modal(document.getElementById('%s') , {keyboard: %t});
 	response.ExecuteJavaScript(script, page.PriorityStandard)
 }
 
+// Serialize is called by the framework to record the state of the modal dialog object.
 func (m *Modal) Serialize(e page.Encoder) {
 	m.Panel.Serialize(e)
 
@@ -308,6 +338,7 @@ func (m *Modal) Serialize(e page.Encoder) {
 	}
 }
 
+// Deserialize is called by the framework to restore the state of the dialog.
 func (m *Modal) Deserialize(d page.Decoder) {
 	m.Panel.Deserialize(d)
 
@@ -329,12 +360,14 @@ func (m *Modal) Deserialize(d page.Decoder) {
 	}
 }
 
+// TitleBar is a control that displays the title bar portion of a modal dialog.
 type TitleBar struct {
 	control.Panel
 	HasCloseBox bool
 	Title       string
 }
 
+// NewTitleBar creates a new TitleBar control.
 func NewTitleBar(parent page.ControlI, id string) *TitleBar {
 	d := new(TitleBar)
 	d.Panel.Init(d, parent, id)
@@ -346,6 +379,8 @@ func init() {
 	page.RegisterControl(&TitleBar{})
 }
 
+// ModalButtonCreator declares a dialog button to put on a modal. Pass the structure to
+// the ModalButtons function.
 type ModalButtonCreator struct {
 	Label               string
 	ID                  string
@@ -356,10 +391,35 @@ type ModalButtonCreator struct {
 	Options             map[string]interface{}
 }
 
+// ModalButtons is a helper for declaring buttons on a Modal dialog control.
+// Pass it to the Buttons parameter of a ModalCreator.
 func ModalButtons(buttons ...ModalButtonCreator) []ModalButtonCreator {
 	return buttons
 }
 
+// ModalCreator declares a Bootstrap modal dialog. Pass this structure to the AddControls function of a form.
+//
+// For example, the following will create a dialog with a title, text, and two buttons.
+//
+//		 form.AddControls(
+//		   ModalCreator {
+//	      ID: "my-modal",
+//	      Title: "Look Out!",
+//	      Style: dialog.WarningStyle,
+//	      Buttons: ModalButtons(
+//	        ModalButtonCreator {
+//	          Label: "OK",
+//	          ID: "ok",
+//	          IsClose: true,
+//	        },
+//	        ModalButtonCreator {
+//	          Label: "Cancel",
+//	          ID: "cancel",
+//	          IsClose: true,
+//	        }
+//	      ),
+//		   }
+//		 )
 type ModalCreator struct {
 	ID            string
 	Title         string
