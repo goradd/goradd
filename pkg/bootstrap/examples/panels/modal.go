@@ -29,7 +29,7 @@ func (p *ModalPanel) Init(self any, ctx context.Context, parent page.ControlI, i
 		ButtonCreator{
 			ID:       "popupButton",
 			Text:     "Popup Modal",
-			OnSubmit: action.Ajax(p.ID(), PopupClick),
+			OnSubmit: action.Do(p.ID(), PopupClick),
 		},
 	)
 
@@ -52,6 +52,6 @@ func (p *ModalPanel) DoAction(ctx context.Context, a action.Params) {
 func init() {
 	examples.RegisterPanel("modal", "Modal", NewModalPanel, 6)
 	page.RegisterControl(&ModalPanel{})
-	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
+	//browsertest.RegisterTestFunction("Bootstrap Standard Form Do Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }

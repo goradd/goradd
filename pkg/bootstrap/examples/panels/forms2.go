@@ -65,13 +65,13 @@ func (p *Forms2Panel) Init(self any, ctx context.Context, parent page.ControlI, 
 
 		ButtonCreator{
 			ID:       "ajaxButton",
-			Text:     "Submit Ajax",
-			OnSubmit: action.Ajax(p.ID(), AjaxSubmit),
+			Text:     "Submit Do",
+			OnSubmit: action.Do(p.ID(), AjaxSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
-			OnSubmit: action.Server(p.ID(), ServerSubmit),
+			OnSubmit: action.Do(p.ID(), PostSubmit).Post(),
 		},
 	)
 }
@@ -79,6 +79,6 @@ func (p *Forms2Panel) Init(self any, ctx context.Context, parent page.ControlI, 
 func init() {
 	examples.RegisterPanel("forms2", "Forms 2", NewForms2Panel, 2)
 	page.RegisterControl(new(Forms2Panel))
-	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
+	//browsertest.RegisterTestFunction("Bootstrap Standard Form Do Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }

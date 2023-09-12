@@ -34,12 +34,12 @@ func (p *DialogsPanel) Init(self any, ctx context.Context, parent page.ControlI,
 		ButtonCreator{
 			ID:       "alertButton",
 			Text:     "Alert",
-			OnSubmit: action.Ajax("dialogsPanel", ButtonAlert),
+			OnSubmit: action.Do("dialogsPanel", ButtonAlert),
 		},
 		ButtonCreator{
 			ID:       "messageButton",
 			Text:     "Message",
-			OnSubmit: action.Server("dialogsPanel", ButtonMessage),
+			OnSubmit: action.Do("dialogsPanel", ButtonMessage).Post(),
 		},
 	)
 
@@ -65,14 +65,14 @@ func (p *DialogsPanel) DoAction(ctx context.Context, a action.Params) {
 			dp.AddButton("For Me", "forme", &ButtonOptions{
 				IsPrimary: true,
 				Validates: true,
-				//OnClick:action.Ajax(p.ID(), ForMeAction), // You can handle button actions this way
+				//OnClick:action.Do(p.ID(), ForMeAction), // You can handle button actions this way
 			})
 			dp.AddButton("For You", "foryou", &ButtonOptions{
 				Validates: true,
-				//OnClick:action.Ajax(p.ID(), ForYouAction),
+				//OnClick:action.Do(p.ID(), ForYouAction),
 			})
 			dp.AddCloseButton("Cancel", "cancel")
-			dp.OnButton(action.Ajax(p.ID(), MessageAction)) // or handle button actions this way
+			dp.OnButton(action.Do(p.ID(), MessageAction)) // or handle button actions this way
 		} else {
 			GetTextboxI(p, "msg-txt").SetText("") // reset the text in case it was just hidden
 		}

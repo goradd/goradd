@@ -26,7 +26,7 @@ func (p *{{= panelName }}) ColumnCreators(_ context.Context) []table.ColumnCreat
         creators = append(creators, column.ButtonColumnCreator{
             Title: p.GT("Edit"),
         })
-        p.On(column.ButtonColumnClick(), action.Ajax(p.ID(), {{= lcPanelName }}ButtonClick))
+        p.On(column.ButtonColumnClick(), action.Do(p.ID(), {{= lcPanelName }}ButtonClick))
     }
 
 

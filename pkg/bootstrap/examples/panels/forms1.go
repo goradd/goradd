@@ -17,7 +17,7 @@ const controlsFormPath = "/goradd/examples/bootstrap.g"
 
 const (
 	AjaxSubmit int = iota + 1
-	ServerSubmit
+	PostSubmit
 	ButtonSubmit
 	RadioChange
 )
@@ -62,7 +62,7 @@ func (p *Forms1Panel) Init(self any, ctx context.Context, parent page.ControlI, 
 				{"Divorced", "Divorced"},
 			},
 			Value:    "Single",
-			OnChange: action.Ajax(p.ID(), RadioChange),
+			OnChange: action.Do(p.ID(), RadioChange),
 		},
 		control.SpanCreator{
 			ID: "radioResult",
@@ -78,13 +78,13 @@ func (p *Forms1Panel) Init(self any, ctx context.Context, parent page.ControlI, 
 		},
 		ButtonCreator{
 			ID:       "ajaxButton",
-			Text:     "Submit Ajax",
-			OnSubmit: action.Ajax(p.ID(), AjaxSubmit),
+			Text:     "Submit Do",
+			OnSubmit: action.Do(p.ID(), AjaxSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
-			OnSubmit: action.Server(p.ID(), ServerSubmit),
+			OnSubmit: action.Do(p.ID(), PostSubmit).Post(),
 		},
 	)
 }
@@ -102,7 +102,7 @@ func (p *Forms1Panel) DoAction(ctx context.Context, a action.Params) {
 func init() {
 	examples.RegisterPanel("forms1", "Forms 1", NewForms1Panel, 2)
 	page.RegisterControl(&Forms1Panel{})
-	//browsertest.RegisterTestFunction("Bootstrap Standard Form Ajax Submit", testForms1AjaxSubmit)
+	//browsertest.RegisterTestFunction("Bootstrap Standard Form Do Submit", testForms1AjaxSubmit)
 	//browsertest.RegisterTestFunction("Bootstrap Standard Form Server Submit", testForms1ServerSubmit)
 }
 

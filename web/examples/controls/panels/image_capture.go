@@ -30,7 +30,7 @@ func (p *ImageCapturePanel) Init(self any, ctx context.Context, parent page.Cont
 				SaveState: true,
 				ControlOptions: page.ControlOptions{
 					On: page.EventList{
-						{ImageCaptureEvent(), action.Ajax(p.ID(), 0)}, // Just get the data.
+						{ImageCaptureEvent(), action.Do(p.ID(), 0)}, // Just get the data.
 					},
 				},
 			},
@@ -38,12 +38,12 @@ func (p *ImageCapturePanel) Init(self any, ctx context.Context, parent page.Cont
 		ButtonCreator{
 			ID:       "ajaxButton",
 			Text:     "Submit Ajax",
-			OnSubmit: action.Ajax("checkboxPanel", ButtonSubmit),
+			OnSubmit: action.Do("checkboxPanel", ButtonSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
-			Text:     "Submit Server",
-			OnSubmit: action.Server("checkboxPanel", ButtonSubmit),
+			Text:     "Submit Post",
+			OnSubmit: action.Do("checkboxPanel", ButtonSubmit).Post(),
 		},
 	)
 }

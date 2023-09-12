@@ -10,7 +10,7 @@ import (
 )
 
 // CallbackActionI defines actions that result in a callback to the server.
-// Specifically Server and Ajax actions are defined for now.
+// Specifically Post and Ajax actions are defined for now.
 // There is potential for a Message action, like through WebSocket, PubHub, etc.
 type CallbackActionI interface {
 	ActionI
@@ -27,6 +27,8 @@ type CallbackActionI interface {
 	// a component inside the main control by concatenating the control's id with another id that
 	// indicates the internal destination, separated with an underscore.
 	DestinationControlID(id string) CallbackActionI
+	// Post turns the action into a post action
+	Post() CallbackActionI
 }
 
 // CallbackActionAccessor is used by the framework and the internals of controls to access actions.
@@ -43,17 +45,15 @@ type CallbackActionAccessor interface {
 	IsServerAction() bool
 }
 
-// callbackAction is a kind of superclass for Ajax and Server actions.
+// callbackAction handles Ajax and Post actions.
 type callbackAction struct {
 	ActionID      int
 	DestControlID string
 	SubID         string
 	Value         interface{}
 	CallAsync     bool
+	IsPost        bool // if false, this is an Ajax call
 }
-
-// CB is a private helper for encoding callback actions
-type CB = callbackAction
 
 // ID returns the action id that was defined when the action was created.
 func (a *callbackAction) ID() int {
@@ -89,41 +89,8 @@ func (a *callbackAction) GetDestinationControlSubID() string {
 	return a.SubID
 }
 
-type serverAction struct {
-	CB
-}
-
-// Server creates a server action, which is an action that will use a POST submission mechanism to trigger the action.
-// Generally, with modern browsers, server actions are not that useful, since they cause an entire page to reload, while
-// Ajax actions do not, and therefore Ajax actions are quicker to process.
-// However, there are special cases where a server action might be
-// useful, like:
-//   - You are moving to a new page anyway.
-//   - You are having trouble making an Ajax action work for some reason, and a Server action might get around the problem.
-//   - You are submitting a multipart form, like when uploading a file.
-//
-// When the action fires, the DoAction() function of the GoRADD control identified by the
-// destControlId will be called, and the given actionID will be the ID passed in the Params of the call.
-//
-// You send an action to a sub-control  specify a sub id which indicates that the action should be sent to something
-// inside the main control by concatenating the control's id with another id that indicates the internal destination,
-// separated with an underscore.
-//
-// The returned action uses a Builder pattern to add options, so for example you might call:
-//
-//	myControl.On(event.Click(), action.Server("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
-func Server(destControlId string, actionId int) CallbackActionI {
-	a := &serverAction{
-		callbackAction{
-			ActionID: actionId,
-		},
-	}
-	a.DestinationControlID(destControlId)
-	return a
-}
-
-// RenderScript is called by the framework to render the script as javascript.
-func (a *serverAction) RenderScript(params RenderParams) string {
+// RenderScript renders the script as javascript.
+func (a *callbackAction) RenderScript(params RenderParams) string {
 	v := new(maps.SliceMap[string, any])
 	v.Set("controlID", params.TriggeringControlID)
 	v.Set("eventId", params.EventID)
@@ -145,38 +112,55 @@ func (a *serverAction) RenderScript(params RenderParams) string {
 		v2.Set("control", cV)
 	}
 	v.Set("actionValues", v2)
-	return fmt.Sprintf("goradd.postBack(%s);", javascript.ToJavaScript(v))
+
+	if a.IsPost {
+		return fmt.Sprintf("goradd.postBack(%s);", javascript.ToJavaScript(v))
+	} else {
+		return fmt.Sprintf("goradd.postAjax(%s);", javascript.ToJavaScript(v))
+	}
 }
 
-// ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the ActionParam structure
-// sent to the event handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
+// ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the
+// ActionParam structure sent to the event handler.
+// This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
 // javascript.Closures will be called immediately with a (this) parameter.
-func (a *serverAction) ActionValue(v interface{}) CallbackActionI {
+func (a *callbackAction) ActionValue(v interface{}) CallbackActionI {
 	a.Value = v
 	return a
 }
 
 // Async will cause the action to be handled asynchronously. Use this only in special situations where you know that you
 // do not need information from other actions.
-func (a *serverAction) Async() CallbackActionI {
+func (a *callbackAction) Async() CallbackActionI {
 	a.CallAsync = true
 	return a
 }
 
 // DestinationControlID sets the id of the control that will receive the action.
-//
-// Implementations of composite controls can specify a sub id which indicates that the action should be sent to
-// an item inside a control by concatenating the control's id with another id that indicates the internal destination,
+// You can specify a sub id which indicates that the action should be sent to something
+// inside the main control by concatenating the control's id with another id that indicates the internal destination,
 // separated with an underscore.
-func (a *serverAction) DestinationControlID(id string) CallbackActionI {
+func (a *callbackAction) DestinationControlID(id string) CallbackActionI {
 	a.setDestinationControlID(id)
 	return a
 }
 
-// IsServerAction returns true if this is a server action.
+// Post specifies that the action will be invoked by calling and http POST on the form.
+//
+// It is unlikely you would need to call this, but there are special cases where a server action might be
+// useful, like:
+//   - You are moving to a new page anyway.
+//   - You are having trouble making an Ajax action work for some reason, and a Post action might get around the problem.
+//   - You are submitting a multipart form, like when uploading a file.
+func (a *callbackAction) Post() CallbackActionI {
+	a.IsPost = true
+	return a
+}
+
+// IsServerAction will return false if this is not a server action.
 // This is used by the test harness.
-func (a *serverAction) IsServerAction() bool {
-	return true
+func (a *callbackAction) IsServerAction() bool {
+	return a.IsPost
 }
 
 /*
@@ -197,10 +181,6 @@ func (a *serverAction) GobDecode(data []byte) (err error) {
 	return a.callbackAction.decode(dec)
 }*/
 
-type ajaxAction struct {
-	CB
-}
-
 // Ajax creates an ajax action. When the action fires, the DoAction() function of the GoRADD control identified by the
 // destControlId will be called, and the given actionID will be the ID passed in the Params of the call.
 // You can specify a sub id which indicates that the action should be sent to something
@@ -209,93 +189,46 @@ type ajaxAction struct {
 //
 // The returned action uses a Builder pattern to add options, so for example you might call:
 //
-//	myControl.On(event.Click(), action.Ajax("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
+//	myControl.On(event.Click(), action.Do("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
+//
+// Deprecated: Use Do() instead.
 func Ajax(destControlId string, actionID int) CallbackActionI {
-	a := &ajaxAction{
-		callbackAction{
-			ActionID: actionID,
-		},
-	}
-	a.DestinationControlID(destControlId)
-	return a
+	return Do(destControlId, actionID)
 }
 
-// RenderScript renders the script as javascript.
-func (a *ajaxAction) RenderScript(params RenderParams) string {
-	v := new(maps.SliceMap[string, any])
-	v.Set("controlID", params.TriggeringControlID)
-	v.Set("eventId", params.EventID)
-	if a.CallAsync {
-		v.Set("async", true)
-	}
-
-	eV, aV, cV := params.EventActionValue, a.Value, params.ControlActionValue
-	v2 := new(maps.SliceMap[string, any])
-	if eV != nil {
-		v2.Set("event", eV)
-	} else {
-		v2.Set("event", javascript.JsCode("eventData"))
-	}
-	if aV != nil {
-		v2.Set("action", aV)
-	}
-	if cV != nil {
-		v2.Set("control", cV)
-	}
-	v.Set("actionValues", v2)
-	return fmt.Sprintf("goradd.postAjax(%s);", javascript.ToJavaScript(v))
+// Server returns a Server based action that is invoked with a Post http call.
+// Deprecated: Use Do instead.
+func Server(destControlId string, actionID int) CallbackActionI {
+	return Do(destControlId, actionID).Post()
 }
 
-// ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the ActionParam structure
-// sent to the event handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
-// javascript.Closures will be called immediately with a (this) parameter.
-func (a *ajaxAction) ActionValue(v interface{}) CallbackActionI {
-	a.Value = v
-	return a
-}
-
-// Async will cause the action to be handled asynchronously. Use this only in special situations where you know that you
-// do not need information from other actions.
-func (a *ajaxAction) Async() CallbackActionI {
-	a.CallAsync = true
-	return a
-}
-
-// DestinationControlID sets the id of the control that will receive the action.
+// Do returns an action that will invoke the DoAction function on the control with id specified by
+// destControlId.
+//
+// The DoAction function will receive the destControlId as the ControlId value
+// in the params parameter of the DoAction function. The given actionID can be accessed
+// in the DoAction function by calling one of the ActionValue* functions on the params value of DoAction.
+//
 // You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the control's id with another id that indicates the internal destination,
 // separated with an underscore.
-func (a *ajaxAction) DestinationControlID(id string) CallbackActionI {
-	a.setDestinationControlID(id)
+//
+// The returned action uses a Builder pattern to add options, so for example you might call:
+//
+//	myControl.On(event.Click(), action.Do("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
+//
+// By default, the action uses an ajax process defined in the goradd.js file. If you want to instead use
+// a more traditional http POST process, call the Post() function on the returned action, but that would
+// rarely be needed.
+func Do(destControlId string, actionID int) CallbackActionI {
+	a := &callbackAction{
+		ActionID: actionID,
+	}
+	a.setDestinationControlID(destControlId)
 	return a
 }
 
-// IsServerAction will return false if this is not a server action.
-// This is used by the test harness.
-func (a *ajaxAction) IsServerAction() bool {
-	return false
-}
-
-/*
-	func (a *ajaxAction) GobEncode() (data []byte, err error) {
-		var buf bytes.Buffer
-		e := gob.NewEncoder(&buf)
-
-		if err = a.callbackAction.encode(e); err != nil {
-			return nil, err
-		}
-		data = buf.Bytes()
-		return
-	}
-
-	func (a *ajaxAction) GobDecode(data []byte) (err error) {
-		buf := bytes.NewBuffer(data)
-		dec := gob.NewDecoder(buf)
-		return a.callbackAction.decode(dec)
-	}
-*/
 func init() {
 	// Register actions so they can be serialized
-	gob.Register(&ajaxAction{})
-	gob.Register(&serverAction{})
+	gob.Register(&callbackAction{})
 }

@@ -86,7 +86,7 @@ func (m *Modal) Init(self any, parent page.ControlI, id string) {
 	m.titleBar = NewTitleBar(m, m.ID()+"-titlebar")
 	m.buttonBar = control.NewPanel(m, m.ID()+"-btnbar")
 
-	m.On(event.DialogClosed().Validate(event.ValidateNone).Private(), action.Ajax(m.ID(), DialogClosed))
+	m.On(event.DialogClosed().Validate(event.ValidateNone).Private(), action.Do(m.ID(), DialogClosed))
 }
 
 func (m *Modal) this() ModalI {

@@ -59,9 +59,9 @@ func (m RequestMode) String() string {
 	case Http:
 		return "Http"
 	case Ajax:
-		return "Ajax"
+		return "Do"
 	case CustomAjax:
-		return "NewEvent Ajax"
+		return "NewEvent Do"
 	case Cli:
 		return "Command-line"
 	}

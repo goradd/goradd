@@ -33,7 +33,7 @@ func (p *TableProxyPanel) Init(self any, ctx context.Context, parent page.Contro
 			ID: "pxy",
 			On: On{
 				Event:  event.Click(),
-				Action: action.Ajax(p.ID(), ProxyClick),
+				Action: action.Do(p.ID(), ProxyClick),
 			},
 		},
 		PagedTableCreator{
