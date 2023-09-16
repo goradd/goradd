@@ -5,7 +5,10 @@
 If you have problems with the following directions, 
 see [Debugging Installation Problems](#debugging-installation-problems) below.
 
-1. Install go. Installation instructions for go are here: https://go.dev/doc/install.
+1. Install go. Installation instructions for go are here: https://go.dev/doc/install. Note that
+the installation process will put your local Go directory in your path so that the command-line Go programs
+you create and install will be easily executable. The rest of these installation steps rely on that happening.
+Be sure to restart any command-line or terminal windows after you install Go.
 2. Create a new project directory *outside* of your go directory and change your working directory 
 to the new directory. Note that go will create and use the "go" directory inside your home
 directory for installing packages and go-based applications. Do NOT put your project in that directory.
