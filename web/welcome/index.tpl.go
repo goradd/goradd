@@ -150,7 +150,7 @@ do to learn about goradd and begin building your application.
 				return
 			}
 
-			if _, err = io.WriteString(_w, http.MakeLocalPath("/goradd/forms/goradd/")); err != nil {
+			if _, err = io.WriteString(_w, http.MakeLocalPath("/goradd/forms/")); err != nil {
 				return
 			}
 

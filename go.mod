@@ -8,14 +8,14 @@ require (
 	github.com/goradd/gofile v1.1.0
 	github.com/goradd/got v1.1.0
 	github.com/goradd/html5tag v1.0.1
-	github.com/goradd/maps v0.1.4
+	github.com/goradd/maps v0.1.5
 	github.com/gorilla/websocket v1.5.0
 	github.com/jackc/pgx/v5 v5.3.0
 	github.com/kenshaw/snaker v0.2.0
 	github.com/microcosm-cc/bluemonday v1.0.22
 	github.com/shurcooL/github_flavored_markdown v0.0.0-20210228213109-c3a9aa474629
 	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.4
 	golang.org/x/text v0.7.0
 )
 

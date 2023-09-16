@@ -16,7 +16,7 @@ func init() {
 			Overwrite: true,
 		},
 	}
-	generator.AddOneTimeTemplate(&t)
+	generator.AddDatabaseTemplate(&t)
 }
 
 type DbTemplate struct {
@@ -33,7 +33,7 @@ func (n *DbTemplate) FileName(key string) string {
 	return targetDir + "/" + key + "/model/db.go"
 }
 
-func (n *DbTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.Model, _w io.Writer) (err error) {
+func (n *DbTemplate) GenerateDatabase(codegen generator.CodeGenerator, dd *db.Model, _w io.Writer) (err error) {
 	{{: "db/db.tmpl" }}
 	return
 }

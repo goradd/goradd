@@ -23,7 +23,7 @@ do to learn about goradd and begin building your application.
 <li><a href="{{localPath /goradd/examples/controls.g}}">View the standard control examples</a></li>
 <li><a href="{{localPath /goradd/examples/bootstrap.g}}">View the Bootstrap control examples</a></li>
 <li><a href="{{localPath /goradd/build.g?cmd=codegen}}">Run the code generator</a></li>
-<li><a href="{{localPath /goradd/forms/goradd/}}">View the generated forms</a></li>
+<li><a href="{{localPath /goradd/forms/}}">View the generated forms</a></li>
 <li><a href="{{localPath /goradd/doc/contents.md}}">View the documentation</a></li>
 <li><a href="{{localPath /goradd/Test.g}}">Run the browser-based tests</a></li>
 </ul>
