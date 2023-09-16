@@ -1,0 +1,40 @@
+package template
+
+// This template generates the index.html file in the forms directory
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"io"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"fmt"
+)
+
+func init() {
+	t := DbEmbedderTemplate {
+		generator.Template {
+			Overwrite: true,
+		},
+	}
+	generator.AddDatabaseTemplate(&t)
+}
+
+type DbEmbedderTemplate struct {
+	generator.Template
+}
+
+func (n *DbEmbedderTemplate) FileName(key string) string {
+    var targetDir string
+    targetDir = config.ProjectDir() + "/gen"
+	return targetDir + "/" + key + "/embedder.go"
+}
+
+func (n *DbEmbedderTemplate) GenerateDatabase(codegen generator.CodeGenerator, dd *db.Model, _w io.Writer) (err error) {
+	{{: "dbembedder/embedder.tmpl" }}
+	return
+}
+
+func (n *DbEmbedderTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+

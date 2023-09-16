@@ -90,6 +90,11 @@ func Generate() {
 	}
 
 	databases := db.GetDatabases()
+
+	if len(databases) == 0 {
+		log.Println("There are no databases to use for code generation. Setup databases in the db.cfg file.")
+	}
+
 	if BuildingExamples {
 		databases = []db.DatabaseI{db.GetDatabase("goradd")}
 	}
@@ -213,16 +218,16 @@ func Generate() {
 			}
 		}
 
-		for _, oneTimeTemplate := range OneTimeTemplates {
+		for _, dbTemplate := range DatabaseTemplates {
 			buf.Reset()
 			// the template generator function in each template, by convention
-			oneTimeTemplate.GenerateOnce(codegen, dd, buf)
-			fileName := oneTimeTemplate.FileName(dbKey)
+			dbTemplate.GenerateDatabase(codegen, dd, buf)
+			fileName := dbTemplate.FileName(dbKey)
 			fp := filepath.Dir(fileName)
 
 			// If the file already exists, and we are not over-writing, skip it
 			if _, err := os.Stat(fileName); err == nil {
-				if !oneTimeTemplate.Overwrite() {
+				if !dbTemplate.Overwrite() {
 					continue
 				}
 			}
@@ -241,6 +246,30 @@ func Generate() {
 		}
 	}
 
+	for _, onceTemplate := range OneTimeTemplates {
+		buf.Reset()
+		onceTemplate.GenerateOnce(codegen, databases, buf)
+		fileName := onceTemplate.FileName()
+		fp := filepath.Dir(fileName)
+		// If the file already exists, and we are not over-writing, skip it
+		if _, err := os.Stat(fileName); err == nil {
+			if !onceTemplate.Overwrite() {
+				continue
+			}
+		}
+
+		if err := os.MkdirAll(fp, 0777); err != nil {
+			log.Print(err)
+		}
+		if err := os.WriteFile(fileName, buf.Bytes(), 0644); err != nil {
+			log.Print(err)
+		} else {
+			if Verbose {
+				log.Printf("Writing %s", fileName)
+			}
+		}
+		RunGoImports(fileName)
+	}
 }
 
 func RunGoImports(fileName string) {

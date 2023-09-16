@@ -1,0 +1,40 @@
+package template
+
+// This template generates the index.html file in the forms directory
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"io"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"fmt"
+)
+
+func init() {
+	t := DbIndexTemplate {
+		generator.Template {
+			Overwrite: true,
+		},
+	}
+	generator.AddDatabaseTemplate(&t)
+}
+
+type DbIndexTemplate struct {
+	generator.Template
+}
+
+func (n *DbIndexTemplate) FileName(key string) string {
+    var targetDir string
+    targetDir = config.ProjectDir() + "/gen"
+	return targetDir + "/" + key + "/index.html"
+}
+
+func (n *DbIndexTemplate) GenerateDatabase(codegen generator.CodeGenerator, dd *db.Model, _w io.Writer) (err error) {
+	{{: "dbindex/index.tmpl" }}
+	return
+}
+
+func (n *DbIndexTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+

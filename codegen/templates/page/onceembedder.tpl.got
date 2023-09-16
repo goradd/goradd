@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	t := HtmlTemplate {
+	t := OnceEmbedderTemplate {
 		generator.Template {
 			Overwrite: true,
 		},
@@ -19,22 +19,22 @@ func init() {
 	generator.AddOneTimeTemplate(&t)
 }
 
-type HtmlTemplate struct {
+type OnceEmbedderTemplate struct {
 	generator.Template
 }
 
-func (n *HtmlTemplate) FileName(key string) string {
+func (n *OnceEmbedderTemplate) FileName() string {
     var targetDir string
     targetDir = config.ProjectDir() + "/gen"
-	return targetDir + "/" + key + "/index.html"
+	return targetDir + "/embedder.go"
 }
 
-func (n *HtmlTemplate) GenerateOnce(codegen generator.CodeGenerator, dd *db.Model, _w io.Writer) (err error) {
-	{{: "index/index.tmpl" }}
+func (n *OnceEmbedderTemplate) GenerateOnce(codegen generator.CodeGenerator, databases []db.DatabaseI, _w io.Writer) (err error) {
+	{{: "onceembedder/embedder.tmpl" }}
 	return
 }
 
-func (n *HtmlTemplate) Overwrite() bool {
+func (n *OnceEmbedderTemplate) Overwrite() bool {
 	return n.Template.Overwrite
 }
 
