@@ -11,12 +11,14 @@ import (
 	"github.com/goradd/html5tag"
 )
 
+// ButtonI is the Bootstrap control Button interface.
 type ButtonI interface {
 	grctl.ButtonI
 	SetButtonStyle(style ButtonStyle) ButtonI
 	SetButtonSize(size ButtonSize) ButtonI
 }
 
+// Button will draw a Bootstrap styled control.
 type Button struct {
 	grctl.Button
 	style ButtonStyle
@@ -25,6 +27,7 @@ type Button struct {
 
 const ButtonClass = "btn"
 
+// ButtonStyle represents a btn-* Bootstrap style class.
 type ButtonStyle string
 
 const (
@@ -48,6 +51,7 @@ const (
 	ButtonStyleOutlineDark      = "btn-outline-dark"
 )
 
+// ButtonSize is one of the btn-* size classes.
 type ButtonSize string
 
 const (

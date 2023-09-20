@@ -1,3 +1,5 @@
+// Package control contains the Bootstrap control structures that when added to a page
+// will result in Bootstrap styled controls.
 package control
 
 type ContainerClass string

@@ -12,17 +12,21 @@ import (
 	"io"
 )
 
+// Checkbox is a Bootstrap styled checkbox control.
 type Checkbox struct {
 	button.Checkbox
 	inline bool
 }
 
+// NewCheckbox returns a new Checkbox Bootstrap control.
 func NewCheckbox(parent page.ControlI, id string) *Checkbox {
 	c := &Checkbox{}
 	c.Init(c, parent, id)
 	config.LoadBootstrap(c.ParentForm())
 	return c
 }
+
+// SetInline controls whether the form-check-inline class will be added to the checkbox, which
 
 func (c *Checkbox) SetInline(v bool) *Checkbox {
 	c.inline = v
