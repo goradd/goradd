@@ -3,12 +3,13 @@ if t.PrimaryKeyColumn() != nil {
 	var typ string = t.PrimaryKeyColumn().ColumnType.GoType()
 {{
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *{{privateName}}Base) PrimaryKey() {{typ}} {
 	return o.{{= t.PrimaryKeyColumn().ModelName() }}
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *{{privateName}}Base) OriginalPrimaryKey() {{typ}} {
 	return o._originalPK
 }

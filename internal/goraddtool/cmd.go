@@ -13,7 +13,7 @@ func MakeRootCommand() *cobra.Command {
 
 	var rootCmd = &cobra.Command{
 		Use:   "goradd",
-		Short: "goradd is a tool for installing goradd, generating code, and building a web application",
+		Short: "goradd is a tool for initializing a goradd project, generating code, and building a web application",
 		Long:  `goradd is a web application framework. This command-line tool is a helper for installing the framework, generating code, seeing intermediate results, and ultimately building your web application.`,
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
+// Database returns the database object corresponding to  the {{= dd.DbName }} database.
 func Database() db.DatabaseI {
     return db.GetDatabase("{{dd.DbKey}}")
 }

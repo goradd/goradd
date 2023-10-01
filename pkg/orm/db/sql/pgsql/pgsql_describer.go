@@ -70,7 +70,7 @@ type pgForeignKey struct {
 func (m *DB) Analyze(options Options) {
 	rawTables := m.getRawTables(options)
 	description := m.descriptionFromRawTables(rawTables, options)
-	m.model = db.NewModel(m.DbKey(), options.ForeignKeySuffix, options.EnumTableSuffix, !options.UseQualifiedNames, description)
+	m.model = db.NewModel(m.DbKey(), m.databaseName, options.ForeignKeySuffix, options.EnumTableSuffix, !options.UseQualifiedNames, description)
 }
 
 func (m *DB) getRawTables(options Options) map[string]pgTable {
