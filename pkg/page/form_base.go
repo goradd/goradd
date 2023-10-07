@@ -98,11 +98,13 @@ func (f *FormBase) this() FormI {
 	return f.Self().(FormI)
 }
 
-// AddRelatedFiles adds related javascript and style sheet files. This is the default to get the minimum goradd installation working.,
-// The order is important, so if you override this, be sure these files get loaded
-// before other files.
+// AddRelatedFiles is called by the framework when drawing the form to add JavaScript, style sheets, and other related files
+// to the form.
+//
+// In your override, you would typically call [FormBase.AddJavaScriptFile] and [FormBase.AddStyleSheetFile] to add the files
+// to the form, and then call this parent version of the function to get the default functionality.
 func (f *FormBase) AddRelatedFiles() {
-	f.AddGoraddFiles()
+	f.addGoraddFiles()
 	if messageServer.Messenger != nil {
 		files := messageServer.Messenger.JavascriptFiles()
 		for file, attr := range files {
@@ -111,8 +113,8 @@ func (f *FormBase) AddRelatedFiles() {
 	}
 }
 
-// AddGoraddFiles adds the various goradd files to the form
-func (f *FormBase) AddGoraddFiles() {
+// addGoraddFiles is called by the framework to add the various goradd files to the form.
+func (f *FormBase) addGoraddFiles() {
 	f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "goradd.js"), false, nil)
 	if !config.Release {
 		f.AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "test", "js", "goradd-test.js"), false, nil)
