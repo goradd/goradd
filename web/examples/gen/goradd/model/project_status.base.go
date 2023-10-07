@@ -9,15 +9,14 @@ import (
 )
 
 const (
-	ProjectStatusOpen ProjectStatus = 1
-
+	ProjectStatusOpen      ProjectStatus = 1
 	ProjectStatusCancelled ProjectStatus = 2
-
 	ProjectStatusCompleted ProjectStatus = 3
-
-	ProjectStatusPlanned ProjectStatus = 4
+	ProjectStatusPlanned   ProjectStatus = 4
 )
 
+// ProjectStatusMaxValue is the maximum enumerated value of ProjectStatus
+// doc: type=ProjectStatus
 const ProjectStatusMaxValue = 4
 
 type ProjectStatus int
@@ -85,7 +84,7 @@ func ProjectStatusFromName(name string) ProjectStatus {
 	return ProjectStatus(0)
 }
 
-// AllProjectStatuses returns a slice of all the ProjectStatus items
+// AllProjectStatuses returns a slice of all the ProjectStatus values.
 func AllProjectStatuses() (values []ProjectStatus) {
 	values = append(values, 1)
 	values = append(values, 2)
@@ -94,8 +93,9 @@ func AllProjectStatuses() (values []ProjectStatus) {
 	return
 }
 
-// AllProjectStatusesI returns a slice of interfaces that contains all the ProjectStatus items
-func AllProjectStatusesI() (values []interface{}) {
+// AllProjectStatusesI returns a slice of all the ProjectStatus values as generic interfaces.
+// doc: type=ProjectStatus
+func AllProjectStatusesI() (values []any) {
 	values = make([]interface{}, 4, 4)
 	values[0] = ProjectStatus(1)
 	values[1] = ProjectStatus(2)
@@ -189,44 +189,56 @@ func (p ProjectStatus) IsActive() bool {
 	return false // prevent warning
 }
 
+// ProjectStatusNames returns a slice of all the Names associated with ProjectStatus values.
+// doc: type=ProjectStatus
 func ProjectStatusNames() []string {
-	names := make([]string, 5)
-	// 0 item will be a blank
-	names[1] = "Open"
-	names[2] = "Cancelled"
-	names[3] = "Completed"
-	names[4] = "Planned"
-	return names
+	return []string{
+		// 0 item will be a blank
+		"",
+		"Open",
+		"Cancelled",
+		"Completed",
+		"Planned",
+	}
 }
 
+// ProjectStatusDescriptions returns a slice of all the Descriptions associated with ProjectStatus values.
+// doc: type=ProjectStatus
 func ProjectStatusDescriptions() []string {
-	descriptions := make([]string, 5)
-	// 0 item will be a blank
-	descriptions[1] = "The project is currently active"
-	descriptions[2] = "The project has been canned"
-	descriptions[3] = "The project has been completed successfully"
-	descriptions[4] = "Project is in the planning stages and has not been assigned a manager"
-	return descriptions
+	return []string{
+		// 0 item will be a blank
+		"",
+		"The project is currently active",
+		"The project has been canned",
+		"The project has been completed successfully",
+		"Project is in the planning stages and has not been assigned a manager",
+	}
 }
 
+// ProjectStatusGuidelines returns a slice of all the Guidelines associated with ProjectStatus values.
+// doc: type=ProjectStatus
 func ProjectStatusGuidelines() []string {
-	guidelines := make([]string, 5)
-	// 0 item will be a blank
-	guidelines[1] = "All projects that we are working on should be in this state"
-	guidelines[2] = ""
-	guidelines[3] = "Celebrate successes!"
-	guidelines[4] = "Get ready"
-	return guidelines
+	return []string{
+		// 0 item will be a blank
+		"",
+		"All projects that we are working on should be in this state",
+		"",
+		"Celebrate successes!",
+		"Get ready",
+	}
 }
 
+// ProjectStatusIsActives returns a slice of all the IsActives associated with ProjectStatus values.
+// doc: type=ProjectStatus
 func ProjectStatusIsActives() []bool {
-	is_actives := make([]bool, 5)
-	// 0 item will be a blank
-	is_actives[1] = true
-	is_actives[2] = true
-	is_actives[3] = true
-	is_actives[4] = false
-	return is_actives
+	return []bool{
+		// 0 item will be a blank
+		false,
+		true,
+		true,
+		true,
+		false,
+	}
 }
 
 func (p ProjectStatus) Get(key string) interface{} {

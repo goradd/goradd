@@ -9,37 +9,54 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type addressNode struct {
+// AddressNode represents the address table in a query. It uses a builder pattern to chain
+// together other tables and columns to form a node in a query.
+//
+// To use the AddressNode, call [Address] to start a reference chain when querying the address table.
+type AddressNode struct {
+	// ReferenceNodeI is an internal object that represents the capabilities of the node. Since it is embedded, all
+	// of its functions are exported and are callable along with the addressNode functions here.
 	query.ReferenceNodeI
 }
 
-func Address() *addressNode {
-	n := addressNode{
+// Address returns a table node that starts a node chain that begins with the address table.
+func Address() *AddressNode {
+	n := AddressNode{
 		query.NewTableNode("goradd", "address", "Address"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
 }
 
-func (n *addressNode) SelectNodes_() (nodes []*query.ColumnNode) {
+// SelectNodes_ is used internally by the framework to return the list of all the column nodes.
+// doc: hide
+func (n *AddressNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.PersonID())
 	nodes = append(nodes, n.Street())
 	nodes = append(nodes, n.City())
 	return nodes
 }
-func (n *addressNode) PrimaryKeyNode() *query.ColumnNode {
+
+// PrimaryKeyNode returns a node that points to the primary key column.
+func (n *AddressNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
-func (n *addressNode) EmbeddedNode_() query.NodeI {
+
+// EmbeddedNode is used internally by the framework to return the embedded Reference node.
+// doc: hide
+func (n *AddressNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
-func (n *addressNode) Copy_() query.NodeI {
-	return &addressNode{query.CopyNode(n.ReferenceNodeI)}
+
+// Copy_ is used internally by the framework to deep copy the node.
+// doc: hide
+func (n *AddressNode) Copy_() query.NodeI {
+	return &AddressNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 // ID represents the id column in the database.
-func (n *addressNode) ID() *query.ColumnNode {
+func (n *AddressNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"address",
@@ -53,7 +70,7 @@ func (n *addressNode) ID() *query.ColumnNode {
 }
 
 // PersonID represents the person_id column in the database.
-func (n *addressNode) PersonID() *query.ColumnNode {
+func (n *AddressNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"address",
@@ -67,8 +84,8 @@ func (n *addressNode) PersonID() *query.ColumnNode {
 }
 
 // Person represents the link to the Person object.
-func (n *addressNode) Person() *personNode {
-	cn := &personNode{
+func (n *AddressNode) Person() *PersonNode {
+	cn := &PersonNode{
 		query.NewReferenceNode(
 			"goradd",
 			"address",
@@ -86,7 +103,7 @@ func (n *addressNode) Person() *personNode {
 }
 
 // Street represents the street column in the database.
-func (n *addressNode) Street() *query.ColumnNode {
+func (n *AddressNode) Street() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"address",
@@ -100,7 +117,7 @@ func (n *addressNode) Street() *query.ColumnNode {
 }
 
 // City represents the city column in the database.
-func (n *addressNode) City() *query.ColumnNode {
+func (n *AddressNode) City() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"address",
@@ -117,7 +134,9 @@ type addressNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
-func (n *addressNode) GobEncode() (data []byte, err error) {
+// GobEncode makes the node serializable.
+// doc:hide
+func (n *AddressNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
@@ -132,7 +151,9 @@ func (n *addressNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-func (n *addressNode) GobDecode(data []byte) (err error) {
+// GobDecode makes the node deserializable.
+// doc: hide
+func (n *AddressNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
@@ -146,5 +167,5 @@ func (n *addressNode) GobDecode(data []byte) (err error) {
 }
 
 func init() {
-	gob.RegisterName("addressNode2", &addressNode{})
+	gob.RegisterName("AddressNode2", &AddressNode{})
 }

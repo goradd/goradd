@@ -8,29 +8,36 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type personTypeNode struct {
+type PersonTypeNode struct {
 	query.ReferenceNodeI
 }
 
-func (n *personTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
+// SelectNodes_ is used internally by the framework to return the list of column nodes.
+// doc: hide
+func (n *PersonTypeNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.Name())
 	return nodes
 }
 
-func (n *personTypeNode) PrimaryKeyNode() *query.ColumnNode {
+// PrimaryKeyNode returns a node representing the primary key column.
+func (n *PersonTypeNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 
-func (n *personTypeNode) EmbeddedNode_() query.NodeI {
+// EmbeddedNode_ is used internally by the framework to return the embedded ReferenceNodeI.
+// doc: hide
+func (n *PersonTypeNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
 
-func (n *personTypeNode) Copy_() query.NodeI {
-	return &personTypeNode{query.CopyNode(n.ReferenceNodeI)}
+// Copy_ is used internally by the framework to deep copy the node.
+// doc: hide
+func (n *PersonTypeNode) Copy_() query.NodeI {
+	return &PersonTypeNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
-func (n *personTypeNode) ID() *query.ColumnNode {
+func (n *PersonTypeNode) ID() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
@@ -43,7 +50,7 @@ func (n *personTypeNode) ID() *query.ColumnNode {
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *personTypeNode) Name() *query.ColumnNode {
+func (n *PersonTypeNode) Name() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
@@ -57,5 +64,5 @@ func (n *personTypeNode) Name() *query.ColumnNode {
 	return cn
 }
 func init() {
-	gob.RegisterName("personTypeNode2", &personTypeNode{})
+	gob.RegisterName("PersonTypeNode2", &PersonTypeNode{})
 }

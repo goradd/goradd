@@ -20,8 +20,9 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-// projectBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-
+// projectBase is embedded in a Project object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the Project embedder.
+// Instead, use the accessor functions.
 type projectBase struct {
 	id        string
 	idIsValid bool
@@ -71,6 +72,7 @@ type projectBase struct {
 	spentIsDirty bool
 
 	// Reverse reference objects.
+
 	oMilestones        []*Milestone          // Objects in the order they were queried
 	mMilestones        map[string]*Milestone // Objects by PK
 	sMilestonesPKs     []string              // Primary keys to associate at Save time
@@ -102,49 +104,43 @@ type projectBase struct {
 	_originalPK string
 }
 
+// Default values for the fields in the project table.
+// When a Project object is created, the fields in the object will be initialized to these values.
+// doc: type=Project
 const (
-	ProjectIDDefault          = ""
-	ProjectNumDefault         = 0
-	ProjectStatusIDDefault    = 0
-	ProjectManagerIDDefault   = ""
-	ProjectNameDefault        = ""
-	ProjectDescriptionDefault = ""
-	ProjectStartDateDefault   = time2.Zero
-	ProjectEndDateDefault     = time2.Zero
-	ProjectBudgetDefault      = ""
-	ProjectSpentDefault       = ""
+	ProjectIDDefault          = ""         // id
+	ProjectNumDefault         = 0          // num
+	ProjectStatusIDDefault    = 0          // status_id
+	ProjectManagerIDDefault   = ""         // manager_id
+	ProjectNameDefault        = ""         // name
+	ProjectDescriptionDefault = ""         // description
+	ProjectStartDateDefault   = time2.Zero // start_date
+	ProjectEndDateDefault     = time2.Zero // end_date
+	ProjectBudgetDefault      = ""         // budget
+	ProjectSpentDefault       = ""         // spent
 )
 
+// IDs used to access the Project object fields by name using the Get function.
+// doc: type=Project
 const (
-	Project_ID = `ID`
-
-	Project_Num = `Num`
-
-	Project_StatusID = `StatusID`
-
-	Project_ManagerID = `ManagerID`
-
-	Project_Manager = `Manager`
-
-	Project_Name = `Name`
-
+	Project_ID          = `ID`
+	Project_Num         = `Num`
+	Project_StatusID    = `StatusID`
+	Project_ManagerID   = `ManagerID`
+	Project_Manager     = `Manager`
+	Project_Name        = `Name`
 	Project_Description = `Description`
-
-	Project_StartDate = `StartDate`
-
-	Project_EndDate = `EndDate`
-
-	Project_Budget = `Budget`
-
-	Project_Spent = `Spent`
-
-	ProjectMilestones  = `Milestones`
-	ProjectChild       = `Child`
-	ProjectChildren    = `Children`
-	ProjectParent      = `Parent`
-	ProjectParents     = `Parents`
-	ProjectTeamMember  = `TeamMember`
-	ProjectTeamMembers = `TeamMembers`
+	Project_StartDate   = `StartDate`
+	Project_EndDate     = `EndDate`
+	Project_Budget      = `Budget`
+	Project_Spent       = `Spent`
+	ProjectMilestones   = `Milestones`
+	ProjectChild        = `Child`
+	ProjectChildren     = `Children`
+	ProjectParent       = `Parent`
+	ProjectParents      = `Parents`
+	ProjectTeamMember   = `TeamMember`
+	ProjectTeamMembers  = `TeamMembers`
 )
 
 // Initialize or re-initialize a Project database object to default values.
@@ -199,17 +195,18 @@ func (o *projectBase) Initialize() {
 	o._restored = false
 }
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *projectBase) PrimaryKey() string {
 	return o.id
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *projectBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
-// Copy copies all valid fields (except for the primary key) to a new Project object.
+// Copy copies all valid fields (except for the primary key) to a new [Project] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *projectBase) Copy() (newObject *Project) {
@@ -1005,12 +1002,13 @@ func (o *projectBase) SetMilestonePrimaryKeys(pks []string) {
 
 // LoadProject returns a Project from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [ProjectsBuilder.Join] and [ProjectsBuilder.Select] for more info.
 func LoadProject(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Project {
 	return queryProjects(ctx).Where(Equal(node.Project().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasProject returns true if a Project with the given key exists database.
+// HasProject returns true if a Project with the given primaryKey exists in the database.
+// doc: type=Project
 func HasProject(ctx context.Context, primaryKey string) bool {
 	q := queryProjects(ctx)
 	q = q.Where(Equal(node.Project().ID(), primaryKey))
@@ -1019,7 +1017,7 @@ func HasProject(ctx context.Context, primaryKey string) bool {
 
 // LoadProjectByNum queries for a single Project object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [ProjectsBuilder.Join] and [ProjectsBuilder.Select] for more info.
 // If you need a more elaborate query, use QueryProjects() to start a query builder.
 func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.NodeI) *Project {
 	q := queryProjects(ctx)
@@ -1031,6 +1029,7 @@ func LoadProjectByNum(ctx context.Context, num int, joinOrSelectNodes ...query.N
 
 // HasProjectByNum returns true if the
 // given unique index values exist in the database.
+// doc: type=Project
 func HasProjectByNum(ctx context.Context, num int) bool {
 	q := queryProjects(ctx)
 	q = q.Where(Equal(node.Project().Num(), num))
@@ -1239,14 +1238,23 @@ func (b *ProjectsBuilder) joinOrSelect(nodes ...query.NodeI) *ProjectsBuilder {
 	return b
 }
 
+// CountProjectByID queries the database and returns the number of Project objects that
+// have the given id value.
+// doc: type=Project
 func CountProjectByID(ctx context.Context, id string) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().ID(), id)).Count(false))
 }
 
+// CountProjectByNum queries the database and returns the number of Project objects that
+// have the given num value.
+// doc: type=Project
 func CountProjectByNum(ctx context.Context, num int) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().Num(), num)).Count(false))
 }
 
+// CountProjectByStatusID queries the database and returns the number of Project objects that
+// have the given statusID value.
+// doc: type=Project
 func CountProjectByStatusID(ctx context.Context, statusID uint) int {
 	if statusID == 0 {
 		return 0
@@ -1254,6 +1262,9 @@ func CountProjectByStatusID(ctx context.Context, statusID uint) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().StatusID(), statusID)).Count(false))
 }
 
+// CountProjectByManagerID queries the database and returns the number of Project objects that
+// have the given managerID value.
+// doc: type=Project
 func CountProjectByManagerID(ctx context.Context, managerID string) int {
 	if managerID == "" {
 		return 0
@@ -1261,26 +1272,44 @@ func CountProjectByManagerID(ctx context.Context, managerID string) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().ManagerID(), managerID)).Count(false))
 }
 
+// CountProjectByName queries the database and returns the number of Project objects that
+// have the given name value.
+// doc: type=Project
 func CountProjectByName(ctx context.Context, name string) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().Name(), name)).Count(false))
 }
 
+// CountProjectByDescription queries the database and returns the number of Project objects that
+// have the given description value.
+// doc: type=Project
 func CountProjectByDescription(ctx context.Context, description string) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().Description(), description)).Count(false))
 }
 
+// CountProjectByStartDate queries the database and returns the number of Project objects that
+// have the given startDate value.
+// doc: type=Project
 func CountProjectByStartDate(ctx context.Context, startDate time.Time) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().StartDate(), startDate)).Count(false))
 }
 
+// CountProjectByEndDate queries the database and returns the number of Project objects that
+// have the given endDate value.
+// doc: type=Project
 func CountProjectByEndDate(ctx context.Context, endDate time.Time) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().EndDate(), endDate)).Count(false))
 }
 
+// CountProjectByBudget queries the database and returns the number of Project objects that
+// have the given budget value.
+// doc: type=Project
 func CountProjectByBudget(ctx context.Context, budget string) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().Budget(), budget)).Count(false))
 }
 
+// CountProjectBySpent queries the database and returns the number of Project objects that
+// have the given spent value.
+// doc: type=Project
 func CountProjectBySpent(ctx context.Context, spent string) int {
 	return int(queryProjects(ctx).Where(Equal(node.Project().Spent(), spent)).Count(false))
 }
@@ -1844,155 +1873,120 @@ func (o *projectBase) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "goradd", "project", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *projectBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
-
 		fields["id"] = o.id
-
 	}
 	if o.numIsDirty {
-
 		fields["num"] = o.num
-
 	}
 	if o.statusIDIsDirty {
-
 		fields["status_id"] = o.statusID
-
 	}
 	if o.managerIDIsDirty {
-
 		if o.managerIDIsNull {
 			fields["manager_id"] = nil
 		} else {
 			fields["manager_id"] = o.managerID
 		}
-
 	}
 	if o.nameIsDirty {
-
 		fields["name"] = o.name
-
 	}
 	if o.descriptionIsDirty {
-
 		if o.descriptionIsNull {
 			fields["description"] = nil
 		} else {
 			fields["description"] = o.description
 		}
-
 	}
 	if o.startDateIsDirty {
-
 		if o.startDateIsNull {
 			fields["start_date"] = nil
 		} else {
 			fields["start_date"] = o.startDate
 		}
-
 	}
 	if o.endDateIsDirty {
-
 		if o.endDateIsNull {
 			fields["end_date"] = nil
 		} else {
 			fields["end_date"] = o.endDate
 		}
-
 	}
 	if o.budgetIsDirty {
-
 		if o.budgetIsNull {
 			fields["budget"] = nil
 		} else {
 			fields["budget"] = o.budget
 		}
-
 	}
 	if o.spentIsDirty {
-
 		if o.spentIsNull {
 			fields["spent"] = nil
 		} else {
 			fields["spent"] = o.spent
 		}
-
 	}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *projectBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.numIsValid {
-
 		fields["num"] = o.num
-
 	}
 	if o.statusIDIsValid {
-
 		fields["status_id"] = o.statusID
-
 	}
 	if o.managerIDIsValid {
-
 		if o.managerIDIsNull {
 			fields["manager_id"] = nil
 		} else {
 			fields["manager_id"] = o.managerID
 		}
-
 	}
 	if o.nameIsValid {
-
 		fields["name"] = o.name
-
 	}
 	if o.descriptionIsValid {
-
 		if o.descriptionIsNull {
 			fields["description"] = nil
 		} else {
 			fields["description"] = o.description
 		}
-
 	}
 	if o.startDateIsValid {
-
 		if o.startDateIsNull {
 			fields["start_date"] = nil
 		} else {
 			fields["start_date"] = o.startDate
 		}
-
 	}
 	if o.endDateIsValid {
-
 		if o.endDateIsNull {
 			fields["end_date"] = nil
 		} else {
 			fields["end_date"] = o.endDate
 		}
-
 	}
 	if o.budgetIsValid {
-
 		if o.budgetIsNull {
 			fields["budget"] = nil
 		} else {
 			fields["budget"] = o.budget
 		}
-
 	}
 	if o.spentIsValid {
-
 		if o.spentIsNull {
 			fields["spent"] = nil
 		} else {
 			fields["spent"] = o.spent
 		}
-
 	}
 	return
 }
@@ -2052,6 +2046,7 @@ func deleteProject(ctx context.Context, pk string) {
 	}
 }
 
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *projectBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.numIsDirty = false
@@ -2070,6 +2065,7 @@ func (o *projectBase) resetDirtyStatus() {
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *projectBase) IsDirty() (dirty bool) {
 	dirty = o.idIsDirty ||
 		o.numIsDirty ||
@@ -2454,6 +2450,7 @@ func (o *projectBase) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a Project object.
 func (o *projectBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
@@ -2846,26 +2843,17 @@ func (o *projectBase) MarshalStringMap() map[string]interface{} {
 // Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
-//   "id" - string
-
-//   "num" - int
-
-//   "statusID" - uint
-
-//   "managerID" - string, nullable
-
-//   "name" - string
-
-//   "description" - string, nullable
-
-//   "startDate" - time.Time, nullable
-
-//   "endDate" - time.Time, nullable
-
-//   "budget" - string, nullable
-
-//   "spent" - string, nullable
-
+//
+//	"id" - string
+//	"num" - int
+//	"statusID" - uint
+//	"managerID" - string, nullable
+//	"name" - string
+//	"description" - string, nullable
+//	"startDate" - time.Time, nullable
+//	"endDate" - time.Time, nullable
+//	"budget" - string, nullable
+//	"spent" - string, nullable
 func (o *projectBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

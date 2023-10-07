@@ -17,8 +17,9 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-// giftBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-
+// giftBase is embedded in a Gift object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the Gift embedder.
+// Instead, use the accessor functions.
 type giftBase struct {
 	number        int
 	numberIsValid bool
@@ -38,15 +39,19 @@ type giftBase struct {
 	_originalPK int
 }
 
+// Default values for the fields in the gift table.
+// When a Gift object is created, the fields in the object will be initialized to these values.
+// doc: type=Gift
 const (
-	GiftNumberDefault = 0
-	GiftNameDefault   = ""
+	GiftNumberDefault = 0  // number
+	GiftNameDefault   = "" // name
 )
 
+// IDs used to access the Gift object fields by name using the Get function.
+// doc: type=Gift
 const (
 	Gift_Number = `Number`
-
-	Gift_Name = `Name`
+	Gift_Name   = `Name`
 )
 
 // Initialize or re-initialize a Gift database object to default values.
@@ -63,17 +68,18 @@ func (o *giftBase) Initialize() {
 	o._restored = false
 }
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *giftBase) PrimaryKey() int {
 	return o.number
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *giftBase) OriginalPrimaryKey() int {
 	return o._originalPK
 }
 
-// Copy copies all valid fields (except for the primary key) to a new Gift object.
+// Copy copies all valid fields (except for the primary key) to a new [Gift] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *giftBase) Copy() (newObject *Gift) {
@@ -149,12 +155,13 @@ func (o *giftBase) IsNew() bool {
 
 // LoadGift returns a Gift from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [GiftsBuilder.Join] and [GiftsBuilder.Select] for more info.
 func LoadGift(ctx context.Context, primaryKey int, joinOrSelectNodes ...query.NodeI) *Gift {
 	return queryGifts(ctx).Where(Equal(node.Gift().Number(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasGift returns true if a Gift with the given key exists database.
+// HasGift returns true if a Gift with the given primaryKey exists in the database.
+// doc: type=Gift
 func HasGift(ctx context.Context, primaryKey int) bool {
 	q := queryGifts(ctx)
 	q = q.Where(Equal(node.Gift().Number(), primaryKey))
@@ -363,10 +370,16 @@ func (b *GiftsBuilder) joinOrSelect(nodes ...query.NodeI) *GiftsBuilder {
 	return b
 }
 
+// CountGiftByNumber queries the database and returns the number of Gift objects that
+// have the given number value.
+// doc: type=Gift
 func CountGiftByNumber(ctx context.Context, number int) int {
 	return int(queryGifts(ctx).Where(Equal(node.Gift().Number(), number)).Count(false))
 }
 
+// CountGiftByName queries the database and returns the number of Gift objects that
+// have the given name value.
+// doc: type=Gift
 func CountGiftByName(ctx context.Context, name string) int {
 	return int(queryGifts(ctx).Where(Equal(node.Gift().Name(), name)).Count(false))
 }
@@ -463,32 +476,27 @@ func (o *giftBase) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "goradd", "gift", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *giftBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.numberIsDirty {
-
 		fields["number"] = o.number
-
 	}
 	if o.nameIsDirty {
-
 		fields["name"] = o.name
-
 	}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *giftBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.numberIsValid {
-
 		fields["number"] = o.number
-
 	}
 	if o.nameIsValid {
-
 		fields["name"] = o.name
-
 	}
 	return
 }
@@ -510,12 +518,14 @@ func deleteGift(ctx context.Context, pk int) {
 	broadcast.Delete(ctx, "goradd", "gift", fmt.Sprint(pk))
 }
 
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *giftBase) resetDirtyStatus() {
 	o.numberIsDirty = false
 	o.nameIsDirty = false
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *giftBase) IsDirty() (dirty bool) {
 	dirty = o.numberIsDirty ||
 		o.nameIsDirty
@@ -596,6 +606,7 @@ func (o *giftBase) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a Gift object.
 func (o *giftBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
@@ -681,10 +692,9 @@ func (o *giftBase) MarshalStringMap() map[string]interface{} {
 // Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
-//   "number" - int
-
-//   "name" - string
-
+//
+//	"number" - int
+//	"name" - string
 func (o *giftBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

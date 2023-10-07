@@ -18,8 +18,9 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-// personBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-
+// personBase is embedded in a Person object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the Person embedder.
+// Instead, use the accessor functions.
 type personBase struct {
 	id        string
 	idIsValid bool
@@ -34,6 +35,7 @@ type personBase struct {
 	lastNameIsDirty bool
 
 	// Reverse reference objects.
+
 	oAddresses                []*Address          // Objects in the order they were queried
 	mAddresses                map[string]*Address // Objects by PK
 	sAddressesPKs             []string            // Primary keys to associate at Save time
@@ -68,19 +70,21 @@ type personBase struct {
 	_originalPK string
 }
 
+// Default values for the fields in the person table.
+// When a Person object is created, the fields in the object will be initialized to these values.
+// doc: type=Person
 const (
-	PersonIDDefault        = ""
-	PersonFirstNameDefault = ""
-	PersonLastNameDefault  = ""
+	PersonIDDefault        = "" // id
+	PersonFirstNameDefault = "" // first_name
+	PersonLastNameDefault  = "" // last_name
 )
 
+// IDs used to access the Person object fields by name using the Get function.
+// doc: type=Person
 const (
-	Person_ID = `ID`
-
-	Person_FirstName = `FirstName`
-
-	Person_LastName = `LastName`
-
+	Person_ID               = `ID`
+	Person_FirstName        = `FirstName`
+	Person_LastName         = `LastName`
 	PersonAddresses         = `Addresses`
 	PersonEmployeeInfo      = `EmployeeInfo`
 	PersonLogin             = `Login`
@@ -109,17 +113,18 @@ func (o *personBase) Initialize() {
 	o._restored = false
 }
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *personBase) PrimaryKey() string {
 	return o.id
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *personBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
-// Copy copies all valid fields (except for the primary key) to a new Person object.
+// Copy copies all valid fields (except for the primary key) to a new [Person] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *personBase) Copy() (newObject *Person) {
@@ -631,12 +636,13 @@ func (o *personBase) SetProjectAsManagerPrimaryKeys(pks []string) {
 
 // LoadPerson returns a Person from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [PeopleBuilder.Join] and [PeopleBuilder.Select] for more info.
 func LoadPerson(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Person {
 	return queryPeople(ctx).Where(Equal(node.Person().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasPerson returns true if a Person with the given key exists database.
+// HasPerson returns true if a Person with the given primaryKey exists in the database.
+// doc: type=Person
 func HasPerson(ctx context.Context, primaryKey string) bool {
 	q := queryPeople(ctx)
 	q = q.Where(Equal(node.Person().ID(), primaryKey))
@@ -845,14 +851,23 @@ func (b *PeopleBuilder) joinOrSelect(nodes ...query.NodeI) *PeopleBuilder {
 	return b
 }
 
+// CountPersonByID queries the database and returns the number of Person objects that
+// have the given id value.
+// doc: type=Person
 func CountPersonByID(ctx context.Context, id string) int {
 	return int(queryPeople(ctx).Where(Equal(node.Person().ID(), id)).Count(false))
 }
 
+// CountPersonByFirstName queries the database and returns the number of Person objects that
+// have the given firstName value.
+// doc: type=Person
 func CountPersonByFirstName(ctx context.Context, firstName string) int {
 	return int(queryPeople(ctx).Where(Equal(node.Person().FirstName(), firstName)).Count(false))
 }
 
+// CountPersonByLastName queries the database and returns the number of Person objects that
+// have the given lastName value.
+// doc: type=Person
 func CountPersonByLastName(ctx context.Context, lastName string) int {
 	return int(queryPeople(ctx).Where(Equal(node.Person().LastName(), lastName)).Count(false))
 }
@@ -1290,37 +1305,30 @@ func (o *personBase) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "goradd", "person", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *personBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
-
 		fields["id"] = o.id
-
 	}
 	if o.firstNameIsDirty {
-
 		fields["first_name"] = o.firstName
-
 	}
 	if o.lastNameIsDirty {
-
 		fields["last_name"] = o.lastName
-
 	}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *personBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.firstNameIsValid {
-
 		fields["first_name"] = o.firstName
-
 	}
 	if o.lastNameIsValid {
-
 		fields["last_name"] = o.lastName
-
 	}
 	return
 }
@@ -1403,6 +1411,7 @@ func deletePerson(ctx context.Context, pk string) {
 	}
 }
 
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *personBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.firstNameIsDirty = false
@@ -1416,6 +1425,7 @@ func (o *personBase) resetDirtyStatus() {
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *personBase) IsDirty() (dirty bool) {
 	dirty = o.idIsDirty ||
 		o.firstNameIsDirty ||
@@ -1696,6 +1706,7 @@ func (o *personBase) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a Person object.
 func (o *personBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
@@ -1975,12 +1986,10 @@ func (o *personBase) MarshalStringMap() map[string]interface{} {
 // Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
-//   "id" - string
-
-//   "firstName" - string
-
-//   "lastName" - string
-
+//
+//	"id" - string
+//	"firstName" - string
+//	"lastName" - string
 func (o *personBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {
