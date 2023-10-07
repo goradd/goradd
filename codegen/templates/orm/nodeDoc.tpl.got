@@ -1,0 +1,40 @@
+package template
+
+// This template generates a got template for the db.go file in the orm directory
+
+import (
+	"github.com/goradd/goradd/codegen/generator"
+	"github.com/goradd/goradd/pkg/config"
+	"io"
+	"github.com/goradd/goradd/pkg/orm/db"
+	"fmt"
+)
+
+func init() {
+	t := NodeDocTemplate {
+		generator.Template {
+			Overwrite: true,
+		},
+	}
+	generator.AddDatabaseTemplate(&t)
+}
+
+type NodeDocTemplate struct {
+	generator.Template
+}
+
+func (n *NodeDocTemplate) FileName(key string) string {
+    var targetDir string
+    targetDir = config.ProjectDir() + "/gen"
+	return targetDir + "/" + key + "/model/node/doc.go"
+}
+
+func (n *NodeDocTemplate) GenerateDatabase(codegen generator.CodeGenerator, dd *db.Model, _w io.Writer) (err error) {
+	{{: "node/doc.tmpl" }}
+	return
+}
+
+func (n *NodeDocTemplate) Overwrite() bool {
+	return n.Template.Overwrite
+}
+
