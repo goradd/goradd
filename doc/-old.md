@@ -9,10 +9,9 @@ application over time with as little rewrite as possible.
 Instead of having to build separate server and client applications, and having 
 to stitch together a bunch of different technologies just to get something 
 running, GoRADD lets you start with your data model, gets you a working app
-quickly, and then lets you build from there. As you learn more about your app, your
-audience, and your requirements, you can change your database structure and
-build out your business logic. 
-Your app grows in incremental steps, and GoRADD helps you on the way.
+quickly, and then build from there. As you learn more about your app, your
+audience, and your requirements, you can build and branch out to include them
+as your needs grow. Your app grows in incremental steps, and GoRADD helps you on the way.
 
 GoRADD is great for beginners and experienced developers alike.
 
