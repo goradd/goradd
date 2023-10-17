@@ -45,7 +45,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 }
 
 func (p *TableCheckboxPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(self, parent, "checkboxTablePanel")
+	p.Panel.Init(self, parent, id)
 	p.AddControls(ctx,
 		PagedTableCreator{
 			ID:             "table1",

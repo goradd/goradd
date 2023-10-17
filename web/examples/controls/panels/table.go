@@ -16,7 +16,7 @@ type TablePanel struct {
 type TableMapData map[string]string
 type TableSliceData []string
 
-// Make the TableMapData satisfy the Getter interface so it can be used in a Getter column.
+// Get satisfies the Getter interface so it can be used in a Getter column.
 func (m TableMapData) Get(i string) string {
 	return m[i]
 }

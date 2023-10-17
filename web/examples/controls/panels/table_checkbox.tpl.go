@@ -7,6 +7,7 @@ import (
 	"io"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *TableCheckboxPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<style>

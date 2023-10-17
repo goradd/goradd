@@ -7,6 +7,7 @@ import (
 	"io"
 )
 
+// AddHeadTags adds items that will appear in the head tag of the html page.
 func (ctrl *ControlsForm) AddHeadTags() {
 	ctrl.FormBase.AddHeadTags()
 	if "Control Examples" != "" {
@@ -17,6 +18,7 @@ func (ctrl *ControlsForm) AddHeadTags() {
 	ctrl.Page().BodyAttributes = ``
 }
 
+// DrawTemplate draws the content of the matching form's template file.
 func (ctrl *ControlsForm) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<script>

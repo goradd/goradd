@@ -1,0 +1,16 @@
+{{define control}}FileSelectPanel{{end control}}
+
+{{define template }}
+<h2>File Select Button</h2>
+<p>
+File Upload Buttons let the user select and upload files.
+</p>
+<p>
+File uploading can present security risks to your website. You should always check your files for integrity to
+prevent malicious activity.
+</p>
+{{draw uploadButton }}
+
+{{end template}}
+
+{{renderControlTemplate}}

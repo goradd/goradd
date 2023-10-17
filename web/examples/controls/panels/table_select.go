@@ -27,7 +27,7 @@ func NewTableSelectPanel(ctx context.Context, parent page.ControlI) {
 }
 
 func (p *TableSelectPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(self, parent, "tableSelectPanel")
+	p.Panel.Init(self, parent, id)
 
 	// In this first example, we create a small table pre-filled with data
 	var items = []map[string]string{

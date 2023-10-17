@@ -44,12 +44,12 @@ type FileSelectI interface {
 
 // FileSelect is a standard html file select button.
 //
-// By default, it will only accept single file. Call SetMultiple to allow multiple selections, and SetAccept
+// By default, it will only accept a single file. Call SetMultiple to allow multiple selections, and SetAccept
 // to control what types of files can be selected based on the file suffixes.
 //
 // To get the list of files that have been selected, call FileInfo.
 // However, to get to the files that are being uploaded, you must do one of the following:
-//   - create an Do action on the UploadEvent event, and then call the Upload function, or
+//   - create a DoAction action on the UploadEvent event, and then call the Upload function, or
 //   - create a Server action on a submit button.
 //
 // In your DoAction handler, call FileHeaders on the FileSelect to retrieve the file headers.

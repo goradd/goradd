@@ -22,11 +22,11 @@ const (
 
 func NewDialogsPanel(ctx context.Context, parent page.ControlI) {
 	p := new(DialogsPanel)
-	p.Init(p, ctx, parent, "checkboxPanel")
+	p.Init(p, ctx, parent, "dialogsPanel")
 }
 
 func (p *DialogsPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(self, parent, "dialogsPanel")
+	p.Panel.Init(self, parent, id)
 	p.AddControls(ctx,
 		PanelCreator{
 			ID: "result",
