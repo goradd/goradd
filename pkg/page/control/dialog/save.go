@@ -68,6 +68,8 @@ func (p *SavePanel) DoAction(ctx context.Context, a action.Params) {
 	case saveDlgSaveAction:
 		p.SavePanel().Save(ctx)
 		p.Hide()
+	default:
+		p.DialogPanel.DoAction(ctx, a)
 	}
 }
 

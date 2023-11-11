@@ -553,6 +553,10 @@ func (t *Table) DoPrivateAction(ctx context.Context, p action.Params) {
 	case SortClick:
 		t.sortClick(p.EventValueString())
 		t.Refresh()
+	default:
+		if par := t.Parent(); par != nil {
+			par.DoPrivateAction(ctx, p)
+		}
 	}
 
 }

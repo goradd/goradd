@@ -76,9 +76,9 @@ func (b *Button) SetIsPrimary(s bool) ButtonI {
 }
 
 // On causes the given actions to execute when the given event is triggered.
-func (b *Button) On(e *event.Event, action action.ActionI) page.ControlI {
+func (b *Button) On(e *event.Event, action ...action.ActionI) page.ControlI {
 	e.Terminating() // prevent default action (override submit)
-	b.ControlBase.On(e, action)
+	b.ControlBase.On(e, action...)
 	return b.this()
 }
 
@@ -96,6 +96,9 @@ func (b *Button) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 // OnSubmit is a shortcut for adding a click event handler that is particular to buttons and button like objects.
+//
+// A nil action indicates the default action.
+//
 // It debounces the click, so that all other events are lost until this event processes. It should generally be used for
 // operations that will redirect to a different page. If coupling this with an ajax response, you should
 // probably also make the response priority PriorityFinal.
@@ -108,6 +111,8 @@ func (b *Button) OnSubmit(action action.ActionI) ButtonI {
 // OnClick is a shortcut for adding a click event handler.
 //
 // If your handler causes a new page to load, you should consider using OnSubmit instead.
+//
+// Passing a nil action will invoke DoAction with a default action.
 func (b *Button) OnClick(action action.ActionI) ButtonI {
 	b.this().On(event.Click(), action)
 	return b.this()

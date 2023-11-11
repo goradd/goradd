@@ -68,7 +68,7 @@ func (p *TableDbPanel) Init(self any, ctx context.Context, parent page.ControlI,
 		},
 		ButtonCreator{
 			ID:       "ajaxButton",
-			Text:     "Submit Do",
+			Text:     "Submit Ajax",
 			OnSubmit: action.Do("checkboxPanel", ButtonSubmit),
 		},
 		ButtonCreator{

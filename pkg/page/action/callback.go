@@ -9,6 +9,12 @@ import (
 	"github.com/goradd/maps"
 )
 
+// DefaultActionId is the default action id for events that do not want to specify a custom action id
+const DefaultActionId = 0
+
+// DefaultControlId indicates that the control that the action is first sent to is the same as the control that received the event.
+const DefaultControlId = ""
+
 // CallbackActionI defines actions that result in a callback to the server.
 // Specifically Post and Ajax actions are defined for now.
 // There is potential for a Message action, like through WebSocket, PubHub, etc.
@@ -27,7 +33,7 @@ type CallbackActionI interface {
 	// a component inside the main control by concatenating the control's id with another id that
 	// indicates the internal destination, separated with an underscore.
 	DestinationControlID(id string) CallbackActionI
-	// Post turns the action into a post action
+	// Post turns the action into a form post action, vs. an Ajax action.
 	Post() CallbackActionI
 }
 
@@ -226,6 +232,13 @@ func Do(destControlId string, actionID int) CallbackActionI {
 	}
 	a.setDestinationControlID(destControlId)
 	return a
+}
+
+// DoDefault will create a default Ajax action.
+//
+// To process this action, look for the control id or the event in the params of DoAction.
+func DoDefault() CallbackActionI {
+	return &callbackAction{}
 }
 
 func init() {

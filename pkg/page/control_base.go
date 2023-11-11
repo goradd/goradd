@@ -169,7 +169,7 @@ type ControlI interface {
 	DoPrivateAction(context.Context, action.Params)
 	SetActionValue(interface{}) ControlI
 	ActionValue() interface{}
-	On(e *event.Event, a action.ActionI) ControlI
+	On(e *event.Event, a ...action.ActionI) ControlI
 	Off(ids ...event.EventID)
 	WrapEvent(eventName string, selector string, eventJs string, options map[string]interface{}) string
 	Event(eventName string) *event.Event
@@ -1049,8 +1049,21 @@ func (c *ControlBase) ShouldAutoRender() bool {
 }
 
 // On adds an event listener to the control that will trigger the given actions.
-// To have a single event fire multiple actions, use action.Group() to combine the actions into one.
-func (c *ControlBase) On(e *event.Event, a action.ActionI) ControlI {
+//
+// If no action is specified, a default action will be sent to the control's DoAction handler,
+// and the handler can check the ActionParams for the event name and respond accordingly.
+//
+// If multiple actions are specified, they are combined using action.Group.
+// In this case, if an Ajax or Post action is in the group, it must be the last item.
+func (c *ControlBase) On(e *event.Event, a ...action.ActionI) ControlI {
+	var combinedAction action.ActionI
+	if a == nil {
+		combinedAction = action.DoDefault()
+	} else if len(a) > 1 {
+		combinedAction = action.Group(a...)
+	} else {
+		combinedAction = a[0]
+	}
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
 	// implement a script block with every control connected by id
@@ -1069,7 +1082,7 @@ func (c *ControlBase) On(e *event.Event, a action.ActionI) ControlI {
 		c.events = map[event.EventID]*event.Event{}
 	}
 	c.events[c.eventCounter] = e
-	event.SetEventItems(e, a, c.eventCounter)
+	event.SetEventItems(e, combinedAction, c.eventCounter)
 	return c.this()
 }
 
@@ -1110,7 +1123,8 @@ func (c *ControlBase) PrivateOff(ids ...event.EventID) {
 }
 
 // Event returns the event associated with the eventName, which corresponds to the javascript
-// trigger name.
+// trigger name. If there are multiple events with the same event name, the first event will
+// be returned. (Multiple events with the same name could be listed if some events have a delay.)
 func (c *ControlBase) Event(eventName string) *event.Event {
 	for _, e := range c.events {
 		if event.Name(e) == eventName {
@@ -1135,9 +1149,15 @@ func (c *ControlBase) ActionValue() interface{} {
 }
 
 // DoAction is called by the framework in response to an action created by [action.Do].
-// Forms and controls should implement this method to handle the action.
-// Typically, the Action function will first look at the id to know how to handle it.
+//
+// Forms and controls should implement this method to handle an action.
+// Typically, the DoAction function will first look at the ID, or Event to know how to handle it.
+//
+// When an action is not handled, most controls should pass it to its "superclass" object.
 func (c *ControlBase) DoAction(ctx context.Context, a action.Params) {
+	if p := c.Parent(); p != nil { // a form does not have a parent
+		p.DoAction(ctx, a)
+	}
 }
 
 // DoPrivateAction processes actions that a control sets up for itself, and that it does not want to give the opportunity
@@ -1206,14 +1226,19 @@ func (c *ControlBase) doAction(ctx context.Context) {
 		if callbackAction := event.GetCallbackAction(e); callbackAction != nil {
 			cba := callbackAction.(action.CallbackActionAccessor)
 			p := action.NewActionParams(
+				event.Name(e),
 				cba.ID(),
 				callbackAction,
 				c.ID(),
 				grCtx.actionValues,
 			)
 
-			if c.Page().HasControl(cba.GetDestinationControlID()) {
-				dest := c.Page().GetControl(cba.GetDestinationControlID())
+			controlId := cba.GetDestinationControlID()
+			if controlId == action.DefaultControlId {
+				controlId = c.ID()
+			}
+			if c.Page().HasControl(controlId) {
+				dest := c.Page().GetControl(controlId)
 				if isPrivate {
 					if log.HasLogger(log.FrameworkDebugLog) {
 						log.FrameworkDebugf("doAction - DoPrivateAction, DestId: %s, ActionId: %d, DoAction: %s, TriggerId: %s",

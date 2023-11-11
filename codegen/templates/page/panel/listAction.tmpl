@@ -22,6 +22,8 @@ func (p *{{= panelName }}) DoAction(ctx context.Context, a action.Params) {
 	    if id != "" {
 			p.EditItem(ctx, id)
 	    }
+	default:
+	    p.Panel.DoAction(ctx, a)
 	}
 }
 

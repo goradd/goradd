@@ -189,17 +189,13 @@ func (d *Dialog) AddButton(
 		} else {
 			if options.OnClick != nil {
 				btn.On(event.Click(),
-					action.Group(
-						action.Confirm(options.ConfirmationMessage),
-						options.OnClick,
-					),
+					action.Confirm(options.ConfirmationMessage),
+					options.OnClick,
 				)
 			} else {
 				btn.On(event.Click(),
-					action.Group(
-						action.Confirm(options.ConfirmationMessage),
-						action.Trigger(d.ID(), event.DialogButtonEvent, id),
-					),
+					action.Confirm(options.ConfirmationMessage),
+					action.Trigger(d.ID(), event.DialogButtonEvent, id),
 				)
 			}
 		}

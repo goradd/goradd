@@ -99,6 +99,8 @@ func (p *EditPanel) DoAction(ctx context.Context, a action.Params) {
 	case editDlgDeleteAction:
 		p.EditPanel().Delete(ctx)
 		p.Hide()
+	default:
+		p.DialogPanel.DoAction(ctx, a)
 	}
 }
 

@@ -88,7 +88,7 @@ func (p *SelectListPanel) Init(self any, ctx context.Context, parent page.Contro
 		},
 		ButtonCreator{
 			ID:       "ajaxButton",
-			Text:     "Submit Do",
+			Text:     "Submit Ajax",
 			OnSubmit: action.Do("selectListPanel", ButtonSubmit),
 		},
 		ButtonCreator{

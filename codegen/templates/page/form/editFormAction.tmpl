@@ -5,13 +5,13 @@
 // DoAction is called by the framework to execute any Server or Ajax actions you have assigned to controls
 // and directed here.
 func (f *{{= formName }}) DoAction(ctx context.Context, a action.Params) {
-	switch a.ID {
-	case {{= title }}SaveAction:
+	switch a.ControlId {
+	case {{= title }}SaveButtonID:
 	    Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Save(ctx)
 	    f.returnToPrevious(ctx)
-    case {{= title }}CancelAction:
+    case {{= title }}CancelButtonID:
         f.returnToPrevious(ctx)
-    case {{= title }}DeleteAction:
+    case {{= title }}DeleteButtonID:
         Get{{= t.GoName }}EditPanel(f, {{= title }}EditPanelID).Delete(ctx)
         f.returnToPrevious(ctx)
     default:

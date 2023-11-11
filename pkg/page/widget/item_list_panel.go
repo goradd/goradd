@@ -86,5 +86,7 @@ func (f *ItemListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case filterChanged:
 		f.ItemTable.Refresh() // TODO: Change this to some kind of data only refresh so that when control is redrawn the scroll position is maintained
+	default:
+		f.Panel.DoAction(ctx, a)
 	}
 }
