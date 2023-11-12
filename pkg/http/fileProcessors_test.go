@@ -2,13 +2,13 @@ package http
 
 import (
 	"bytes"
+	"github.com/russross/blackfriday/v2"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
-	"github.com/shurcooL/github_flavored_markdown"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +20,7 @@ func markdownProcessor(r io.Reader, w http.ResponseWriter, req *http.Request) er
 	if err != nil {
 		return err
 	}
-	_, err = w.Write(github_flavored_markdown.Markdown(markdown))
+	_, err = w.Write(blackfriday.Run(markdown))
 	return err
 }
 
