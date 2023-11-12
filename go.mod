@@ -2,13 +2,14 @@ module github.com/goradd/goradd
 
 require (
 	github.com/alexedwards/scs/v2 v2.5.0
-	github.com/andybalholm/brotli v1.0.5
+	github.com/andybalholm/brotli v1.0.6
 	github.com/gedex/inflector v0.0.0-20170307190818-16278e9db813
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/goradd/gofile v1.1.0
-	github.com/goradd/got v1.1.0
+	github.com/goradd/gofile v1.1.1
+	github.com/goradd/got v1.1.1
 	github.com/goradd/html5tag v1.0.1
 	github.com/goradd/maps v0.1.5
+	github.com/goradd/moddoc v0.4.2
 	github.com/gorilla/websocket v1.5.0
 	github.com/jackc/pgx/v5 v5.3.0
 	github.com/kenshaw/snaker v0.2.0
@@ -31,6 +32,7 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.15.0 // indirect
+	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.18.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
