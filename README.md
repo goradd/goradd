@@ -109,12 +109,14 @@ so that the server-side engineer has complete control over what is happening in 
 needing to write javascript.
 
 GoRADD relies on a number of other open-source projects, including:
-- The [Shurcool Github Markdown Library](https://github.com/shurcooL/github_flavored_markdown)
 - Alex Edward's [SCS Session Manager Library](https://github.com/alexedwards/scs)
 - Akeda Bagus' [Inflector Library](https://github.com/gedex/inflector)
 - Gorilla's [Websocket Library](https://github.com/gorilla/websocket)
 - Kenneth Shaw's [Snaker Library](https://github.com/kenshaw/snaker)
-- Stretchr's [Testify Testing Library](https://github.com/stretchr/testify)
+- Stretchr's testing library [Testify](https://github.com/stretchr/testify)
+- Andy Balholm's [Brotli Library](github.com/andybalholm/brotli)
+- Microcosm's injection prevention library [Blue Monday](github.com/microcosm-cc/bluemonday)
+- Russ Ross's Markdown library [Black Friday](github.com/russross/blackfriday)
 
 GoRADD was created and is maintained by [Shannon Pekary](https://github.com/spekary)
 
