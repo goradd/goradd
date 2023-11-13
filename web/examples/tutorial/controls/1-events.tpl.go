@@ -7,13 +7,13 @@ import (
 	"io"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *EventsPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<h1>Events</h1>
 <h2>Intro</h2>
 <p>
 You can assign <i>Events</i> to GoRADD controls to trigger <i>Actions</i> using the <i>On</i> function.
-<i>Events</i> create javascript events that are attached to Goradd controls.
 </p>
 <p>
 Consider the code below from the previous example:
@@ -54,13 +54,13 @@ Consider the code below from the previous example:
 	if _, err = io.WriteString(_w, `<br>
 <code>
 textBox := NewTextbox(p, "textField")
-textBox.On(event.Input().Delay(1000), action.Message(javascript.JsCode("event.target.value")))
+textBox.On(event.Input().Delay(1000).Action(action.Message(javascript.JsCode("event.target.value"))))
 </code>
 <br>
 <p>
 This code creates a <i>Textbox</i> control, and then tells it to respond to javascript <i>input</i> events.
 The response from the event is a javascript action that will display a message on the screen, using the value of
-the Textbox as the text of the message. The <i>On</i> function associates the event with the action.
+the Textbox as the text of the message. The <i>On</i> function attaches the event and action to the control.
 </p>
 <h2>Default Events</h2>
 <p>
@@ -105,7 +105,7 @@ This code creates a button and tells it to display a message when the button is 
 </p>
 <code>
 btn := NewButton(p, "btn1")
-btn.On(event.Click(), action.Message("btn1 clicked"))
+btn.On(event.Click().Action(action.Message("btn1 clicked")))
 </code>
 <h2>Predefined Events</h2>
 <p>
@@ -175,7 +175,7 @@ event using event.NewEvent(). The textbox below shows a message when text is sel
 	if _, err = io.WriteString(_w, `<code>
 textBox2 := NewTextbox(p, "textBox2")
 textBox2.SetText("Cut Me")
-textBox2.On(event.NewEvent("cut"), action.Message("textbox2 cut"))
+textBox2.On(event.NewEvent("cut").Action(action.Message("textbox2 cut")))
 </code>
 </p>
 <p>

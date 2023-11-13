@@ -32,10 +32,12 @@ func (p *ActionsPanel) Init(self any, ctx context.Context, parent page.ControlI,
 	textbox1.On(event.Input(), action.Javascript("event.target.value = event.target.value.toUpperCase()"))
 
 	btn1 := NewButton(p, "serverTimeButton").SetText("Get Server Time")
-	btn1.On(event.Click().Action(action.Do().ID(1000)))
+	// This does the default action, which calls DoAction on the control
+	btn1.On(event.Click())
 
 	btn2 := NewButton(p, "clientTimeButton").SetText("Get Client Time")
-	btn2.On(event.Click().Action(action.Do().ID(1001).ActionValue(javascript.NewClosureCall(
+	// This adds an action with a javascript action value.
+	btn2.On(event.Click().Action(action.Do().ActionValue(javascript.NewClosureCall(
 		`var today = new DateTextbox(); return today.getHours() + ':' + today.getMinutes();`, "",
 	))))
 
@@ -45,11 +47,11 @@ func (p *ActionsPanel) Init(self any, ctx context.Context, parent page.ControlI,
 
 func (p *ActionsPanel) DoAction(ctx context.Context, a action.Params) {
 	span1 := GetSpan(p, "timeSpan")
-	switch a.ID {
-	case 1000:
+	switch a.ControlId {
+	case "serverTimeButton":
 		t := time.Now()
 		span1.SetText("Server time = " + t.String())
-	case 1001:
+	case "clientTimeButton":
 		span1.SetText("Client time = " + a.ActionValueString())
 	}
 }

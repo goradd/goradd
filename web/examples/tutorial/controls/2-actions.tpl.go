@@ -7,6 +7,7 @@ import (
 	"io"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *ActionsPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<h1>Actions</h1>
@@ -63,7 +64,7 @@ For example, the following code will convert any text to uppercase while it is t
 
 	if _, err = io.WriteString(_w, `<code>
 textbox1 := NewTextbox(p, "textbox1")
-textbox1.On(event.Input(), action.Javascript("event.target.value = event.target.value.toUpperCase()"))
+textbox1.On(event.Input().Action(action.Javascript("event.target.value = event.target.value.toUpperCase()")))
 </code>
 <p>
 GoRADD predefines some Javascript actions to do common tasks. You can find the complete list of predefined Javascript
@@ -71,12 +72,11 @@ actions in the <a href="https://pkg.go.dev/github.com/goradd/goradd/pkg/page/act
 </p>
 <h2>Callback Actions</h2>
 <p>
-Callback actions invoke the control.DoAction() that is in every GoRADD control. You specify the id
-of the control that will receive the action, and your own integer id that is sent to the DoAction() function,
-and the action function takes it from there.
+Callback actions invoke the control.DoAction() that is in every GoRADD control. By default, if you do not specify an
+action to an event, the event will invoke the DoAction function on the receiving control using an Ajax call from the client browser.
 </p>
 <p>
-The two buttons below use Ajax actions to get both the server's time and browser's time.
+The two buttons below use actions to get both the server's time and browser's time.
 Click on the "2-actions.go" button under the View Source list to see how these buttons are
 created and how the DoAction() function responds.
 Note that the DoAction() function just sets the text of the span and the span is automatically redrawn
