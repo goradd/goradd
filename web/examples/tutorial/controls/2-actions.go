@@ -32,12 +32,12 @@ func (p *ActionsPanel) Init(self any, ctx context.Context, parent page.ControlI,
 	textbox1.On(event.Input(), action.Javascript("event.target.value = event.target.value.toUpperCase()"))
 
 	btn1 := NewButton(p, "serverTimeButton").SetText("Get Server Time")
-	btn1.On(event.Click(), action.Do(p.ID(), 1000))
+	btn1.On(event.Click().Action(action.Do().ID(1000)))
 
 	btn2 := NewButton(p, "clientTimeButton").SetText("Get Client Time")
-	btn2.On(event.Click(), action.Do(p.ID(), 1001).ActionValue(javascript.NewClosureCall(
+	btn2.On(event.Click().Action(action.Do().ID(1001).ActionValue(javascript.NewClosureCall(
 		`var today = new DateTextbox(); return today.getHours() + ':' + today.getMinutes();`, "",
-	)))
+	))))
 
 	span1 := NewSpan(p, "timeSpan")
 	span1.SetText("Unknown - click the button")

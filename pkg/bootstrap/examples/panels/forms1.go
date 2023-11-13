@@ -62,7 +62,7 @@ func (p *Forms1Panel) Init(self any, ctx context.Context, parent page.ControlI, 
 				{"Divorced", "Divorced"},
 			},
 			Value:    "Single",
-			OnChange: action.Do(p.ID(), RadioChange),
+			OnChange: action.Do().ID(RadioChange),
 		},
 		control.SpanCreator{
 			ID: "radioResult",
@@ -79,12 +79,12 @@ func (p *Forms1Panel) Init(self any, ctx context.Context, parent page.ControlI, 
 		ButtonCreator{
 			ID:       "ajaxButton",
 			Text:     "Submit Ajax",
-			OnSubmit: action.Do(p.ID(), AjaxSubmit),
+			OnSubmit: action.Do().ID(AjaxSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
-			OnSubmit: action.Do(p.ID(), PostSubmit).Post(),
+			OnSubmit: action.Do().ID(PostSubmit).Post(),
 		},
 	)
 }

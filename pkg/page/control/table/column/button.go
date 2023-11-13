@@ -12,15 +12,15 @@ import (
 
 // ButtonColumnClick returns an event that detects a click on the icon in the column.
 // The EventValue will be the row value clicked on.
-// If you need to also know the column clicked on, you can set the ActionValue on the associated action to:
+// If you need to also know the column clicked on, you can set the EventValue on the associated action to:
 //
 //	javascript.JsCode(`g$(event.goradd.match).columnId()`)
 //
-// and then get the value from the ActionValue.
+// and then get the value from the EventValue.
 func ButtonColumnClick() *event.Event {
 	e := event.Click().
 		Selector("[data-gr-btn-col]").
-		ActionValue(javascript.JsCode(
+		EventValue(javascript.JsCode(
 			`g$(event.goradd.match).closest("tr").data("value")`,
 		))
 	return e

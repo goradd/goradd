@@ -190,8 +190,11 @@ func (c *CheckboxColumn) AddActions(t page.ControlI) {
 	t.On(event.
 		CheckboxColumnClick().
 		Selector(`input[data-gr-all]`).
-		Private(),
-		action.Do(c.ParentTable().ID()+"_"+c.ID(), table.ColumnAction).ActionValue(AllClickAction))
+		Private().
+		Action(action.Do().
+			ControlID(c.ParentTable().ID() + "_" + c.ID()).
+			ID(table.ColumnAction).
+			ActionValue(AllClickAction)))
 }
 
 // Action is called by the framework to respond to an event. Here it responds to a click in the CheckAll box.

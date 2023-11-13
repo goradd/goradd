@@ -12,7 +12,7 @@ func (f *{{= formName }}) CreateControls(ctx context.Context) {
         {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= title }}OkButtonID,
             Text: f.GT("OK"),
-            OnSubmit: action.DoDefault(),
+            OnSubmit: action.Do(),
         },
     )
 }

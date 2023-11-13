@@ -18,7 +18,7 @@ import (
 type Params struct {
 	// Event is the javascript name of the event that was triggered.
 	Event string
-	// Id is the action id assigned when the action was created
+	// ID is the action id assigned when the action was created
 	ID int
 	// Action is an interface to the action itself
 	Action ActionI

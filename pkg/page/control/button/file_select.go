@@ -14,10 +14,6 @@ import (
 	"strings"
 )
 
-const (
-	fileSelectChangeAction = 2000 // This action is just here to update form values
-)
-
 const uploadEventName = "upload"
 
 // UploadEvent triggers when an upload has been completed.
@@ -85,7 +81,6 @@ func (b *FileSelect) Init(self any, parent page.ControlI, id string) {
 	b.ControlBase.Init(self, parent, id)
 	b.Tag = "input"
 	b.SetAttribute("type", "file")
-	b.On(event.Change().Private(), action.Do(b.ID(), fileSelectChangeAction))
 	b.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "file_select.js"), false, nil)
 }
 

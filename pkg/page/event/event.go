@@ -10,6 +10,9 @@
 // would be typically useful in a submit button where you want to prevent multiple submissions of the same button.
 //
 //	btn := NewButton().On(event.Click().Delay(200).Blocking(), action.Redirect("/mypage"))
+//
+// By default, an event will fire an Ajax action that will execute the DoAction function on the target control.
+// Call Action to set a different action.
 package event
 
 import (
@@ -27,7 +30,9 @@ import (
 type EventID uint16
 
 // Event represents a javascript event that triggers an action. Create it with a call to NewEvent(), or one of the
-// predefined events in the event package, like event.Click()
+// predefined events in the event package, like event.Click().
+//
+// Event uses a builder pattern to add options to the event.
 type Event struct {
 	// jsEvent is the JavaScript event that will be triggered by the event.
 	jsEvent string
@@ -43,10 +48,10 @@ type Event struct {
 	// blocking specifies that once the event fires, all other events will be blocked until the action associated with
 	// the event returns.
 	blocking bool
-	// actionValue is a static value, or a javascript.* to get a dynamic value when the action returns to us.
+	// eventValue is a static value, or a javascript.* to get a dynamic value when the action returns to us.
 	// this value will become the EventValue returned to the action.
-	actionValue interface{}
-	// action is the action that the event triggers. Multiple actions can be specified using an action group.
+	eventValue interface{}
+	// action is the action that the event triggers. Multiple actions can be specified using a action.Group.
 	action action.ActionI
 	// preventDefault will cause the preventDefault function to be called on the event, which prevents the
 	// default action. In particular, this would prevent a submit button from submitting a form.
@@ -154,31 +159,12 @@ func (e *Event) PreventBubbling() *Event {
 	return e
 }
 
-// ActionValue sets the event value in the actions triggered by this event. Specify a static
-// value, or javascript objects that will gather data at the time the event fires. The event will appear in the
-// Params as the EventValue. By default, this will be the value passed in to the javascript event as event data.
+// Action sets the action that is executed by the event.
 //
-// See on: and trigger: in goradd.js.
-//
-// For example:
-//
-//	ActionValue(javascript.JsCode{"event.target.id"})
-//
-// will cause the EventValue for the action to be the HTML id of the target object of the event.
-func (e *Event) ActionValue(r interface{}) *Event {
-	e.actionValue = r
+// Use action.Group to attach a series of actions that will happen from this event.
+func (e *Event) Action(action action.ActionI) *Event {
+	e.action = action
 	return e
-}
-
-// EventValueTargetID will set the event value of the resulting action to the HTML id of the target of the event.
-func (e *Event) EventValueTargetID() *Event {
-	e.actionValue = javascript.JsCode("event.target.id")
-	return e
-}
-
-// GetActionValue returns the event value associated with the actions resulting from the event.
-func GetActionValue(e *Event) interface{} {
-	return e.actionValue
 }
 
 // Validate overrides the controls validation setting just for this event.
@@ -200,6 +186,31 @@ func (e *Event) Private() *Event {
 	return e
 }
 
+// EventValue sets the event value that is delivered to the DoAction function.
+//
+// Alternatively, you can set the ActionValue on an action associated with the event.
+//
+// Specify a static value, or javascript objects that will gather data at the time the event fires.
+// By default, this will be the value passed in to the javascript event as event data.
+//
+// See on: and trigger: in goradd.js.
+//
+// For example:
+//
+//	EventValue(javascript.JsCode{"event.target.id"})
+//
+// will cause the EventValue for the action to be the HTML id of the target object of the event.
+func (e *Event) EventValue(r interface{}) *Event {
+	e.eventValue = r
+	return e
+}
+
+// EventValueTargetID will set the event value of the resulting action to the HTML id of the target of the event.
+func (e *Event) EventValueTargetID() *Event {
+	e.eventValue = javascript.JsCode("event.target.id")
+	return e
+}
+
 // Name returns the name of the javascript event being triggered.
 func Name(e *Event) string {
 	return e.jsEvent
@@ -217,6 +228,9 @@ type getCallbackActioner interface {
 // GetCallbackAction will return the action associated with the event if it is a callback action.
 // Otherwise, it will return nil.
 func GetCallbackAction(e *Event) action.CallbackActionI {
+	if e.action == nil { // a nil action signifies the default action, which is a callback action.
+		return action.Do()
+	}
 	switch a := e.action.(type) {
 	case action.CallbackActionI:
 		return a
@@ -266,7 +280,7 @@ func (e *Event) GobEncode() (data []byte, err error) {
 		Bubbles:                   e.bubbles,
 		Capture:                   e.capture,
 		Private:                   e.private,
-		ActionValue:               e.actionValue,
+		ActionValue:               e.eventValue,
 		Action:                    e.action,
 		PreventDefault:            e.preventDefault,
 		StopPropagation:           e.stopPropagation,
@@ -297,7 +311,7 @@ func (e *Event) GobDecode(data []byte) (err error) {
 	e.bubbles = s.Bubbles
 	e.capture = s.Capture
 	e.private = s.Private
-	e.actionValue = s.ActionValue
+	e.eventValue = s.ActionValue
 	e.action = s.Action
 	e.preventDefault = s.PreventDefault
 	e.stopPropagation = s.StopPropagation
@@ -307,10 +321,9 @@ func (e *Event) GobDecode(data []byte) (err error) {
 	return nil
 }
 
-// SetEventItems is used internally by the framework to set up an event.
+// SetEventID is used internally by the framework to set the event id.
 // You should not normally need to call this function.
-func SetEventItems(e *Event, action action.ActionI, eventId EventID) {
-	e.action = action
+func SetEventID(e *Event, eventId EventID) {
 	e.eventID = eventId
 }
 
@@ -350,7 +363,7 @@ func RenderActions(e *Event, control renderer, eventID EventID) string {
 		js += "event.stopPropagation();\n"
 	}
 
-	var params = action.RenderParams{TriggeringControlID: control.ID(), ControlActionValue: control.ActionValue(), EventID: uint16(eventID), EventActionValue: e.actionValue}
+	var params = action.RenderParams{TriggeringControlID: control.ID(), ControlActionValue: control.ActionValue(), EventID: uint16(eventID), EventActionValue: e.eventValue}
 
 	var actionJs = e.action.RenderScript(params)
 
@@ -393,5 +406,5 @@ func RenderActions(e *Event, control renderer, eventID EventID) string {
 }
 
 func init() {
-	gob.Register(map[string]interface{}{}) // This is so that action values that use this can be serialized
+	gob.Register(map[string]any{}) // This is so that action values that use this can be serialized
 }

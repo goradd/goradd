@@ -40,7 +40,7 @@ func (f *IndexForm) CreateControls(ctx context.Context) {
 		ButtonCreator{
 			ID:      "viewSourceButton",
 			Text:    "View Source",
-			OnClick: action.Do(f.ID(), ViewSourceAction),
+			OnClick: action.Do().ID(ViewSourceAction),
 		},
 	)
 }

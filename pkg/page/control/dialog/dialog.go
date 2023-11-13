@@ -106,7 +106,7 @@ func (d *Dialog) Init(self any, parent page.ControlI, id string) {
 	bb := control.NewPanel(d, d.buttonBarID)
 	bb.AddClass("gr-dialog-buttons")
 	d.SetValidationType(event.ValidateChildrenOnly) // allows sub items to validate and have validation stop here
-	d.On(event.DialogClosed().Validate(event.ValidateNone).Private(), action.Do(d.ID(), ClosedAction))
+	d.On(event.DialogClosed().Validate(event.ValidateNone).Private().Action(action.Do().ID(ClosedAction)))
 }
 
 func (d *Dialog) TitleBar() *control.Panel {

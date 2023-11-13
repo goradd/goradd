@@ -34,12 +34,12 @@ func (p *DialogsPanel) Init(self any, ctx context.Context, parent page.ControlI,
 		ButtonCreator{
 			ID:       "alertButton",
 			Text:     "Alert",
-			OnSubmit: action.Do("dialogsPanel", ButtonAlert),
+			OnSubmit: action.Do().ControlID("dialogsPanel").ID(ButtonAlert),
 		},
 		ButtonCreator{
 			ID:       "messageButton",
 			Text:     "Message",
-			OnSubmit: action.Do("dialogsPanel", ButtonMessage).Post(),
+			OnSubmit: action.Do().ControlID("dialogsPanel").ID(ButtonMessage).Post(),
 		},
 	)
 
@@ -72,7 +72,7 @@ func (p *DialogsPanel) DoAction(ctx context.Context, a action.Params) {
 				//OnClick:action.Do(p.ID(), ForYouAction),
 			})
 			dp.AddCloseButton("Cancel", "cancel")
-			dp.OnButton(action.Do(p.ID(), MessageAction)) // or handle button actions this way
+			dp.OnButton(action.Do().ID(MessageAction)) // or handle button actions this way
 		} else {
 			GetTextboxI(p, "msg-txt").SetText("") // reset the text in case it was just hidden
 		}

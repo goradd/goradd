@@ -63,8 +63,8 @@ func (p *ItemListPanel) Init(self any, parent page.ControlI, id string) {
 	p.EditButton = NewButton(p.ButtonPanel, p.ID()+"-editbtn")
 	p.EditButton.SetText(p.ParentForm().GT("Edit"))
 
-	p.FilterText.On(event.Input().Delay(300), action.Do(p.ID(), filterChanged))
-	p.FilterText.On(event.EnterKey().Terminating(), action.Do(p.ID(), filterChanged))
+	p.FilterText.On(event.Input().Delay(300), action.Do().ID(filterChanged))
+	p.FilterText.On(event.EnterKey().Terminating(), action.Do().ID(filterChanged))
 
 }
 

@@ -50,7 +50,7 @@ func (p *TableSelectPanel) Init(self any, ctx context.Context, parent page.Contr
 				Class: "gr-table-rows",
 			},
 			SaveState:     true,
-			OnRowSelected: action.Do(p.ID(), rowSelectedEvent),
+			OnRowSelected: action.Do().ID(rowSelectedEvent),
 			Data:          items,
 		},
 		SelectTableCreator{
@@ -71,7 +71,7 @@ func (p *TableSelectPanel) Init(self any, ctx context.Context, parent page.Contr
 				},
 			},
 			SaveState:     true,
-			OnRowSelected: action.Do(p.ID(), rowSelectedEvent),
+			OnRowSelected: action.Do().ID(rowSelectedEvent),
 		},
 		PanelCreator{
 			ID: "infoPanel",

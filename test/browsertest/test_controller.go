@@ -66,8 +66,8 @@ func (p *TestController) Init(self any, parent page.ControlI, id string) {
 	// Use declarative attribute to attach javascript to the control
 	p.SetDataAttribute("grWidget", "goradd.TestController")
 
-	p.On(TestStepEvent(), action.Do(p.ID(), testStepAction))
-	p.On(TestMarkerEvent(), action.Do(p.ID(), testMarkerAction))
+	p.On(TestStepEvent().Action(action.Do().ID(testStepAction)))
+	p.On(TestMarkerEvent().Action(action.Do().ID(testMarkerAction)))
 	p.stepTimeout = StepTimeoutSeconds
 }
 

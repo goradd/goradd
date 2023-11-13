@@ -57,7 +57,7 @@ func (l *ListGroup) SetIsSelectable(canSelect bool) {
 	l.Refresh()
 	l.PrivateOff()
 	if canSelect {
-		l.On(event.Click().Selector(l.ItemTag()).Private(), action.Do(l.ID(), refreshAction))
+		l.On(event.Click().Selector(l.ItemTag()).Private().Action(action.Do().ID(refreshAction)))
 	}
 }
 

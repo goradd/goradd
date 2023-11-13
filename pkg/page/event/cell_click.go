@@ -41,12 +41,14 @@ const (
 // You can put your items in a javascript array, and an array will be returned as the strParameter in the action.
 // Or you can put it in a javascript object, and a named array(hash) will be returned.
 //
+// By default, it returns a map with the "row" being the row index and "col" being the column index of the cell clicked on.
+//
 // By default, the cell click does not bubble. Add Bubbles() to the event to get the click
 // to bubble up from sub objects.
 func CellClick() *Event {
 	e := Click().
 		Selector("td").
-		ActionValue(javascript.JsCode(CellClickDefault))
+		EventValue(javascript.JsCode(CellClickDefault))
 	return e
 }
 
@@ -54,24 +56,24 @@ func CellClick() *Event {
 func HeaderCellClick() *Event {
 	e := Click().
 		Selector("th").
-		ActionValue(javascript.JsCode(CellClickDefault))
+		EventValue(javascript.JsCode(CellClickDefault))
 	return e
 }
 
-// RowDataActionValue returns code to use in the ActionValue to return the data value of the row clicked on.
+// RowDataActionValue returns code to use in the EventValue to return the data value of the row clicked on.
 // The code can be used directly, or in a map or array.
 // For example:
 //
-//	e := event.CellClick().ActionValue(event.RowDataActionValue("rowVal")).Delay(100)
+//	e := event.CellClick().EventValue(event.RowDataActionValue("rowVal")).Delay(100)
 func RowDataActionValue(key string) javascript.JavaScripter {
 	return javascript.JsCode(`g$(this).parent().data("` + key + `")`)
 }
 
-// CellDataActionValue sets the ActionValue to javascript that will return the data value of the row clicked on.
+// CellDataActionValue sets the EventValue to javascript that will return the data value of the row clicked on.
 // If you are going to use this, call it immediately after you call CellClick, and before any other calls on the event.
 // For example:
 //
-//	e := event.CellClick().ActionValue(event.CellDataActionValue("cellVal")).Delay(100)
+//	e := event.CellClick().EventValue(event.CellDataActionValue("cellVal")).Delay(100)
 func CellDataActionValue(key string) javascript.JavaScripter {
 	return javascript.JsCode(`g$(this).data("` + key + `")`)
 }

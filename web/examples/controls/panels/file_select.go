@@ -31,7 +31,7 @@ func (p *FileSelectPanel) Init(self any, ctx context.Context, parent page.Contro
 		FileSelectCreator{
 			ID:       "uploadButton",
 			Multiple: true,
-			OnUpload: action.Do(p.ID(), FileUploadAction),
+			OnUpload: action.Do().ID(FileUploadAction),
 		},
 	)
 

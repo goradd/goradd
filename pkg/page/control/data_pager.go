@@ -234,7 +234,7 @@ func (d *DataPager) Init(self any, parent page.ControlI, id string, pagedControl
 	pagedControl.AddDataPager(d.this())
 	d.pagedControlID = pagedControl.ID()
 	pxy := NewProxy(d, d.proxyID())
-	pxy.On(event.Click().Bubbles(), action.Do(d.ID(), PageClick))
+	pxy.On(event.Click().Bubbles().Action(action.Do().ID(PageClick)))
 	d.SetAttribute("role", "tablist")
 	d.PagedControl().SetPageNum(1)
 }

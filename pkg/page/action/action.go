@@ -49,7 +49,6 @@ package action
 type ActionI interface {
 	// RenderScript is called by the framework to return the action's javascript.
 	// You do not normally need to call this function.
-	// You can create your own custom javascript action by defining a RenderScript function.
 	RenderScript(params RenderParams) string
 }
 

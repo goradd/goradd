@@ -1050,20 +1050,8 @@ func (c *ControlBase) ShouldAutoRender() bool {
 
 // On adds an event listener to the control that will trigger the given actions.
 //
-// If no action is specified, a default action will be sent to the control's DoAction handler,
-// and the handler can check the ActionParams for the event name and respond accordingly.
-//
-// If multiple actions are specified, they are combined using action.Group.
-// In this case, if an Ajax or Post action is in the group, it must be the last item.
+// Specifying an action is deprecated. Instead, call [event.Action] on the event.
 func (c *ControlBase) On(e *event.Event, a ...action.ActionI) ControlI {
-	var combinedAction action.ActionI
-	if a == nil {
-		combinedAction = action.DoDefault()
-	} else if len(a) > 1 {
-		combinedAction = action.Group(a...)
-	} else {
-		combinedAction = a[0]
-	}
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
 	// implement a script block with every control connected by id
@@ -1082,7 +1070,15 @@ func (c *ControlBase) On(e *event.Event, a ...action.ActionI) ControlI {
 		c.events = map[event.EventID]*event.Event{}
 	}
 	c.events[c.eventCounter] = e
-	event.SetEventItems(e, combinedAction, c.eventCounter)
+
+	event.SetEventID(e, c.eventCounter)
+
+	if len(a) > 1 {
+		e.Action(action.Group(a...))
+	} else if len(a) == 1 {
+		e.Action(a[0])
+	}
+
 	return c.this()
 }
 
@@ -1227,7 +1223,7 @@ func (c *ControlBase) doAction(ctx context.Context) {
 			cba := callbackAction.(action.CallbackActionAccessor)
 			p := action.NewActionParams(
 				event.Name(e),
-				cba.ID(),
+				cba.GetActionID(),
 				callbackAction,
 				c.ID(),
 				grCtx.actionValues,
@@ -1947,12 +1943,8 @@ func (c *ControlBase) Deserialize(d Decoder) {
 	return
 }
 
-// EventList is used by Creators to declare a list of event and action pairs.
-// Use action.Group as the Action to assign multiple actions to single event.
-type EventList []struct {
-	Event  *event.Event
-	Action action.ActionI
-}
+// EventList is used by Creators to declare a list of events.
+type EventList []*event.Event
 
 // DataAttributeMap is used by Creators to declare a map of data attributes.
 type DataAttributeMap map[string]interface{}
@@ -1999,7 +1991,7 @@ func (c *ControlBase) ApplyOptions(ctx context.Context, o ControlOptions) {
 		c.SetStyle(k, v)
 	}
 	for _, a := range o.On {
-		c.On(a.Event, a.Action)
+		c.On(a)
 	}
 	if o.Class != "" {
 		c.attributes.AddClass(o.Class) // Responds to add and remove class commands

@@ -15,60 +15,65 @@ const DefaultActionId = 0
 // DefaultControlId indicates that the control that the action is first sent to is the same as the control that received the event.
 const DefaultControlId = ""
 
-// CallbackActionI defines actions that result in a callback to the server.
-// Specifically Post and Ajax actions are defined for now.
-// There is potential for a Message action, like through WebSocket, PubHub, etc.
+// CallbackActionI defines actions that result in a callback to the server through a Post or Ajax call.
+//   - ID sets an optional action id, which can be retrieved in the DoAction function.
+//   - ActionValue sets the value that will be available to the DoAction handler as the ActionValue() function in the Param structure.
+//     This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
+//     javascript.Closures will be called immediately with a (this) parameter.
+//   - Async will cause the action to be handled asynchronously. Use this only in special situations where you know that you
+//     do not need information from other actions.
+//   - ControlID sets the id of the control that will receive the action.
+//     Composite controls can specify a sub id which indicates that the action should be sent to
+//     a component inside the main control by concatenating the control's id with another id that
+//     indicates the internal destination, separated with an underscore.
+//     By default, the control will be the control receiving the event that triggered the action.
+//   - Post turns the action into a form post action, vs. an Ajax action. You only need this in special situations, when
+//     the standard Ajax action will not work.
 type CallbackActionI interface {
 	ActionI
-	// ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the ActionParam structure
-	// sent to the event handler. This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
-	// javascript.Closures will be called immediately with a (this) parameter.
+	ID(id int) CallbackActionI
 	ActionValue(v interface{}) CallbackActionI
-	// Async will cause the action to be handled asynchronously. Use this only in special situations where you know that you
-	// do not need information from other actions.
 	Async() CallbackActionI
-	// DestinationControlID sets the id of the control that will receive the action.
-	//
-	// Composite controls can specify a sub id which indicates that the action should be sent to
-	// a component inside the main control by concatenating the control's id with another id that
-	// indicates the internal destination, separated with an underscore.
-	DestinationControlID(id string) CallbackActionI
-	// Post turns the action into a form post action, vs. an Ajax action.
+	ControlID(id string) CallbackActionI
 	Post() CallbackActionI
 }
 
 // CallbackActionAccessor is used by the framework and the internals of controls to access actions.
-// Callback actions must satisfy
-// this interface, as well as the CallbackActionI interface.
+// Callback actions must satisfy this interface, as well as the CallbackActionI interface.
 type CallbackActionAccessor interface {
-	// ID returns the id assigned to the action when the action was created.
-	ID() int
+	GetActionID() int
 	// GetDestinationControlID returns the id that the action was sent to.
 	GetDestinationControlID() string
 	// GetDestinationControlSubID returns the id of the sub-control that is the destination of the action, if one was assigned.
 	GetDestinationControlSubID() string
-	// IsServerAction returns true if the action is a server action
-	IsServerAction() bool
+	// IsPostAction returns true if the action is a server action
+	IsPostAction() bool
 }
 
-// callbackAction handles Ajax and Post actions.
+// callbackAction handles Ajax and Post actions through the CallbackActionI interface.
 type callbackAction struct {
 	ActionID      int
 	DestControlID string
 	SubID         string
-	Value         interface{}
+	Value         any
 	CallAsync     bool
 	IsPost        bool // if false, this is an Ajax call
 }
 
-// ID returns the action id that was defined when the action was created.
-func (a *callbackAction) ID() int {
+// ID sets the action id that was defined when the action was created.
+func (a *callbackAction) ID(id int) CallbackActionI {
+	a.ActionID = id
+	return a
+}
+
+// GetActionID returns the action id given to the action when it was created.
+func (a *callbackAction) GetActionID() int {
 	return a.ActionID
 }
 
 // GetActionValue returns the action value given to the action when it was created.
-func (a *callbackAction) GetActionValue() interface{} {
-	return a.Value
+func (a *callbackAction) GetActionValue() any {
+	return a.ActionValue
 }
 
 // Assign the destination control id. You can specify a sub id which indicates that the action should be sent to something
@@ -126,8 +131,8 @@ func (a *callbackAction) RenderScript(params RenderParams) string {
 	}
 }
 
-// ActionValue lets you set a value that will be available to the action handler as the ActionValue() function in the
-// ActionParam structure sent to the event handler.
+// ActionValue sets a value that will be available to the action handler as the ActionValue() function in the
+// Params structure sent to the event handler.
 // This can be any go type, including slices and maps, or a javascript.JavaScripter interface type.
 // javascript.Closures will be called immediately with a (this) parameter.
 func (a *callbackAction) ActionValue(v interface{}) CallbackActionI {
@@ -142,16 +147,18 @@ func (a *callbackAction) Async() CallbackActionI {
 	return a
 }
 
-// DestinationControlID sets the id of the control that will receive the action.
+// ControlID sets the id of the control that will receive the action.
 // You can specify a sub id which indicates that the action should be sent to something
 // inside the main control by concatenating the control's id with another id that indicates the internal destination,
 // separated with an underscore.
-func (a *callbackAction) DestinationControlID(id string) CallbackActionI {
+//
+// By default, this will be the control that triggers the action.
+func (a *callbackAction) ControlID(id string) CallbackActionI {
 	a.setDestinationControlID(id)
 	return a
 }
 
-// Post specifies that the action will be invoked by calling and http POST on the form.
+// Post specifies that the action will be invoked by calling an http POST on the form.
 //
 // It is unlikely you would need to call this, but there are special cases where a server action might be
 // useful, like:
@@ -163,9 +170,9 @@ func (a *callbackAction) Post() CallbackActionI {
 	return a
 }
 
-// IsServerAction will return false if this is not a server action.
+// IsPostAction will return true if this is a post action.
 // This is used by the test harness.
-func (a *callbackAction) IsServerAction() bool {
+func (a *callbackAction) IsPostAction() bool {
 	return a.IsPost
 }
 
@@ -195,50 +202,33 @@ func (a *serverAction) GobDecode(data []byte) (err error) {
 //
 // The returned action uses a Builder pattern to add options, so for example you might call:
 //
-//	myControl.On(event.Click(), action.Do("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
+//	myControl.On(event.Click(), action.Do("myControl", MyActionIdConst).EventValue("myActionValue").Async())
 //
 // Deprecated: Use Do() instead.
 func Ajax(destControlId string, actionID int) CallbackActionI {
-	return Do(destControlId, actionID)
+	return Do().ControlID(destControlId).ID(actionID)
 }
 
 // Server returns a Server based action that is invoked with a Post http call.
 // Deprecated: Use Do instead.
 func Server(destControlId string, actionID int) CallbackActionI {
-	return Do(destControlId, actionID).Post()
+	return Do().ControlID(destControlId).ID(actionID).Post()
 }
 
-// Do returns an action that will invoke the DoAction function on the control with id specified by
-// destControlId.
+// Do returns an action that will invoke the DoAction function on the destination control.
 //
-// The DoAction function will receive the destControlId as the ControlId value
-// in the params parameter of the DoAction function. The given actionID can be accessed
-// in the DoAction function by calling one of the ActionValue* functions on the params value of DoAction.
-//
-// You can specify a sub id which indicates that the action should be sent to something
-// inside the main control by concatenating the control's id with another id that indicates the internal destination,
-// separated with an underscore.
+// By default, the control that will receive the action will be the control that triggered the action.
 //
 // The returned action uses a Builder pattern to add options, so for example you might call:
 //
-//	myControl.On(event.Click(), action.Do("myControl", MyActionIdConst).ActionValue("myActionValue").Async())
+//	myControl.On(event.Click(), action.Do("myControl", MyActionIdConst).EventValue("myActionValue").Async())
 //
 // By default, the action uses an ajax process defined in the goradd.js file. If you want to instead use
 // a more traditional http POST process, call the Post() function on the returned action, but that would
 // rarely be needed.
-func Do(destControlId string, actionID int) CallbackActionI {
-	a := &callbackAction{
-		ActionID: actionID,
-	}
-	a.setDestinationControlID(destControlId)
+func Do() CallbackActionI {
+	a := &callbackAction{}
 	return a
-}
-
-// DoDefault will create a default Ajax action.
-//
-// To process this action, look for the control id or the event in the params of DoAction.
-func DoDefault() CallbackActionI {
-	return &callbackAction{}
 }
 
 func init() {
