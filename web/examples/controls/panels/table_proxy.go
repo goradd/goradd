@@ -33,7 +33,7 @@ func (p *TableProxyPanel) Init(self any, ctx context.Context, parent page.Contro
 	p.AddControls(ctx,
 		ProxyCreator{
 			ID: proxyId,
-			On: event.Click(),
+			On: event.Click().Action(action.Do().ID(ProxyClick)),
 		},
 		PagedTableCreator{
 			ID:           "table1",
@@ -91,8 +91,8 @@ func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, info CellIn
 }
 
 func (p *TableProxyPanel) DoAction(ctx context.Context, a action.Params) {
-	switch a.ControlId {
-	case proxyId:
+	switch a.ID {
+	case ProxyClick:
 		id := a.ControlValueString()
 		id = crypt.SessionDecryptUrlValue(ctx, id)
 		if id != "" {
@@ -130,9 +130,9 @@ func testTableProxyCol(t *browsertest.TestForm) {
 	t.LoadUrl(myUrl)
 
 	t.ClickHtmlItem("pxy1")
-	/*	h := t.ControlInnerHtml("nameItem")
-		t.AssertEqual("<label>Name</label>ACME Website Redesign", h)
-	*/t.Done("Complete")
+	h := t.ControlInnerHtml("nameItem")
+	t.AssertEqual("<th>Name</th><td>ACME Website Redesign</td>", h)
+	t.Done("Complete")
 
 }
 
