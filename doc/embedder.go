@@ -4,7 +4,7 @@ package doc
 import (
 	"embed"
 	http2 "github.com/goradd/goradd/pkg/http"
-	"github.com/shurcooL/github_flavored_markdown"
+	"github.com/russross/blackfriday/v2"
 	"io"
 	"net/http"
 )
@@ -26,6 +26,7 @@ func serveMarkdown(r io.Reader, w http.ResponseWriter, req *http.Request) error 
 	if err != nil {
 		return err
 	}
-	_, err = w.Write(github_flavored_markdown.Markdown(markdown))
+	output := blackfriday.Run(markdown)
+	_, err = w.Write(output)
 	return err
 }

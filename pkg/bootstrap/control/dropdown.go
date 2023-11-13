@@ -74,7 +74,7 @@ func (l *Dropdown) MenuAttributes() html5tag.Attributes {
 
 // OnClick sets the action to take when a link in the Dropdown is selected.
 // It will only respond to links whose href is "#", which indicates its an empty link.
-// The ActionValue will be the id of the link clicked.
+// The EventValue will be the id of the link clicked.
 func (l *Dropdown) OnClick(a action.ActionI) DropdownI {
 	l.On(DropdownSelectEvent(), a)
 	return l.this()

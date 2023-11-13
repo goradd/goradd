@@ -46,7 +46,7 @@ func (o *{{= t.GoName }}) String() string  {
 {{g builderName := t.GoPlural + "Builder" }}
 
 // Query{{t.GoPlural}} returns a new builder that gives you general purpose access to the {{= t.GoName }} records
-// in the database. Its here to give public access to the query builder, but you can remove it if you do not need it.
+// in the database.
 func Query{{t.GoPlural}}(ctx context.Context) *{{builderName}} {
 	return query{{t.GoPlural}}(ctx)
 }
@@ -59,8 +59,9 @@ func query{{t.GoPlural}}(ctx context.Context) *{{builderName}} {
 }
 
 
-// Delete{{= t.GoName }} deletes the given record from the database. Note that you can also delete
-// loaded {{= t.GoName }} objects by calling Delete on them.
+// Delete{{= t.GoName }} deletes a {{= t.DbName }} record from the database given its primary key.
+// Note that you can also delete loaded {{= t.GoName }} objects by calling Delete on them.
+// doc: type={{= t.GoName }}
 func Delete{{= t.GoName }}(ctx context.Context, pk {{= t.PrimaryKeyColumn().GoType() }}) {
 	delete{{= t.GoName }}(ctx, pk)
 }

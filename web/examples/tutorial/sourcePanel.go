@@ -43,7 +43,7 @@ func (p *SourcePanel) show(files []string) {
 		b := NewButton(p.ButtonPanel, "")
 		b.SetLabel(fmt.Sprintf("%d. %s", i, base))
 		b.SetActionValue(path)
-		b.On(event.Click(), action.Do(p.ID(), FileAction))
+		b.On(event.Click(), action.Do().ID(FileAction))
 	}
 }
 

@@ -9,36 +9,53 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type personNode struct {
+// PersonNode represents the person table in a query. It uses a builder pattern to chain
+// together other tables and columns to form a node in a query.
+//
+// To use the PersonNode, call [Person] to start a reference chain when querying the person table.
+type PersonNode struct {
+	// ReferenceNodeI is an internal object that represents the capabilities of the node. Since it is embedded, all
+	// of its functions are exported and are callable along with the personNode functions here.
 	query.ReferenceNodeI
 }
 
-func Person() *personNode {
-	n := personNode{
+// Person returns a table node that starts a node chain that begins with the person table.
+func Person() *PersonNode {
+	n := PersonNode{
 		query.NewTableNode("goradd", "person", "Person"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
 }
 
-func (n *personNode) SelectNodes_() (nodes []*query.ColumnNode) {
+// SelectNodes_ is used internally by the framework to return the list of all the column nodes.
+// doc: hide
+func (n *PersonNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.FirstName())
 	nodes = append(nodes, n.LastName())
 	return nodes
 }
-func (n *personNode) PrimaryKeyNode() *query.ColumnNode {
+
+// PrimaryKeyNode returns a node that points to the primary key column.
+func (n *PersonNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
-func (n *personNode) EmbeddedNode_() query.NodeI {
+
+// EmbeddedNode is used internally by the framework to return the embedded Reference node.
+// doc: hide
+func (n *PersonNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
-func (n *personNode) Copy_() query.NodeI {
-	return &personNode{query.CopyNode(n.ReferenceNodeI)}
+
+// Copy_ is used internally by the framework to deep copy the node.
+// doc: hide
+func (n *PersonNode) Copy_() query.NodeI {
+	return &PersonNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 // ID represents the id column in the database.
-func (n *personNode) ID() *query.ColumnNode {
+func (n *PersonNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"person",
@@ -52,7 +69,7 @@ func (n *personNode) ID() *query.ColumnNode {
 }
 
 // FirstName represents the first_name column in the database.
-func (n *personNode) FirstName() *query.ColumnNode {
+func (n *PersonNode) FirstName() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"person",
@@ -66,7 +83,7 @@ func (n *personNode) FirstName() *query.ColumnNode {
 }
 
 // LastName represents the last_name column in the database.
-func (n *personNode) LastName() *query.ColumnNode {
+func (n *PersonNode) LastName() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"person",
@@ -80,8 +97,8 @@ func (n *personNode) LastName() *query.ColumnNode {
 }
 
 // PersonTypes represents the many-to-many relationship formed by the person_persontype_assn table.
-func (n *personNode) PersonTypes() *personTypeNode {
-	cn := &personTypeNode{
+func (n *PersonNode) PersonTypes() *PersonTypeNode {
+	cn := &PersonTypeNode{
 		query.NewManyManyNode(
 			"goradd",
 			"person_persontype_assn",
@@ -99,8 +116,8 @@ func (n *personNode) PersonTypes() *personTypeNode {
 }
 
 // Projects represents the many-to-many relationship formed by the team_member_project_assn table.
-func (n *personNode) Projects() *projectNode {
-	cn := &projectNode{
+func (n *PersonNode) Projects() *ProjectNode {
+	cn := &ProjectNode{
 		query.NewManyManyNode(
 			"goradd",
 			"team_member_project_assn",
@@ -119,9 +136,9 @@ func (n *personNode) Projects() *projectNode {
 
 // Addresses represents the many-to-one relationship formed by the reverse reference from the
 // addresses column in the person table.
-func (n *personNode) Addresses() *addressNode {
+func (n *PersonNode) Addresses() *AddressNode {
 
-	cn := &addressNode{
+	cn := &AddressNode{
 		query.NewReverseReferenceNode(
 			"goradd",
 			"person",
@@ -140,9 +157,9 @@ func (n *personNode) Addresses() *addressNode {
 
 // EmployeeInfo represents the one-to-one relationship formed by the reverse reference from the
 // employee_info column in the person table.
-func (n *personNode) EmployeeInfo() *employeeInfoNode {
+func (n *PersonNode) EmployeeInfo() *EmployeeInfoNode {
 
-	cn := &employeeInfoNode{
+	cn := &EmployeeInfoNode{
 		query.NewReverseReferenceNode(
 			"goradd",
 			"person",
@@ -161,9 +178,9 @@ func (n *personNode) EmployeeInfo() *employeeInfoNode {
 
 // Login represents the one-to-one relationship formed by the reverse reference from the
 // login column in the person table.
-func (n *personNode) Login() *loginNode {
+func (n *PersonNode) Login() *LoginNode {
 
-	cn := &loginNode{
+	cn := &LoginNode{
 		query.NewReverseReferenceNode(
 			"goradd",
 			"person",
@@ -182,9 +199,9 @@ func (n *personNode) Login() *loginNode {
 
 // ProjectsAsManager represents the many-to-one relationship formed by the reverse reference from the
 // projects_as_manager column in the person table.
-func (n *personNode) ProjectsAsManager() *projectNode {
+func (n *PersonNode) ProjectsAsManager() *ProjectNode {
 
-	cn := &projectNode{
+	cn := &ProjectNode{
 		query.NewReverseReferenceNode(
 			"goradd",
 			"person",
@@ -205,7 +222,9 @@ type personNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
-func (n *personNode) GobEncode() (data []byte, err error) {
+// GobEncode makes the node serializable.
+// doc:hide
+func (n *PersonNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
@@ -220,7 +239,9 @@ func (n *personNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-func (n *personNode) GobDecode(data []byte) (err error) {
+// GobDecode makes the node deserializable.
+// doc: hide
+func (n *PersonNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
@@ -234,5 +255,5 @@ func (n *personNode) GobDecode(data []byte) (err error) {
 }
 
 func init() {
-	gob.RegisterName("personNode2", &personNode{})
+	gob.RegisterName("PersonNode2", &PersonNode{})
 }

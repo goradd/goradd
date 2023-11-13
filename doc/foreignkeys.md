@@ -1,4 +1,5 @@
-# Foreign Keys
+# Database Relationships
+## Foreign Keys
 
 Foreign Keys are a term that SQL databases use to refer to a pointer from one database table
 to another. Foreign Keys are what make relational databases "relational". NoSQL databases

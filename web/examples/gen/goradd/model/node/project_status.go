@@ -8,11 +8,13 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type projectStatusNode struct {
+type ProjectStatusNode struct {
 	query.ReferenceNodeI
 }
 
-func (n *projectStatusNode) SelectNodes_() (nodes []*query.ColumnNode) {
+// SelectNodes_ is used internally by the framework to return the list of column nodes.
+// doc: hide
+func (n *ProjectStatusNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.Name())
 	nodes = append(nodes, n.Description())
@@ -21,19 +23,24 @@ func (n *projectStatusNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	return nodes
 }
 
-func (n *projectStatusNode) PrimaryKeyNode() *query.ColumnNode {
+// PrimaryKeyNode returns a node representing the primary key column.
+func (n *ProjectStatusNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
 
-func (n *projectStatusNode) EmbeddedNode_() query.NodeI {
+// EmbeddedNode_ is used internally by the framework to return the embedded ReferenceNodeI.
+// doc: hide
+func (n *ProjectStatusNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
 
-func (n *projectStatusNode) Copy_() query.NodeI {
-	return &projectStatusNode{query.CopyNode(n.ReferenceNodeI)}
+// Copy_ is used internally by the framework to deep copy the node.
+// doc: hide
+func (n *ProjectStatusNode) Copy_() query.NodeI {
+	return &ProjectStatusNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
-func (n *projectStatusNode) ID() *query.ColumnNode {
+func (n *ProjectStatusNode) ID() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
@@ -46,7 +53,7 @@ func (n *projectStatusNode) ID() *query.ColumnNode {
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *projectStatusNode) Name() *query.ColumnNode {
+func (n *ProjectStatusNode) Name() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
@@ -59,7 +66,7 @@ func (n *projectStatusNode) Name() *query.ColumnNode {
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *projectStatusNode) Description() *query.ColumnNode {
+func (n *ProjectStatusNode) Description() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
@@ -72,7 +79,7 @@ func (n *projectStatusNode) Description() *query.ColumnNode {
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *projectStatusNode) Guidelines() *query.ColumnNode {
+func (n *ProjectStatusNode) Guidelines() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
@@ -85,7 +92,7 @@ func (n *projectStatusNode) Guidelines() *query.ColumnNode {
 	query.SetParentNode(cn, n)
 	return cn
 }
-func (n *projectStatusNode) IsActive() *query.ColumnNode {
+func (n *ProjectStatusNode) IsActive() *query.ColumnNode {
 
 	cn := query.NewColumnNode(
 		"goradd",
@@ -99,5 +106,5 @@ func (n *projectStatusNode) IsActive() *query.ColumnNode {
 	return cn
 }
 func init() {
-	gob.RegisterName("projectStatusNode2", &projectStatusNode{})
+	gob.RegisterName("ProjectStatusNode2", &ProjectStatusNode{})
 }

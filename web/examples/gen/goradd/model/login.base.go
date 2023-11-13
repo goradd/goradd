@@ -17,8 +17,9 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-// loginBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-
+// loginBase is embedded in a Login object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the Login embedder.
+// Instead, use the accessor functions.
 type loginBase struct {
 	id        string
 	idIsValid bool
@@ -53,25 +54,25 @@ type loginBase struct {
 	_originalPK string
 }
 
+// Default values for the fields in the login table.
+// When a Login object is created, the fields in the object will be initialized to these values.
+// doc: type=Login
 const (
-	LoginIDDefault        = ""
-	LoginPersonIDDefault  = ""
-	LoginUsernameDefault  = ""
-	LoginPasswordDefault  = ""
-	LoginIsEnabledDefault = true
+	LoginIDDefault        = ""   // id
+	LoginPersonIDDefault  = ""   // person_id
+	LoginUsernameDefault  = ""   // username
+	LoginPasswordDefault  = ""   // password
+	LoginIsEnabledDefault = true // is_enabled
 )
 
+// IDs used to access the Login object fields by name using the Get function.
+// doc: type=Login
 const (
-	Login_ID = `ID`
-
-	Login_PersonID = `PersonID`
-
-	Login_Person = `Person`
-
-	Login_Username = `Username`
-
-	Login_Password = `Password`
-
+	Login_ID        = `ID`
+	Login_PersonID  = `PersonID`
+	Login_Person    = `Person`
+	Login_Username  = `Username`
+	Login_Password  = `Password`
 	Login_IsEnabled = `IsEnabled`
 )
 
@@ -103,17 +104,18 @@ func (o *loginBase) Initialize() {
 	o._restored = false
 }
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *loginBase) PrimaryKey() string {
 	return o.id
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *loginBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
-// Copy copies all valid fields (except for the primary key) to a new Login object.
+// Copy copies all valid fields (except for the primary key) to a new [Login] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *loginBase) Copy() (newObject *Login) {
@@ -348,12 +350,13 @@ func (o *loginBase) IsNew() bool {
 
 // LoadLogin returns a Login from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [LoginsBuilder.Join] and [LoginsBuilder.Select] for more info.
 func LoadLogin(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Login {
 	return queryLogins(ctx).Where(Equal(node.Login().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasLogin returns true if a Login with the given key exists database.
+// HasLogin returns true if a Login with the given primaryKey exists in the database.
+// doc: type=Login
 func HasLogin(ctx context.Context, primaryKey string) bool {
 	q := queryLogins(ctx)
 	q = q.Where(Equal(node.Login().ID(), primaryKey))
@@ -362,7 +365,7 @@ func HasLogin(ctx context.Context, primaryKey string) bool {
 
 // LoadLoginByPersonID queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [LoginsBuilder.Join] and [LoginsBuilder.Select] for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
 func LoadLoginByPersonID(ctx context.Context, personID interface{}, joinOrSelectNodes ...query.NodeI) *Login {
 	q := queryLogins(ctx)
@@ -378,6 +381,7 @@ func LoadLoginByPersonID(ctx context.Context, personID interface{}, joinOrSelect
 
 // HasLoginByPersonID returns true if the
 // given unique index values exist in the database.
+// doc: type=Login
 func HasLoginByPersonID(ctx context.Context, personID interface{}) bool {
 	q := queryLogins(ctx)
 	if personID == nil {
@@ -390,7 +394,7 @@ func HasLoginByPersonID(ctx context.Context, personID interface{}) bool {
 
 // LoadLoginByUsername queries for a single Login object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [LoginsBuilder.Join] and [LoginsBuilder.Select] for more info.
 // If you need a more elaborate query, use QueryLogins() to start a query builder.
 func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes ...query.NodeI) *Login {
 	q := queryLogins(ctx)
@@ -402,6 +406,7 @@ func LoadLoginByUsername(ctx context.Context, username string, joinOrSelectNodes
 
 // HasLoginByUsername returns true if the
 // given unique index values exist in the database.
+// doc: type=Login
 func HasLoginByUsername(ctx context.Context, username string) bool {
 	q := queryLogins(ctx)
 	q = q.Where(Equal(node.Login().Username(), username))
@@ -610,10 +615,16 @@ func (b *LoginsBuilder) joinOrSelect(nodes ...query.NodeI) *LoginsBuilder {
 	return b
 }
 
+// CountLoginByID queries the database and returns the number of Login objects that
+// have the given id value.
+// doc: type=Login
 func CountLoginByID(ctx context.Context, id string) int {
 	return int(queryLogins(ctx).Where(Equal(node.Login().ID(), id)).Count(false))
 }
 
+// CountLoginByPersonID queries the database and returns the number of Login objects that
+// have the given personID value.
+// doc: type=Login
 func CountLoginByPersonID(ctx context.Context, personID string) int {
 	if personID == "" {
 		return 0
@@ -621,14 +632,23 @@ func CountLoginByPersonID(ctx context.Context, personID string) int {
 	return int(queryLogins(ctx).Where(Equal(node.Login().PersonID(), personID)).Count(false))
 }
 
+// CountLoginByUsername queries the database and returns the number of Login objects that
+// have the given username value.
+// doc: type=Login
 func CountLoginByUsername(ctx context.Context, username string) int {
 	return int(queryLogins(ctx).Where(Equal(node.Login().Username(), username)).Count(false))
 }
 
+// CountLoginByPassword queries the database and returns the number of Login objects that
+// have the given password value.
+// doc: type=Login
 func CountLoginByPassword(ctx context.Context, password string) int {
 	return int(queryLogins(ctx).Where(Equal(node.Login().Password(), password)).Count(false))
 }
 
+// CountLoginByIsEnabled queries the database and returns the number of Login objects that
+// have the given isEnabled value.
+// doc: type=Login
 func CountLoginByIsEnabled(ctx context.Context, isEnabled bool) int {
 	return int(queryLogins(ctx).Where(Equal(node.Login().IsEnabled(), isEnabled)).Count(false))
 }
@@ -792,73 +812,58 @@ func (o *loginBase) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "goradd", "login", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *loginBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
-
 		fields["id"] = o.id
-
 	}
 	if o.personIDIsDirty {
-
 		if o.personIDIsNull {
 			fields["person_id"] = nil
 		} else {
 			fields["person_id"] = o.personID
 		}
-
 	}
 	if o.usernameIsDirty {
-
 		fields["username"] = o.username
-
 	}
 	if o.passwordIsDirty {
-
 		if o.passwordIsNull {
 			fields["password"] = nil
 		} else {
 			fields["password"] = o.password
 		}
-
 	}
 	if o.isEnabledIsDirty {
-
 		fields["is_enabled"] = o.isEnabled
-
 	}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *loginBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.personIDIsValid {
-
 		if o.personIDIsNull {
 			fields["person_id"] = nil
 		} else {
 			fields["person_id"] = o.personID
 		}
-
 	}
 	if o.usernameIsValid {
-
 		fields["username"] = o.username
-
 	}
 	if o.passwordIsValid {
-
 		if o.passwordIsNull {
 			fields["password"] = nil
 		} else {
 			fields["password"] = o.password
 		}
-
 	}
 	if o.isEnabledIsValid {
-
 		fields["is_enabled"] = o.isEnabled
-
 	}
 	return
 }
@@ -880,6 +885,7 @@ func deleteLogin(ctx context.Context, pk string) {
 	broadcast.Delete(ctx, "goradd", "login", fmt.Sprint(pk))
 }
 
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *loginBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.personIDIsDirty = false
@@ -889,6 +895,7 @@ func (o *loginBase) resetDirtyStatus() {
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *loginBase) IsDirty() (dirty bool) {
 	dirty = o.idIsDirty ||
 		o.personIDIsDirty ||
@@ -1042,6 +1049,7 @@ func (o *loginBase) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a Login object.
 func (o *loginBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
@@ -1194,16 +1202,12 @@ func (o *loginBase) MarshalStringMap() map[string]interface{} {
 // Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
-//   "id" - string
-
-//   "personID" - string, nullable
-
-//   "username" - string
-
-//   "password" - string, nullable
-
-//   "isEnabled" - bool
-
+//
+//	"id" - string
+//	"personID" - string, nullable
+//	"username" - string
+//	"password" - string, nullable
+//	"isEnabled" - bool
 func (o *loginBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

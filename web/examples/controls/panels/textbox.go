@@ -105,12 +105,12 @@ func (p *TextboxPanel) Init(self any, ctx context.Context, parent page.ControlI,
 		ButtonCreator{
 			ID:       "ajaxButton",
 			Text:     "Submit Ajax",
-			OnSubmit: action.Do("textboxPanel", ButtonSubmit),
+			OnSubmit: action.Do().ControlID("textboxPanel").ID(ButtonSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Post",
-			OnSubmit: action.Do("textboxPanel", ButtonSubmit).Post(),
+			OnSubmit: action.Do().ControlID("textboxPanel").ID(ButtonSubmit).Post(),
 		},
 	)
 }

@@ -11,11 +11,13 @@ func (p *ProjectPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err erro
 {{
     <h4>Project Details</h4>
 {{if p.project != nil}}
-    <div id="nameItem"><label>Name</label>{{= p.project.Name()}}</div>
-    <div><label>Description</label>{{= p.project.Description()}}</div>
-    <div><label>Budget</label>{{= p.project.Budget()}}</div>
-    <div><label>Spent</label>{{= p.project.Spent()}}</div>
-    <div><label>Manager</label>{{= p.project.LoadManager(ctx).FirstName() + " " + p.project.LoadManager(ctx).LastName()}}</div>
+    <table>
+    <tr id="nameItem"><th>Name</th><td>{{= p.project.Name()}}</td></tr>
+    <tr><th>Description</th><td>{{= p.project.Description()}}</td></tr>
+    <tr><th>Budget</th><td>{{= p.project.Budget()}}</td></tr>
+    <tr><th>Spent</th><td>{{= p.project.Spent()}}</td></tr>
+    <tr><th>Manager</th><td>{{= p.project.LoadManager(ctx).FirstName() + " " + p.project.LoadManager(ctx).LastName()}}</td></tr>
+    </table>
 {{if}}
 }}
 

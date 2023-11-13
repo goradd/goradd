@@ -9,17 +9,15 @@ import (
 )
 
 const (
-	PersonTypeContractor PersonType = 1
-
-	PersonTypeManager PersonType = 2
-
-	PersonTypeInactive PersonType = 3
-
-	PersonTypeCompanyCar PersonType = 4
-
+	PersonTypeContractor    PersonType = 1
+	PersonTypeManager       PersonType = 2
+	PersonTypeInactive      PersonType = 3
+	PersonTypeCompanyCar    PersonType = 4
 	PersonTypeWorksFromHome PersonType = 5
 )
 
+// PersonTypeMaxValue is the maximum enumerated value of PersonType
+// doc: type=PersonType
 const PersonTypeMaxValue = 5
 
 type PersonType int
@@ -93,7 +91,7 @@ func PersonTypeFromName(name string) PersonType {
 	return PersonType(0)
 }
 
-// AllPersonTypes returns a slice of all the PersonType items
+// AllPersonTypes returns a slice of all the PersonType values.
 func AllPersonTypes() (values []PersonType) {
 	values = append(values, 1)
 	values = append(values, 2)
@@ -103,8 +101,9 @@ func AllPersonTypes() (values []PersonType) {
 	return
 }
 
-// AllPersonTypesI returns a slice of interfaces that contains all the PersonType items
-func AllPersonTypesI() (values []interface{}) {
+// AllPersonTypesI returns a slice of all the PersonType values as generic interfaces.
+// doc: type=PersonType
+func AllPersonTypesI() (values []any) {
 	values = make([]interface{}, 5, 5)
 	values[0] = PersonType(1)
 	values[1] = PersonType(2)
@@ -147,15 +146,18 @@ func (p PersonType) Name() string {
 	return "" // prevent warning
 }
 
+// PersonTypeNames returns a slice of all the Names associated with PersonType values.
+// doc: type=PersonType
 func PersonTypeNames() []string {
-	names := make([]string, 6)
-	// 0 item will be a blank
-	names[1] = "Contractor"
-	names[2] = "Manager"
-	names[3] = "Inactive"
-	names[4] = "Company Car"
-	names[5] = "Works From Home"
-	return names
+	return []string{
+		// 0 item will be a blank
+		"",
+		"Contractor",
+		"Manager",
+		"Inactive",
+		"Company Car",
+		"Works From Home",
+	}
 }
 
 func (p PersonType) Get(key string) interface{} {

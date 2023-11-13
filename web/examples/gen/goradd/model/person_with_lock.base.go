@@ -19,8 +19,9 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-// personWithLockBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-
+// personWithLockBase is embedded in a PersonWithLock object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the PersonWithLock embedder.
+// Instead, use the accessor functions.
 type personWithLockBase struct {
 	id        string
 	idIsValid bool
@@ -49,20 +50,22 @@ type personWithLockBase struct {
 	_originalPK string
 }
 
+// Default values for the fields in the person_with_lock table.
+// When a PersonWithLock object is created, the fields in the object will be initialized to these values.
+// doc: type=PersonWithLock
 const (
-	PersonWithLockIDDefault           = ""
-	PersonWithLockFirstNameDefault    = ""
-	PersonWithLockLastNameDefault     = ""
-	PersonWithLockSysTimestampDefault = time2.Zero
+	PersonWithLockIDDefault           = ""         // id
+	PersonWithLockFirstNameDefault    = ""         // first_name
+	PersonWithLockLastNameDefault     = ""         // last_name
+	PersonWithLockSysTimestampDefault = time2.Zero // sys_timestamp
 )
 
+// IDs used to access the PersonWithLock object fields by name using the Get function.
+// doc: type=PersonWithLock
 const (
-	PersonWithLock_ID = `ID`
-
-	PersonWithLock_FirstName = `FirstName`
-
-	PersonWithLock_LastName = `LastName`
-
+	PersonWithLock_ID           = `ID`
+	PersonWithLock_FirstName    = `FirstName`
+	PersonWithLock_LastName     = `LastName`
 	PersonWithLock_SysTimestamp = `SysTimestamp`
 )
 
@@ -89,17 +92,18 @@ func (o *personWithLockBase) Initialize() {
 	o._restored = false
 }
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *personWithLockBase) PrimaryKey() string {
 	return o.id
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *personWithLockBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
-// Copy copies all valid fields (except for the primary key) to a new PersonWithLock object.
+// Copy copies all valid fields (except for the primary key) to a new [PersonWithLock] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *personWithLockBase) Copy() (newObject *PersonWithLock) {
@@ -241,12 +245,13 @@ func (o *personWithLockBase) IsNew() bool {
 
 // LoadPersonWithLock returns a PersonWithLock from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [PersonWithLocksBuilder.Join] and [PersonWithLocksBuilder.Select] for more info.
 func LoadPersonWithLock(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *PersonWithLock {
 	return queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasPersonWithLock returns true if a PersonWithLock with the given key exists database.
+// HasPersonWithLock returns true if a PersonWithLock with the given primaryKey exists in the database.
+// doc: type=PersonWithLock
 func HasPersonWithLock(ctx context.Context, primaryKey string) bool {
 	q := queryPersonWithLocks(ctx)
 	q = q.Where(Equal(node.PersonWithLock().ID(), primaryKey))
@@ -455,18 +460,30 @@ func (b *PersonWithLocksBuilder) joinOrSelect(nodes ...query.NodeI) *PersonWithL
 	return b
 }
 
+// CountPersonWithLockByID queries the database and returns the number of PersonWithLock objects that
+// have the given id value.
+// doc: type=PersonWithLock
 func CountPersonWithLockByID(ctx context.Context, id string) int {
 	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().ID(), id)).Count(false))
 }
 
+// CountPersonWithLockByFirstName queries the database and returns the number of PersonWithLock objects that
+// have the given firstName value.
+// doc: type=PersonWithLock
 func CountPersonWithLockByFirstName(ctx context.Context, firstName string) int {
 	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().FirstName(), firstName)).Count(false))
 }
 
+// CountPersonWithLockByLastName queries the database and returns the number of PersonWithLock objects that
+// have the given lastName value.
+// doc: type=PersonWithLock
 func CountPersonWithLockByLastName(ctx context.Context, lastName string) int {
 	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().LastName(), lastName)).Count(false))
 }
 
+// CountPersonWithLockBySysTimestamp queries the database and returns the number of PersonWithLock objects that
+// have the given sysTimestamp value.
+// doc: type=PersonWithLock
 func CountPersonWithLockBySysTimestamp(ctx context.Context, sysTimestamp time.Time) int {
 	return int(queryPersonWithLocks(ctx).Where(Equal(node.PersonWithLock().SysTimestamp(), sysTimestamp)).Count(false))
 }
@@ -594,55 +611,44 @@ func (o *personWithLockBase) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "goradd", "person_with_lock", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *personWithLockBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
-
 		fields["id"] = o.id
-
 	}
 	if o.firstNameIsDirty {
-
 		fields["first_name"] = o.firstName
-
 	}
 	if o.lastNameIsDirty {
-
 		fields["last_name"] = o.lastName
-
 	}
 	if o.sysTimestampIsDirty {
-
 		if o.sysTimestampIsNull {
 			fields["sys_timestamp"] = nil
 		} else {
 			fields["sys_timestamp"] = o.sysTimestamp
 		}
-
 	}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *personWithLockBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.firstNameIsValid {
-
 		fields["first_name"] = o.firstName
-
 	}
 	if o.lastNameIsValid {
-
 		fields["last_name"] = o.lastName
-
 	}
 	if o.sysTimestampIsValid {
-
 		if o.sysTimestampIsNull {
 			fields["sys_timestamp"] = nil
 		} else {
 			fields["sys_timestamp"] = o.sysTimestamp
 		}
-
 	}
 	return
 }
@@ -664,6 +670,7 @@ func deletePersonWithLock(ctx context.Context, pk string) {
 	broadcast.Delete(ctx, "goradd", "person_with_lock", fmt.Sprint(pk))
 }
 
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *personWithLockBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.firstNameIsDirty = false
@@ -672,6 +679,7 @@ func (o *personWithLockBase) resetDirtyStatus() {
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *personWithLockBase) IsDirty() (dirty bool) {
 	dirty = o.idIsDirty ||
 		o.firstNameIsDirty ||
@@ -789,6 +797,7 @@ func (o *personWithLockBase) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a PersonWithLock object.
 func (o *personWithLockBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
@@ -909,14 +918,11 @@ func (o *personWithLockBase) MarshalStringMap() map[string]interface{} {
 // Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
-//   "id" - string
-
-//   "firstName" - string
-
-//   "lastName" - string
-
-//   "sysTimestamp" - time.Time, nullable
-
+//
+//	"id" - string
+//	"firstName" - string
+//	"lastName" - string
+//	"sysTimestamp" - time.Time, nullable
 func (o *personWithLockBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

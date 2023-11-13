@@ -65,13 +65,13 @@ func (p *Forms2Panel) Init(self any, ctx context.Context, parent page.ControlI, 
 
 		ButtonCreator{
 			ID:       "ajaxButton",
-			Text:     "Submit Do",
-			OnSubmit: action.Do(p.ID(), AjaxSubmit),
+			Text:     "Submit Ajax",
+			OnSubmit: action.Do().ID(AjaxSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Server",
-			OnSubmit: action.Do(p.ID(), PostSubmit).Post(),
+			OnSubmit: action.Do().ID(PostSubmit).Post(),
 		},
 	)
 }

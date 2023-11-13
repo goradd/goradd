@@ -38,7 +38,7 @@ type ProxyI interface {
 // Proxy is a control that attaches events to controls. It is useful for attaching
 // similar events to a series of controls, like all the links in a table, or all the buttons in button bar.
 // You can also use it to draw a series of links or buttons. The proxy differentiates between the different objects
-// that are sending it events by the ActionValue that you gave the proxy.
+// that are sending it events by the EventValue that you gave the proxy.
 //
 // To use a Proxy, create it in the control that wraps the controls the proxy will manage.
 // Attach an event to the proxy control, and in the action handler, look for the ControlValue in the DoAction Value
@@ -189,25 +189,20 @@ func (p *Proxy) WrapEvent(eventName string, _ string, eventJs string, options ma
 	return fmt.Sprintf(`g$('%s').on('%s', '[data-gr-proxy="%s"]', function(event, eventData){%s}, %s);`, p.Parent().ID(), eventName, p.ID(), eventJs, javascript.ToJavaScript(options))
 }
 
-type On struct {
-	Event  *event.Event
-	Action action.ActionI
-}
-
 type ProxyCreator struct {
 	// ID is the id of the proxy. Proxies do not draw, so this id will not show up in the html, but you can
 	// use it to get the proxy from the page.
 	ID string
 	// On is a shortcut to assign a single action to an event. If you want a proxy that responds to more than
 	// one event or action, use On in the ControlOptions struct
-	On On
+	On *event.Event
 	page.ControlOptions
 }
 
 func (c ProxyCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewProxy(parent, c.ID)
-	if c.On.Event != nil {
-		ctrl.On(c.On.Event, c.On.Action)
+	if c.On != nil {
+		ctrl.On(c.On)
 	}
 	ctrl.ApplyOptions(ctx, c.ControlOptions)
 	return ctrl

@@ -29,7 +29,7 @@ func (p *ModalPanel) Init(self any, ctx context.Context, parent page.ControlI, i
 		ButtonCreator{
 			ID:       "popupButton",
 			Text:     "Popup Modal",
-			OnSubmit: action.Do(p.ID(), PopupClick),
+			OnSubmit: action.Do().ID(PopupClick),
 		},
 	)
 

@@ -17,8 +17,9 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-// milestoneBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-
+// milestoneBase is embedded in a Milestone object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the Milestone embedder.
+// Instead, use the accessor functions.
 type milestoneBase struct {
 	id        string
 	idIsValid bool
@@ -43,20 +44,22 @@ type milestoneBase struct {
 	_originalPK string
 }
 
+// Default values for the fields in the milestone table.
+// When a Milestone object is created, the fields in the object will be initialized to these values.
+// doc: type=Milestone
 const (
-	MilestoneIDDefault        = ""
-	MilestoneProjectIDDefault = ""
-	MilestoneNameDefault      = ""
+	MilestoneIDDefault        = "" // id
+	MilestoneProjectIDDefault = "" // project_id
+	MilestoneNameDefault      = "" // name
 )
 
+// IDs used to access the Milestone object fields by name using the Get function.
+// doc: type=Milestone
 const (
-	Milestone_ID = `ID`
-
+	Milestone_ID        = `ID`
 	Milestone_ProjectID = `ProjectID`
-
-	Milestone_Project = `Project`
-
-	Milestone_Name = `Name`
+	Milestone_Project   = `Project`
+	Milestone_Name      = `Name`
 )
 
 // Initialize or re-initialize a Milestone database object to default values.
@@ -77,17 +80,18 @@ func (o *milestoneBase) Initialize() {
 	o._restored = false
 }
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *milestoneBase) PrimaryKey() string {
 	return o.id
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *milestoneBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
-// Copy copies all valid fields (except for the primary key) to a new Milestone object.
+// Copy copies all valid fields (except for the primary key) to a new [Milestone] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *milestoneBase) Copy() (newObject *Milestone) {
@@ -210,12 +214,13 @@ func (o *milestoneBase) IsNew() bool {
 
 // LoadMilestone returns a Milestone from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [MilestonesBuilder.Join] and [MilestonesBuilder.Select] for more info.
 func LoadMilestone(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Milestone {
 	return queryMilestones(ctx).Where(Equal(node.Milestone().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasMilestone returns true if a Milestone with the given key exists database.
+// HasMilestone returns true if a Milestone with the given primaryKey exists in the database.
+// doc: type=Milestone
 func HasMilestone(ctx context.Context, primaryKey string) bool {
 	q := queryMilestones(ctx)
 	q = q.Where(Equal(node.Milestone().ID(), primaryKey))
@@ -424,10 +429,16 @@ func (b *MilestonesBuilder) joinOrSelect(nodes ...query.NodeI) *MilestonesBuilde
 	return b
 }
 
+// CountMilestoneByID queries the database and returns the number of Milestone objects that
+// have the given id value.
+// doc: type=Milestone
 func CountMilestoneByID(ctx context.Context, id string) int {
 	return int(queryMilestones(ctx).Where(Equal(node.Milestone().ID(), id)).Count(false))
 }
 
+// CountMilestoneByProjectID queries the database and returns the number of Milestone objects that
+// have the given projectID value.
+// doc: type=Milestone
 func CountMilestoneByProjectID(ctx context.Context, projectID string) int {
 	if projectID == "" {
 		return 0
@@ -435,6 +446,9 @@ func CountMilestoneByProjectID(ctx context.Context, projectID string) int {
 	return int(queryMilestones(ctx).Where(Equal(node.Milestone().ProjectID(), projectID)).Count(false))
 }
 
+// CountMilestoneByName queries the database and returns the number of Milestone objects that
+// have the given name value.
+// doc: type=Milestone
 func CountMilestoneByName(ctx context.Context, name string) int {
 	return int(queryMilestones(ctx).Where(Equal(node.Milestone().Name(), name)).Count(false))
 }
@@ -566,37 +580,30 @@ func (o *milestoneBase) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "goradd", "milestone", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *milestoneBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
-
 		fields["id"] = o.id
-
 	}
 	if o.projectIDIsDirty {
-
 		fields["project_id"] = o.projectID
-
 	}
 	if o.nameIsDirty {
-
 		fields["name"] = o.name
-
 	}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *milestoneBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.projectIDIsValid {
-
 		fields["project_id"] = o.projectID
-
 	}
 	if o.nameIsValid {
-
 		fields["name"] = o.name
-
 	}
 	return
 }
@@ -618,6 +625,7 @@ func deleteMilestone(ctx context.Context, pk string) {
 	broadcast.Delete(ctx, "goradd", "milestone", fmt.Sprint(pk))
 }
 
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *milestoneBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.projectIDIsDirty = false
@@ -625,6 +633,7 @@ func (o *milestoneBase) resetDirtyStatus() {
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *milestoneBase) IsDirty() (dirty bool) {
 	dirty = o.idIsDirty ||
 		o.projectIDIsDirty ||
@@ -738,6 +747,7 @@ func (o *milestoneBase) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a Milestone object.
 func (o *milestoneBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
@@ -848,12 +858,10 @@ func (o *milestoneBase) MarshalStringMap() map[string]interface{} {
 // Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
-//   "id" - string
-
-//   "projectID" - string
-
-//   "name" - string
-
+//
+//	"id" - string
+//	"projectID" - string
+//	"name" - string
 func (o *milestoneBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

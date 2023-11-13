@@ -21,7 +21,7 @@ func CheckboxColumnClick() *Event {
 		"id":      `event.target.id`,
 	}
 
-	e.ActionValue(m)
+	e.EventValue(m)
 	e.Selector(`input[data-gr-checkcol]`)
 	return e
 }

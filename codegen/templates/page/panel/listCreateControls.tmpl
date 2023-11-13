@@ -12,8 +12,8 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
                 Type:        textbox.SearchType,
                 ControlOptions: page.ControlOptions{
                     On: page.EventList{
-                        {event.Input().Delay(300), action.Do(p.ID(), {{= lcPanelName }}Search)},
-                        {event.EnterKey().Terminating(), action.Do(p.ID(), {{= lcPanelName }}Search)},
+                        event.Input().Delay(300).Action(action.Do().ID({{= lcPanelName }}Search)),
+                        event.EnterKey().Terminating().Action(action.Do().ID({{= lcPanelName }}Search)),
                     },
                 },
             },
@@ -35,7 +35,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
             RowStylerID: p.ID(),
             PageSize: {{= ctrlPkg }}.DefaultPagerPageSize,
             Caption: caption,
-            OnCellClick: action.Do(p.ID(), {{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
+            OnCellClick: action.Do().ID({{= lcPanelName }}RowClick).ActionValue(javascript.JsCode(event.CellClickRowValue)),
             ControlOptions: page.ControlOptions{
                 Class:          "gr-clickable-rows",
                 WatchedDbTables: page.Nodes(node.{{= t.GoName }}()),
@@ -45,7 +45,7 @@ func (p *{{= panelName }}) CreateControls(ctx context.Context) {
         {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= t.LcGoName }}NewButtonID,
             Text: p.GT("New"),
-            OnClick:action.Do(p.ID(), {{= lcPanelName }}NewClick),
+            OnClick: action.Do().ID({{= lcPanelName }}NewClick),
         },
 	)
 }

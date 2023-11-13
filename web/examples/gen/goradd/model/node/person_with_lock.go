@@ -9,37 +9,54 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type personWithLockNode struct {
+// PersonWithLockNode represents the person_with_lock table in a query. It uses a builder pattern to chain
+// together other tables and columns to form a node in a query.
+//
+// To use the PersonWithLockNode, call [PersonWithLock] to start a reference chain when querying the person_with_lock table.
+type PersonWithLockNode struct {
+	// ReferenceNodeI is an internal object that represents the capabilities of the node. Since it is embedded, all
+	// of its functions are exported and are callable along with the personWithLockNode functions here.
 	query.ReferenceNodeI
 }
 
-func PersonWithLock() *personWithLockNode {
-	n := personWithLockNode{
+// PersonWithLock returns a table node that starts a node chain that begins with the person_with_lock table.
+func PersonWithLock() *PersonWithLockNode {
+	n := PersonWithLockNode{
 		query.NewTableNode("goradd", "person_with_lock", "PersonWithLock"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
 }
 
-func (n *personWithLockNode) SelectNodes_() (nodes []*query.ColumnNode) {
+// SelectNodes_ is used internally by the framework to return the list of all the column nodes.
+// doc: hide
+func (n *PersonWithLockNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.FirstName())
 	nodes = append(nodes, n.LastName())
 	nodes = append(nodes, n.SysTimestamp())
 	return nodes
 }
-func (n *personWithLockNode) PrimaryKeyNode() *query.ColumnNode {
+
+// PrimaryKeyNode returns a node that points to the primary key column.
+func (n *PersonWithLockNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
-func (n *personWithLockNode) EmbeddedNode_() query.NodeI {
+
+// EmbeddedNode is used internally by the framework to return the embedded Reference node.
+// doc: hide
+func (n *PersonWithLockNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
-func (n *personWithLockNode) Copy_() query.NodeI {
-	return &personWithLockNode{query.CopyNode(n.ReferenceNodeI)}
+
+// Copy_ is used internally by the framework to deep copy the node.
+// doc: hide
+func (n *PersonWithLockNode) Copy_() query.NodeI {
+	return &PersonWithLockNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 // ID represents the id column in the database.
-func (n *personWithLockNode) ID() *query.ColumnNode {
+func (n *PersonWithLockNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"person_with_lock",
@@ -53,7 +70,7 @@ func (n *personWithLockNode) ID() *query.ColumnNode {
 }
 
 // FirstName represents the first_name column in the database.
-func (n *personWithLockNode) FirstName() *query.ColumnNode {
+func (n *PersonWithLockNode) FirstName() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"person_with_lock",
@@ -67,7 +84,7 @@ func (n *personWithLockNode) FirstName() *query.ColumnNode {
 }
 
 // LastName represents the last_name column in the database.
-func (n *personWithLockNode) LastName() *query.ColumnNode {
+func (n *PersonWithLockNode) LastName() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"person_with_lock",
@@ -81,7 +98,7 @@ func (n *personWithLockNode) LastName() *query.ColumnNode {
 }
 
 // SysTimestamp represents the sys_timestamp column in the database.
-func (n *personWithLockNode) SysTimestamp() *query.ColumnNode {
+func (n *PersonWithLockNode) SysTimestamp() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"person_with_lock",
@@ -98,7 +115,9 @@ type personWithLockNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
-func (n *personWithLockNode) GobEncode() (data []byte, err error) {
+// GobEncode makes the node serializable.
+// doc:hide
+func (n *PersonWithLockNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
@@ -113,7 +132,9 @@ func (n *personWithLockNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-func (n *personWithLockNode) GobDecode(data []byte) (err error) {
+// GobDecode makes the node deserializable.
+// doc: hide
+func (n *PersonWithLockNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
@@ -127,5 +148,5 @@ func (n *personWithLockNode) GobDecode(data []byte) (err error) {
 }
 
 func init() {
-	gob.RegisterName("personWithLockNode2", &personWithLockNode{})
+	gob.RegisterName("PersonWithLockNode2", &PersonWithLockNode{})
 }

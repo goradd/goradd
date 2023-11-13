@@ -1,3 +1,4 @@
+// Package api is an example of a REST type api and associated handlers.
 package api
 
 // This is both an example of how to create handlers for api's, like REST api's, but also is

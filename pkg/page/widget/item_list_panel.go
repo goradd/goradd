@@ -63,8 +63,8 @@ func (p *ItemListPanel) Init(self any, parent page.ControlI, id string) {
 	p.EditButton = NewButton(p.ButtonPanel, p.ID()+"-editbtn")
 	p.EditButton.SetText(p.ParentForm().GT("Edit"))
 
-	p.FilterText.On(event.Input().Delay(300), action.Do(p.ID(), filterChanged))
-	p.FilterText.On(event.EnterKey().Terminating(), action.Do(p.ID(), filterChanged))
+	p.FilterText.On(event.Input().Delay(300), action.Do().ID(filterChanged))
+	p.FilterText.On(event.EnterKey().Terminating(), action.Do().ID(filterChanged))
 
 }
 
@@ -86,5 +86,7 @@ func (f *ItemListPanel) DoAction(ctx context.Context, a action.Params) {
 	switch a.ID {
 	case filterChanged:
 		f.ItemTable.Refresh() // TODO: Change this to some kind of data only refresh so that when control is redrawn the scroll position is maintained
+	default:
+		f.Panel.DoAction(ctx, a)
 	}
 }

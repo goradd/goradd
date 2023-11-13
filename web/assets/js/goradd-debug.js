@@ -2,11 +2,10 @@
 
 Goradd Debugging Additions
 
-This file attaches some code uto display ajax and javascript errors and progress.
+This file attaches some code to display ajax and javascript errors and progress.
 It is only loaded in debug mode.
 
 */
-
 (function() {
 
     if (window.console) {

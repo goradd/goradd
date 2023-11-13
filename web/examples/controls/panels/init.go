@@ -17,4 +17,5 @@ func init() {
 	controls.RegisterPanel("repeater", "Repeaters", NewRepeaterPanel)
 	controls.RegisterPanel("dialogs", "Dialogs", NewDialogsPanel)
 	controls.RegisterPanel("imagecapture", "Image Capture Widget", NewImageCapturePanel)
+	controls.RegisterPanel("fileupload", "File Select Button", NewFileSelectPanel)
 }

@@ -9,9 +9,10 @@ application over time with as little rewrite as possible.
 Instead of having to build separate server and client applications, and having 
 to stitch together a bunch of different technologies just to get something 
 running, GoRADD lets you start with your data model, gets you a working app
-quickly, and then build from there. As you learn more about your app, your
-audience, and your requirements, you can build and branch out to include them
-as your needs grow. Your app grows in incremental steps, and GoRADD helps you on the way.
+quickly, and then lets you build from there. As you learn more about your app, your
+audience, and your requirements, you can change your database structure and
+build out your business logic. 
+Your app grows in incremental steps, and GoRADD helps you on the way.
 
 GoRADD is great for beginners and experienced developers alike.
 
@@ -20,7 +21,7 @@ application.
 
 ## Install
 
-If you have not yet installed your application, see the [Quickstart] document.
+If you have not yet installed GoRADD, see the [Quickstart] document.
 
 ## Database Configuration
 
@@ -42,11 +43,12 @@ in postrgres, the "information_schema" and the "pg_catalog" tables. You can use 
 root user during development to accomplish this, and then for deployment, specify
 a user that only has the minimal credentials to access the database.
 
-See the article [Structuring the Database](#) for details, but the basic idea is 
+See the article [Structuring the Database](database.md) for details, but the basic idea is 
 to create tables with
 foreign keys that link to other tables. These form relationships that will be
 reflected by the code generated object-relational model (ORM) data access code, 
 and the generated forms.
+
 The ORM is go code that lets you query the database, update and delete records
 in a way that is independent of the underlying database. If you are using a SQL
 database, you likely will not need to write any SQL code to interact with the 
@@ -69,7 +71,9 @@ This will do the following:
 1. Delete previously generated templates,
 2. Read the templates and generate corresponding go code, placing this code in the goradd-project/tmp directory,
 3. Run the resulting go code to generate the forms and ORM and place them in the
-`goradd-project/gen` directory
+`goradd-project/gen` directory,
+4. Build documentation from the generated source and your own source, and place it in the 
+`goradd-project/doc` directory.
 
 Each time you change the structure of the database, you should run the code generator.
 
@@ -89,7 +93,6 @@ The gen directory is organized as follows:
     * form
     * model
       * node
-    * panel
     * panelbase
 
 <dl>
@@ -99,11 +102,11 @@ The gen directory is organized as follows:
   <dt>form</dt>
   <dd>Forms represent the top level object in a page and the enclosure for the rest of the controls on the page.
       Forms that you wish to use in your application should be copied to the 
-      goradd-project/web/form directory and modified there.</dd>
-  <dt>panel</dt>
-  <dd>Panels are div objects that encapsulate most of the generated controls in a form.
+      goradd-project/web/form directory and modified there. This directory also includes 
+      panels that help in the process of listing and editing objects (rows) in the database tables.
       To use them, copy them to your goradd-project/web/panels directory.</dd>
-  <dd>panelbase contains code that the panel objects rely on. They should be used in place.</dd>
+  <dd>panelbase contains code that the panel objects rely on. They should be used in place. They
+      are regenerated every time the code generator is run.</dd>
 
 </dl>
 

@@ -17,8 +17,9 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-// addressBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-
+// addressBase is embedded in a Address object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the Address embedder.
+// Instead, use the accessor functions.
 type addressBase struct {
 	id        string
 	idIsValid bool
@@ -48,23 +49,24 @@ type addressBase struct {
 	_originalPK string
 }
 
+// Default values for the fields in the address table.
+// When a Address object is created, the fields in the object will be initialized to these values.
+// doc: type=Address
 const (
-	AddressIDDefault       = ""
-	AddressPersonIDDefault = ""
-	AddressStreetDefault   = ""
-	AddressCityDefault     = "BOB"
+	AddressIDDefault       = ""    // id
+	AddressPersonIDDefault = ""    // person_id
+	AddressStreetDefault   = ""    // street
+	AddressCityDefault     = "BOB" // city
 )
 
+// IDs used to access the Address object fields by name using the Get function.
+// doc: type=Address
 const (
-	Address_ID = `ID`
-
+	Address_ID       = `ID`
 	Address_PersonID = `PersonID`
-
-	Address_Person = `Person`
-
-	Address_Street = `Street`
-
-	Address_City = `City`
+	Address_Person   = `Person`
+	Address_Street   = `Street`
+	Address_City     = `City`
 )
 
 // Initialize or re-initialize a Address database object to default values.
@@ -90,17 +92,18 @@ func (o *addressBase) Initialize() {
 	o._restored = false
 }
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *addressBase) PrimaryKey() string {
 	return o.id
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *addressBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
-// Copy copies all valid fields (except for the primary key) to a new Address object.
+// Copy copies all valid fields (except for the primary key) to a new [Address] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *addressBase) Copy() (newObject *Address) {
@@ -276,12 +279,13 @@ func (o *addressBase) IsNew() bool {
 
 // LoadAddress returns a Address from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [AddressesBuilder.Join] and [AddressesBuilder.Select] for more info.
 func LoadAddress(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *Address {
 	return queryAddresses(ctx).Where(Equal(node.Address().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasAddress returns true if a Address with the given key exists database.
+// HasAddress returns true if a Address with the given primaryKey exists in the database.
+// doc: type=Address
 func HasAddress(ctx context.Context, primaryKey string) bool {
 	q := queryAddresses(ctx)
 	q = q.Where(Equal(node.Address().ID(), primaryKey))
@@ -490,10 +494,16 @@ func (b *AddressesBuilder) joinOrSelect(nodes ...query.NodeI) *AddressesBuilder 
 	return b
 }
 
+// CountAddressByID queries the database and returns the number of Address objects that
+// have the given id value.
+// doc: type=Address
 func CountAddressByID(ctx context.Context, id string) int {
 	return int(queryAddresses(ctx).Where(Equal(node.Address().ID(), id)).Count(false))
 }
 
+// CountAddressByPersonID queries the database and returns the number of Address objects that
+// have the given personID value.
+// doc: type=Address
 func CountAddressByPersonID(ctx context.Context, personID string) int {
 	if personID == "" {
 		return 0
@@ -501,10 +511,16 @@ func CountAddressByPersonID(ctx context.Context, personID string) int {
 	return int(queryAddresses(ctx).Where(Equal(node.Address().PersonID(), personID)).Count(false))
 }
 
+// CountAddressByStreet queries the database and returns the number of Address objects that
+// have the given street value.
+// doc: type=Address
 func CountAddressByStreet(ctx context.Context, street string) int {
 	return int(queryAddresses(ctx).Where(Equal(node.Address().Street(), street)).Count(false))
 }
 
+// CountAddressByCity queries the database and returns the number of Address objects that
+// have the given city value.
+// doc: type=Address
 func CountAddressByCity(ctx context.Context, city string) int {
 	return int(queryAddresses(ctx).Where(Equal(node.Address().City(), city)).Count(false))
 }
@@ -655,55 +671,44 @@ func (o *addressBase) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "goradd", "address", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *addressBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
-
 		fields["id"] = o.id
-
 	}
 	if o.personIDIsDirty {
-
 		fields["person_id"] = o.personID
-
 	}
 	if o.streetIsDirty {
-
 		fields["street"] = o.street
-
 	}
 	if o.cityIsDirty {
-
 		if o.cityIsNull {
 			fields["city"] = nil
 		} else {
 			fields["city"] = o.city
 		}
-
 	}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *addressBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.personIDIsValid {
-
 		fields["person_id"] = o.personID
-
 	}
 	if o.streetIsValid {
-
 		fields["street"] = o.street
-
 	}
 	if o.cityIsValid {
-
 		if o.cityIsNull {
 			fields["city"] = nil
 		} else {
 			fields["city"] = o.city
 		}
-
 	}
 	return
 }
@@ -725,6 +730,7 @@ func deleteAddress(ctx context.Context, pk string) {
 	broadcast.Delete(ctx, "goradd", "address", fmt.Sprint(pk))
 }
 
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *addressBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.personIDIsDirty = false
@@ -733,6 +739,7 @@ func (o *addressBase) resetDirtyStatus() {
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *addressBase) IsDirty() (dirty bool) {
 	dirty = o.idIsDirty ||
 		o.personIDIsDirty ||
@@ -866,6 +873,7 @@ func (o *addressBase) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a Address object.
 func (o *addressBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
@@ -997,14 +1005,11 @@ func (o *addressBase) MarshalStringMap() map[string]interface{} {
 // Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
-//   "id" - string
-
-//   "personID" - string
-
-//   "street" - string
-
-//   "city" - string, nullable
-
+//
+//	"id" - string
+//	"personID" - string
+//	"street" - string
+//	"city" - string, nullable
 func (o *addressBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {

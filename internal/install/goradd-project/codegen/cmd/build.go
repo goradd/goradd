@@ -22,3 +22,6 @@ package main
 
 // Build the resulting templates
 //go:generate got -t tpl.got -i -I github.com/goradd/goradd/pkg/page/macros.inc.got -d goradd-project/gen/*/*
+
+// Build the documentation
+//go:generate moddoc -i ../.. -o ../../doc -p tmp/template

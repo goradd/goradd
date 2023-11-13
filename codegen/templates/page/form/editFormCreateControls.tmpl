@@ -12,12 +12,12 @@ func (f *{{= formName }}) CreateControls(ctx context.Context) {
         {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= title }}SaveButtonID,
             Text: f.GT("Save"),
-            OnSubmit: action.Do(f.ID(), {{= title }}SaveAction),
+            OnSubmit: action.Do(),
         },
         {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
             ID: {{= title }}CancelButtonID,
             Text: f.GT("Cancel"),
-            OnSubmit: action.Do(f.ID(), {{= title }}CancelAction),
+            OnSubmit: action.Do(),
   	        ValidationType: event.ValidateNone,
         },
         {{= codegen.ObjectType(generator.DefaultButtonType) }}Creator {
@@ -25,7 +25,7 @@ func (f *{{= formName }}) CreateControls(ctx context.Context) {
             Text: f.GT("Delete"),
  	        OnSubmit: action.Group (
                 action.Confirm(f.GT("Are you sure you want to delete this item?")),
-                action.Do(f.ID(), {{= title }}DeleteAction),
+                action.Do(),
  	        ),
  	        ValidationType: event.ValidateNone,
        },

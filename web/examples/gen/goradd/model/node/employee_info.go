@@ -9,36 +9,53 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type employeeInfoNode struct {
+// EmployeeInfoNode represents the employee_info table in a query. It uses a builder pattern to chain
+// together other tables and columns to form a node in a query.
+//
+// To use the EmployeeInfoNode, call [EmployeeInfo] to start a reference chain when querying the employee_info table.
+type EmployeeInfoNode struct {
+	// ReferenceNodeI is an internal object that represents the capabilities of the node. Since it is embedded, all
+	// of its functions are exported and are callable along with the employeeInfoNode functions here.
 	query.ReferenceNodeI
 }
 
-func EmployeeInfo() *employeeInfoNode {
-	n := employeeInfoNode{
+// EmployeeInfo returns a table node that starts a node chain that begins with the employee_info table.
+func EmployeeInfo() *EmployeeInfoNode {
+	n := EmployeeInfoNode{
 		query.NewTableNode("goradd", "employee_info", "EmployeeInfo"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
 }
 
-func (n *employeeInfoNode) SelectNodes_() (nodes []*query.ColumnNode) {
+// SelectNodes_ is used internally by the framework to return the list of all the column nodes.
+// doc: hide
+func (n *EmployeeInfoNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.PersonID())
 	nodes = append(nodes, n.EmployeeNumber())
 	return nodes
 }
-func (n *employeeInfoNode) PrimaryKeyNode() *query.ColumnNode {
+
+// PrimaryKeyNode returns a node that points to the primary key column.
+func (n *EmployeeInfoNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
-func (n *employeeInfoNode) EmbeddedNode_() query.NodeI {
+
+// EmbeddedNode is used internally by the framework to return the embedded Reference node.
+// doc: hide
+func (n *EmployeeInfoNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
-func (n *employeeInfoNode) Copy_() query.NodeI {
-	return &employeeInfoNode{query.CopyNode(n.ReferenceNodeI)}
+
+// Copy_ is used internally by the framework to deep copy the node.
+// doc: hide
+func (n *EmployeeInfoNode) Copy_() query.NodeI {
+	return &EmployeeInfoNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 // ID represents the id column in the database.
-func (n *employeeInfoNode) ID() *query.ColumnNode {
+func (n *EmployeeInfoNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"employee_info",
@@ -52,7 +69,7 @@ func (n *employeeInfoNode) ID() *query.ColumnNode {
 }
 
 // PersonID represents the person_id column in the database.
-func (n *employeeInfoNode) PersonID() *query.ColumnNode {
+func (n *EmployeeInfoNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"employee_info",
@@ -66,8 +83,8 @@ func (n *employeeInfoNode) PersonID() *query.ColumnNode {
 }
 
 // Person represents the link to the Person object.
-func (n *employeeInfoNode) Person() *personNode {
-	cn := &personNode{
+func (n *EmployeeInfoNode) Person() *PersonNode {
+	cn := &PersonNode{
 		query.NewReferenceNode(
 			"goradd",
 			"employee_info",
@@ -85,7 +102,7 @@ func (n *employeeInfoNode) Person() *personNode {
 }
 
 // EmployeeNumber represents the employee_number column in the database.
-func (n *employeeInfoNode) EmployeeNumber() *query.ColumnNode {
+func (n *EmployeeInfoNode) EmployeeNumber() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"employee_info",
@@ -102,7 +119,9 @@ type employeeInfoNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
-func (n *employeeInfoNode) GobEncode() (data []byte, err error) {
+// GobEncode makes the node serializable.
+// doc:hide
+func (n *EmployeeInfoNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
@@ -117,7 +136,9 @@ func (n *employeeInfoNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-func (n *employeeInfoNode) GobDecode(data []byte) (err error) {
+// GobDecode makes the node deserializable.
+// doc: hide
+func (n *EmployeeInfoNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
@@ -131,5 +152,5 @@ func (n *employeeInfoNode) GobDecode(data []byte) (err error) {
 }
 
 func init() {
-	gob.RegisterName("employeeInfoNode2", &employeeInfoNode{})
+	gob.RegisterName("EmployeeInfoNode2", &EmployeeInfoNode{})
 }

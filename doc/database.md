@@ -1,4 +1,4 @@
-# Databases
+# Structuring the Database
 The database structure is central to GoRADD. The GoRADD code generator generates Go objects based
 on the structure of SQL databaase code (called the ORM). Whenever you change the structure of the database, 
 you should run the code generator to make sure the Go code reflects the structure of the database.

@@ -14,17 +14,11 @@ const {{= title }}EditPanelID = "{{= t.DefaultHtmlID()}}-edit-panel"
 const {{= title }}EditSessionID = "{{= title }}EditSessionID"
 
 // These constants are the ids of the buttons that appear on the bottom of the edit panel
+// doc: type={{= title }}EditForm
 const (
     {{= title }}SaveButtonID = "save-button"
     {{= title }}CancelButtonID = "cancel-button"
     {{= title }}DeleteButtonID = "delete-button"
-)
-
-// These constants are the action values that are triggered by the edit panel buttons.
-const (
-    {{= title }}SaveAction = iota + 1
-    {{= title }}CancelAction
-    {{= title }}DeleteAction
 )
 
 }}

@@ -17,8 +17,9 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
-// employeeInfoBase is a base structure to be embedded in a "subclass" and provides the ORM access to the database.
-
+// employeeInfoBase is embedded in a EmployeeInfo object and provides the ORM access to the database.
+// The member variables of the structure are private and should not normally be accessed by the EmployeeInfo embedder.
+// Instead, use the accessor functions.
 type employeeInfoBase struct {
 	id        string
 	idIsValid bool
@@ -43,19 +44,21 @@ type employeeInfoBase struct {
 	_originalPK string
 }
 
+// Default values for the fields in the employee_info table.
+// When a EmployeeInfo object is created, the fields in the object will be initialized to these values.
+// doc: type=EmployeeInfo
 const (
-	EmployeeInfoIDDefault             = ""
-	EmployeeInfoPersonIDDefault       = ""
-	EmployeeInfoEmployeeNumberDefault = 0
+	EmployeeInfoIDDefault             = "" // id
+	EmployeeInfoPersonIDDefault       = "" // person_id
+	EmployeeInfoEmployeeNumberDefault = 0  // employee_number
 )
 
+// IDs used to access the EmployeeInfo object fields by name using the Get function.
+// doc: type=EmployeeInfo
 const (
-	EmployeeInfo_ID = `ID`
-
-	EmployeeInfo_PersonID = `PersonID`
-
-	EmployeeInfo_Person = `Person`
-
+	EmployeeInfo_ID             = `ID`
+	EmployeeInfo_PersonID       = `PersonID`
+	EmployeeInfo_Person         = `Person`
 	EmployeeInfo_EmployeeNumber = `EmployeeNumber`
 )
 
@@ -77,17 +80,18 @@ func (o *employeeInfoBase) Initialize() {
 	o._restored = false
 }
 
-// PrimaryKey returns the value of the primary key.
+// PrimaryKey returns the current value of the primary key field.
 func (o *employeeInfoBase) PrimaryKey() string {
 	return o.id
 }
 
-// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object.
+// OriginalPrimaryKey returns the value of the primary key that was originally loaded into the object when it was
+// read from the database.
 func (o *employeeInfoBase) OriginalPrimaryKey() string {
 	return o._originalPK
 }
 
-// Copy copies all valid fields (except for the primary key) to a new EmployeeInfo object.
+// Copy copies all valid fields (except for the primary key) to a new [EmployeeInfo] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *employeeInfoBase) Copy() (newObject *EmployeeInfo) {
@@ -210,12 +214,13 @@ func (o *employeeInfoBase) IsNew() bool {
 
 // LoadEmployeeInfo returns a EmployeeInfo from the database.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [EmployeeInfosBuilder.Join] and [EmployeeInfosBuilder.Select] for more info.
 func LoadEmployeeInfo(ctx context.Context, primaryKey string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
 	return queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), primaryKey)).joinOrSelect(joinOrSelectNodes...).Get()
 }
 
-// HasEmployeeInfo returns true if a EmployeeInfo with the given key exists database.
+// HasEmployeeInfo returns true if a EmployeeInfo with the given primaryKey exists in the database.
+// doc: type=EmployeeInfo
 func HasEmployeeInfo(ctx context.Context, primaryKey string) bool {
 	q := queryEmployeeInfos(ctx)
 	q = q.Where(Equal(node.EmployeeInfo().ID(), primaryKey))
@@ -224,7 +229,7 @@ func HasEmployeeInfo(ctx context.Context, primaryKey string) bool {
 
 // LoadEmployeeInfoByPersonID queries for a single EmployeeInfo object by the given unique index values.
 // joinOrSelectNodes lets you provide nodes for joining to other tables or selecting specific fields. Table nodes will
-// be considered Join nodes, and column nodes will be Select nodes. See Join() and Select() for more info.
+// be considered Join nodes, and column nodes will be Select nodes. See [EmployeeInfosBuilder.Join] and [EmployeeInfosBuilder.Select] for more info.
 // If you need a more elaborate query, use QueryEmployeeInfos() to start a query builder.
 func LoadEmployeeInfoByPersonID(ctx context.Context, personID string, joinOrSelectNodes ...query.NodeI) *EmployeeInfo {
 	q := queryEmployeeInfos(ctx)
@@ -236,6 +241,7 @@ func LoadEmployeeInfoByPersonID(ctx context.Context, personID string, joinOrSele
 
 // HasEmployeeInfoByPersonID returns true if the
 // given unique index values exist in the database.
+// doc: type=EmployeeInfo
 func HasEmployeeInfoByPersonID(ctx context.Context, personID string) bool {
 	q := queryEmployeeInfos(ctx)
 	q = q.Where(Equal(node.EmployeeInfo().PersonID(), personID))
@@ -444,10 +450,16 @@ func (b *EmployeeInfosBuilder) joinOrSelect(nodes ...query.NodeI) *EmployeeInfos
 	return b
 }
 
+// CountEmployeeInfoByID queries the database and returns the number of EmployeeInfo objects that
+// have the given id value.
+// doc: type=EmployeeInfo
 func CountEmployeeInfoByID(ctx context.Context, id string) int {
 	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().ID(), id)).Count(false))
 }
 
+// CountEmployeeInfoByPersonID queries the database and returns the number of EmployeeInfo objects that
+// have the given personID value.
+// doc: type=EmployeeInfo
 func CountEmployeeInfoByPersonID(ctx context.Context, personID string) int {
 	if personID == "" {
 		return 0
@@ -455,6 +467,9 @@ func CountEmployeeInfoByPersonID(ctx context.Context, personID string) int {
 	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().PersonID(), personID)).Count(false))
 }
 
+// CountEmployeeInfoByEmployeeNumber queries the database and returns the number of EmployeeInfo objects that
+// have the given employeeNumber value.
+// doc: type=EmployeeInfo
 func CountEmployeeInfoByEmployeeNumber(ctx context.Context, employeeNumber int) int {
 	return int(queryEmployeeInfos(ctx).Where(Equal(node.EmployeeInfo().EmployeeNumber(), employeeNumber)).Count(false))
 }
@@ -586,37 +601,30 @@ func (o *employeeInfoBase) insert(ctx context.Context) {
 	broadcast.Insert(ctx, "goradd", "employee_info", o.PrimaryKey())
 }
 
+// getModifiedFields returns the database columns that have been modified. This
+// will determine which specific fields are sent to the database to be changed.
 func (o *employeeInfoBase) getModifiedFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.idIsDirty {
-
 		fields["id"] = o.id
-
 	}
 	if o.personIDIsDirty {
-
 		fields["person_id"] = o.personID
-
 	}
 	if o.employeeNumberIsDirty {
-
 		fields["employee_number"] = o.employeeNumber
-
 	}
 	return
 }
 
+// getValidFields returns the fields that have valid data in them.
 func (o *employeeInfoBase) getValidFields() (fields map[string]interface{}) {
 	fields = map[string]interface{}{}
 	if o.personIDIsValid {
-
 		fields["person_id"] = o.personID
-
 	}
 	if o.employeeNumberIsValid {
-
 		fields["employee_number"] = o.employeeNumber
-
 	}
 	return
 }
@@ -638,6 +646,7 @@ func deleteEmployeeInfo(ctx context.Context, pk string) {
 	broadcast.Delete(ctx, "goradd", "employee_info", fmt.Sprint(pk))
 }
 
+// resetDirtyStatus resets the dirty status of every field in the object.
 func (o *employeeInfoBase) resetDirtyStatus() {
 	o.idIsDirty = false
 	o.personIDIsDirty = false
@@ -645,6 +654,7 @@ func (o *employeeInfoBase) resetDirtyStatus() {
 
 }
 
+// IsDirty returns true if the object has been changed since it was read from the database.
 func (o *employeeInfoBase) IsDirty() (dirty bool) {
 	dirty = o.idIsDirty ||
 		o.personIDIsDirty ||
@@ -758,6 +768,7 @@ func (o *employeeInfoBase) MarshalBinary() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// UnmarshalBinary converts a structure that was created with MarshalBinary into a EmployeeInfo object.
 func (o *employeeInfoBase) UnmarshalBinary(data []byte) (err error) {
 
 	buf := bytes.NewBuffer(data)
@@ -868,12 +879,10 @@ func (o *employeeInfoBase) MarshalStringMap() map[string]interface{} {
 // Unmarshalling of sub-objects, as in objects linked via foreign keys, is not currently supported.
 //
 // The fields it expects are:
-//   "id" - string
-
-//   "personID" - string
-
-//   "employeeNumber" - int
-
+//
+//	"id" - string
+//	"personID" - string
+//	"employeeNumber" - int
 func (o *employeeInfoBase) UnmarshalJSON(data []byte) (err error) {
 	var v map[string]interface{}
 	if err = json.Unmarshal(data, &v); err != nil {
