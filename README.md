@@ -14,7 +14,7 @@ particularly good for developers new to GO and/or new to web development.
 See the [Quick Start](doc/quickstart.md) guide to get started.
 
 ## Requirements
-- Go 1.18 or greater
+- Go 1.21 or greater
 - A supported database up and running on your local development computer. 
 Current supported databases are:
     - Mysql
