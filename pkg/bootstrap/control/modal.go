@@ -465,7 +465,7 @@ func (c ModalCreator) Create(ctx context.Context, parent page.ControlI) page.Con
 		}
 	}
 	if c.OnButton != nil {
-		ctrl.On(event.DialogButton(), c.OnButton)
+		ctrl.On(event.DialogButton().Action(c.OnButton))
 	}
 	if c.Children != nil {
 		ctrl.AddControls(ctx, c.Children...)

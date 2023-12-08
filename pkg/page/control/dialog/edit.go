@@ -55,14 +55,14 @@ func (p *EditPanel) Init(self any, dlg page.ControlI, id string, objectName stri
 		&ButtonOptions{
 			PushLeft:            true,
 			ConfirmationMessage: fmt.Sprintf(p.GT("Are you sure you want to delete this %s?"), objectName),
-			OnClick:             action.Do().ID(editDlgDeleteAction),
+			OnClick:             action.Do().ID(editDlgDeleteAction).ControlID(p.ID()),
 		})
 
 	p.AddCloseButton(p.GT("Cancel"), CancelButtonnID)
 	p.AddButton(p.GT("Save"), SaveButtonID, &ButtonOptions{
 		Validates: true,
 		IsPrimary: true,
-		OnClick:   action.Do().ID(editDlgSaveAction),
+		OnClick:   action.Do().ID(editDlgSaveAction).ControlID(p.ID()),
 	})
 
 	p.ObjectName = objectName
