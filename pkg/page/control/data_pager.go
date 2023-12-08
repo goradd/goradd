@@ -234,7 +234,7 @@ func (d *DataPager) Init(self any, parent page.ControlI, id string, pagedControl
 	pagedControl.AddDataPager(d.this())
 	d.pagedControlID = pagedControl.ID()
 	pxy := NewProxy(d, d.proxyID())
-	pxy.On(event.Click().Bubbles(), action.Do(d.ID(), PageClick))
+	pxy.On(event.Click().Bubbles().Action(action.Do().ID(PageClick)))
 	d.SetAttribute("role", "tablist")
 	d.PagedControl().SetPageNum(1)
 }
@@ -259,7 +259,7 @@ func (d *DataPager) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 }
 
 // DoAction is called by the framework to respond to actions.
-func (d *DataPager) DoAction(_ context.Context, params action.Params) {
+func (d *DataPager) DoAction(ctx context.Context, params action.Params) {
 	switch params.ID {
 	case PageClick:
 		pageNum := params.ControlValueInt()
@@ -277,6 +277,8 @@ func (d *DataPager) DoAction(_ context.Context, params action.Params) {
 		for _, c := range p.GetDataPagerIDs() {
 			GetDataPager(d, c).Refresh()
 		}
+	default:
+		d.ControlBase.DoAction(ctx, params)
 	}
 }
 

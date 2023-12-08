@@ -462,9 +462,14 @@ func (c *ColumnBase) UpdateFormValues(ctx context.Context) {}
 
 func (c *ColumnBase) AddActions(ctrl page.ControlI) {}
 
-// DoAction does a table action that is directed at this table.
+// DoAction does an action is directed at this column.
 // Column implementations can implement this method to receive private actions that they have added using AddActions.
-func (c *ColumnBase) DoAction(ctx context.Context, params action.Params) {}
+// By default, the action will be passed to the parent table if not handled.
+func (c *ColumnBase) DoAction(ctx context.Context, params action.Params) {
+	if t := c.ParentTable(); t != nil {
+		t.DoAction(ctx, params)
+	}
+}
 
 // RenderSortButton returns the HTML that draws the sort button.
 func (c *ColumnBase) RenderSortButton(labelHtml string) string {

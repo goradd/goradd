@@ -89,6 +89,7 @@ func (m *DB) Analyze(options Options) {
 	rawTables := m.getRawTables()
 	description := m.descriptionFromRawTables(rawTables, options)
 	m.model = db.NewModel(m.DbKey(),
+		m.databaseName,
 		options.ForeignKeySuffix,
 		options.EnumTableSuffix,
 		false, description)

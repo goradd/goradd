@@ -4,7 +4,7 @@ tableName := t.DbName
 for _,col := range t.Columns {
 {{
 // {{= col.GoName }} represents the {{= col.DbName }} column in the database.
-func (n *{{privateName}}Node) {{= col.GoName }}() *query.ColumnNode {
+func (n *{{publicName}}Node) {{= col.GoName }}() *query.ColumnNode {
 	cn := query.NewColumnNode (
 		"{{= dbKey }}",
 		"{{= tableName }}",
@@ -31,8 +31,8 @@ func (n *{{privateName}}Node) {{= col.GoName }}() *query.ColumnNode {
 {{
 
 // {{= col.ForeignKey.GoName }} represents the link to the {{= col.ForeignKey.GoName }} object.
-func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFirst(objName) }}Node {
-	cn := &{{= strings2.LcFirst(objName) }}Node {
+func (n *{{publicName}}Node) {{= col.ForeignKey.GoName }}() *{{= objName }}Node {
+	cn := &{{= objName }}Node {
 		query.NewReferenceNode (
 			"{{= dbKey }}",
 			"{{= tableName }}",
@@ -57,12 +57,12 @@ func (n *{{privateName}}Node) {{= col.ForeignKey.GoName }}() *{{= strings2.LcFir
 
 for _,ref := range t.ManyManyReferences {
     pk := ref.PrimaryKey()
-    nodeName := strings2.LcFirst(ref.ObjectType())
+    nodeName := ref.ObjectType()
 
 {{
 
 // {{= ref.GoPlural }} represents the many-to-many relationship formed by the {{= ref.AssnTableName }} table.
-func (n *{{privateName}}Node) {{= ref.GoPlural }}() *{{= nodeName }}Node  {
+func (n *{{publicName}}Node) {{= ref.GoPlural }}() *{{= nodeName }}Node  {
 	cn := &{{= nodeName }}Node {
 		query.NewManyManyNode (
 			"{{= t.DbKey }}",
@@ -92,9 +92,9 @@ for _,ref2 := range t.ReverseReferences {
 {{
 // {{= ref2.GoName }} represents the one-to-one relationship formed by the reverse reference from the
 // {{= ref2.DbColumn }} column in the {{= t.DbName }} table.
-func (n *{{privateName}}Node) {{= ref2.GoName }}() *{{= strings2.LcFirst(assnTable.GoName) }}Node  {
+func (n *{{publicName}}Node) {{= ref2.GoName }}() *{{= assnTable.GoName }}Node  {
 
-	cn := &{{= strings2.LcFirst(assnTable.GoName) }}Node {
+	cn := &{{= assnTable.GoName }}Node {
 		query.NewReverseReferenceNode (
 			"{{= t.DbKey }}",
 			"{{= t.DbName }}",
@@ -118,9 +118,9 @@ func (n *{{privateName}}Node) {{= ref2.GoName }}() *{{= strings2.LcFirst(assnTab
 
 // {{= ref2.GoPlural }} represents the many-to-one relationship formed by the reverse reference from the
 // {{= ref2.DbColumn }} column in the {{= t.DbName }} table.
-func (n *{{privateName}}Node) {{= ref2.GoPlural }}() *{{= strings2.LcFirst(assnTable.GoName) }}Node  {
+func (n *{{publicName}}Node) {{= ref2.GoPlural }}() *{{= assnTable.GoName }}Node  {
 
-	cn := &{{= strings2.LcFirst(assnTable.GoName) }}Node {
+	cn := &{{= assnTable.GoName }}Node {
 		query.NewReverseReferenceNode (
 			"{{= t.DbKey }}",
 			"{{= t.DbName }}",

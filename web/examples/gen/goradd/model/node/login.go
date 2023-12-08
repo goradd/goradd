@@ -9,19 +9,28 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type loginNode struct {
+// LoginNode represents the login table in a query. It uses a builder pattern to chain
+// together other tables and columns to form a node in a query.
+//
+// To use the LoginNode, call [Login] to start a reference chain when querying the login table.
+type LoginNode struct {
+	// ReferenceNodeI is an internal object that represents the capabilities of the node. Since it is embedded, all
+	// of its functions are exported and are callable along with the loginNode functions here.
 	query.ReferenceNodeI
 }
 
-func Login() *loginNode {
-	n := loginNode{
+// Login returns a table node that starts a node chain that begins with the login table.
+func Login() *LoginNode {
+	n := LoginNode{
 		query.NewTableNode("goradd", "login", "Login"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
 }
 
-func (n *loginNode) SelectNodes_() (nodes []*query.ColumnNode) {
+// SelectNodes_ is used internally by the framework to return the list of all the column nodes.
+// doc: hide
+func (n *LoginNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.PersonID())
 	nodes = append(nodes, n.Username())
@@ -29,18 +38,26 @@ func (n *loginNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.IsEnabled())
 	return nodes
 }
-func (n *loginNode) PrimaryKeyNode() *query.ColumnNode {
+
+// PrimaryKeyNode returns a node that points to the primary key column.
+func (n *LoginNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
-func (n *loginNode) EmbeddedNode_() query.NodeI {
+
+// EmbeddedNode is used internally by the framework to return the embedded Reference node.
+// doc: hide
+func (n *LoginNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
-func (n *loginNode) Copy_() query.NodeI {
-	return &loginNode{query.CopyNode(n.ReferenceNodeI)}
+
+// Copy_ is used internally by the framework to deep copy the node.
+// doc: hide
+func (n *LoginNode) Copy_() query.NodeI {
+	return &LoginNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 // ID represents the id column in the database.
-func (n *loginNode) ID() *query.ColumnNode {
+func (n *LoginNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"login",
@@ -54,7 +71,7 @@ func (n *loginNode) ID() *query.ColumnNode {
 }
 
 // PersonID represents the person_id column in the database.
-func (n *loginNode) PersonID() *query.ColumnNode {
+func (n *LoginNode) PersonID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"login",
@@ -68,8 +85,8 @@ func (n *loginNode) PersonID() *query.ColumnNode {
 }
 
 // Person represents the link to the Person object.
-func (n *loginNode) Person() *personNode {
-	cn := &personNode{
+func (n *LoginNode) Person() *PersonNode {
+	cn := &PersonNode{
 		query.NewReferenceNode(
 			"goradd",
 			"login",
@@ -87,7 +104,7 @@ func (n *loginNode) Person() *personNode {
 }
 
 // Username represents the username column in the database.
-func (n *loginNode) Username() *query.ColumnNode {
+func (n *LoginNode) Username() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"login",
@@ -101,7 +118,7 @@ func (n *loginNode) Username() *query.ColumnNode {
 }
 
 // Password represents the password column in the database.
-func (n *loginNode) Password() *query.ColumnNode {
+func (n *LoginNode) Password() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"login",
@@ -115,7 +132,7 @@ func (n *loginNode) Password() *query.ColumnNode {
 }
 
 // IsEnabled represents the is_enabled column in the database.
-func (n *loginNode) IsEnabled() *query.ColumnNode {
+func (n *LoginNode) IsEnabled() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"login",
@@ -132,7 +149,9 @@ type loginNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
-func (n *loginNode) GobEncode() (data []byte, err error) {
+// GobEncode makes the node serializable.
+// doc:hide
+func (n *LoginNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
@@ -147,7 +166,9 @@ func (n *loginNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-func (n *loginNode) GobDecode(data []byte) (err error) {
+// GobDecode makes the node deserializable.
+// doc: hide
+func (n *LoginNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
@@ -161,5 +182,5 @@ func (n *loginNode) GobDecode(data []byte) (err error) {
 }
 
 func init() {
-	gob.RegisterName("loginNode2", &loginNode{})
+	gob.RegisterName("LoginNode2", &LoginNode{})
 }

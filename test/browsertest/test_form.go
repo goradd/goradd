@@ -56,7 +56,7 @@ func (form *TestForm) Init(ctx context.Context, formID string) {
 	grctx := page.GetContext(ctx)
 
 	if _, ok := grctx.FormValue("all"); ok {
-		form.On(event2.MessengerReady(), action.Do(form.ID(), TestAllAction))
+		form.On(event2.MessengerReady().Action(action.Do().ControlID(form.ID()).ID(TestAllAction)))
 	}
 }
 
@@ -72,7 +72,7 @@ func (form *TestForm) CreateControls(ctx context.Context) {
 	button.NewButton(form, "run-button").
 		SetValidationType(event.ValidateNone).
 		SetText("Run Test").
-		On(event.Click(), action.Do(form.ID(), TestButtonAction))
+		On(event.Click(), action.Do().ControlID(form.ID()).ID(TestButtonAction))
 
 	button.NewButton(form, "run-all-button").
 		SetText("Run All Tests").
@@ -283,7 +283,7 @@ func (form *TestForm) Click(id string) {
 func hasServerAction(c page.ControlI, eventName string) bool {
 	if e := c.Event(eventName); e != nil {
 		if a := event.GetCallbackAction(e); a != nil {
-			return a.(action.CallbackActionAccessor).IsServerAction()
+			return a.(action.CallbackActionAccessor).IsPostAction()
 		}
 	}
 	return false

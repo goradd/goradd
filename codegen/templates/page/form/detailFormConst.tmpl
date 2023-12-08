@@ -1,20 +1,19 @@
 // detailFormConst.tmpl
 
 {{
-// {{= title }}DetailFormPath specifies the URL that will access this form.
-const {{= title }}DetailFormPath = "/goradd/forms/{{= dd.DbKey }}/{{= tableKebab }}-detail"
-// {{= title }}DetailFormID is the id of the html form object.
-const {{= title }}DetailFormID = "{{= tableKebab }}-detail-form"
-// {{= title }}DetailPanelID is the id of the panel that contains the content of the detail form.
-const {{= title }}DetailPanelID = "{{= t.DefaultHtmlID()}}-detail-panel"
-// {{= title }}OkButtonID is the id of the OK button that will navigate back to the list form.
-const {{= title }}OkButtonID = "ok-button"
-// {{= title }}DetailSessionID is the session id that saves the id passed between the list form and the detail form.
-// Set this id in the session before going to this form.
-const {{= title }}DetailSessionID = "{{= title }}DetailSessionID"
-
+// doc: type={{= formName }}
 const (
-    {{= title }}OkAction = iota + 1 // the action triggered by the OK button
+    // {{= title }}DetailFormPath specifies the URL that will access this form.
+    {{= title }}DetailFormPath = "/goradd/forms/{{= dd.DbKey }}/{{= tableKebab }}-detail"
+    // {{= title }}DetailFormID is the id of the html form object.
+    {{= title }}DetailFormID = "{{= tableKebab }}-detail-form"
+    // {{= title }}DetailPanelID is the id of the panel that contains the content of the detail form.
+    {{= title }}DetailPanelID = "{{= t.DefaultHtmlID()}}-detail-panel"
+    // {{= title }}OkButtonID is the id of the OK button that will navigate back to the list form.
+    {{= title }}OkButtonID = "ok-button"
+    // {{= title }}DetailSessionID is the session id that saves the id passed between the list form and the detail form.
+    // Set this id in the session before going to this form.
+    {{= title }}DetailSessionID = "{{= title }}DetailSessionID"
 )
 
 }}

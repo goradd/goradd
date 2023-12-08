@@ -45,7 +45,7 @@ func NewSession() *Session {
 	return &Session{new(sessionData)}
 }
 
-// MarshallBinary serializes the session data for storage.
+// MarshalBinary serializes the session data for storage.
 func (s *Session) MarshalBinary() ([]byte, error) {
 	return s.data.MarshalBinary()
 }

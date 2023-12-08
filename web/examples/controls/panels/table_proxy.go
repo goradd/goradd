@@ -16,6 +16,8 @@ import (
 	"github.com/goradd/html5tag"
 )
 
+const proxyId = "pxy"
+
 type TableProxyPanel struct {
 	Panel
 }
@@ -30,11 +32,8 @@ func (p *TableProxyPanel) Init(self any, ctx context.Context, parent page.Contro
 
 	p.AddControls(ctx,
 		ProxyCreator{
-			ID: "pxy",
-			On: On{
-				Event:  event.Click(),
-				Action: action.Do(p.ID(), ProxyClick),
-			},
+			ID: proxyId,
+			On: event.Click().Action(action.Do().ID(ProxyClick)),
 		},
 		PagedTableCreator{
 			ID:           "table1",
@@ -82,9 +81,9 @@ func (p *TableProxyPanel) CellText(ctx context.Context, col ColumnI, info CellIn
 
 	// This is just to assign an id for click testing. You don't normally need to assign an id.
 	attr := html5tag.NewAttributes()
-	attr.SetID("pxy" + project.ID())
+	attr.SetID(proxyId + project.ID())
 
-	pxy := GetProxy(p, "pxy")
+	pxy := GetProxy(p, proxyId)
 	v := pxy.LinkHtml(ctx, project.Name(),
 		id,
 		attr)
@@ -131,9 +130,9 @@ func testTableProxyCol(t *browsertest.TestForm) {
 	t.LoadUrl(myUrl)
 
 	t.ClickHtmlItem("pxy1")
-	/*	h := t.ControlInnerHtml("nameItem")
-		t.AssertEqual("<label>Name</label>ACME Website Redesign", h)
-	*/t.Done("Complete")
+	h := t.ControlInnerHtml("nameItem")
+	t.AssertEqual("<th>Name</th><td>ACME Website Redesign</td>", h)
+	t.Done("Complete")
 
 }
 

@@ -8,10 +8,6 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 )
 
-const (
-	saveDlgSaveAction = iota + 10200
-)
-
 type SaveablePanel interface {
 	control.PanelI
 	Load(ctx context.Context, pk string) error
@@ -44,7 +40,7 @@ func (p *SavePanel) Init(self any, dlg page.ControlI, id string) {
 	p.AddButton(p.GT("Save"), SaveButtonID, &ButtonOptions{
 		Validates: true,
 		IsPrimary: true,
-		OnClick:   action.Do(p.ID(), saveDlgSaveAction),
+		OnClick:   action.Do(),
 	})
 }
 
@@ -64,10 +60,12 @@ func (p *SavePanel) Load(ctx context.Context, pk string) (data interface{}, err 
 }
 
 func (p *SavePanel) DoAction(ctx context.Context, a action.Params) {
-	switch a.ID {
-	case saveDlgSaveAction:
+	switch a.ControlId {
+	case SaveButtonID:
 		p.SavePanel().Save(ctx)
 		p.Hide()
+	default:
+		p.DialogPanel.DoAction(ctx, a)
 	}
 }
 

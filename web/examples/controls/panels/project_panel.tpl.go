@@ -17,7 +17,8 @@ func (p *ProjectPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err erro
 
 	if p.project != nil {
 
-		if _, err = io.WriteString(_w, `    <div id="nameItem"><label>Name</label>`); err != nil {
+		if _, err = io.WriteString(_w, `    <table>
+    <tr id="nameItem"><th>Name</th><td>`); err != nil {
 			return
 		}
 
@@ -25,8 +26,8 @@ func (p *ProjectPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err erro
 			return
 		}
 
-		if _, err = io.WriteString(_w, `</div>
-    <div><label>Description</label>`); err != nil {
+		if _, err = io.WriteString(_w, `</td></tr>
+    <tr><th>Description</th><td>`); err != nil {
 			return
 		}
 
@@ -34,8 +35,8 @@ func (p *ProjectPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err erro
 			return
 		}
 
-		if _, err = io.WriteString(_w, `</div>
-    <div><label>Budget</label>`); err != nil {
+		if _, err = io.WriteString(_w, `</td></tr>
+    <tr><th>Budget</th><td>`); err != nil {
 			return
 		}
 
@@ -43,8 +44,8 @@ func (p *ProjectPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err erro
 			return
 		}
 
-		if _, err = io.WriteString(_w, `</div>
-    <div><label>Spent</label>`); err != nil {
+		if _, err = io.WriteString(_w, `</td></tr>
+    <tr><th>Spent</th><td>`); err != nil {
 			return
 		}
 
@@ -52,8 +53,8 @@ func (p *ProjectPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err erro
 			return
 		}
 
-		if _, err = io.WriteString(_w, `</div>
-    <div><label>Manager</label>`); err != nil {
+		if _, err = io.WriteString(_w, `</td></tr>
+    <tr><th>Manager</th><td>`); err != nil {
 			return
 		}
 
@@ -61,7 +62,8 @@ func (p *ProjectPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err erro
 			return
 		}
 
-		if _, err = io.WriteString(_w, `</div>
+		if _, err = io.WriteString(_w, `</td></tr>
+    </table>
 `); err != nil {
 			return
 		}

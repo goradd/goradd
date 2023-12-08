@@ -18,7 +18,7 @@ func NewImageCapturePanel(ctx context.Context, parent page.ControlI) {
 }
 
 func (p *ImageCapturePanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(self, parent, "imageCapturePanel")
+	p.Panel.Init(self, parent, id)
 	p.AddControls(ctx,
 		FormFieldWrapperCreator{
 			ID:    "ic1-ff",
@@ -30,7 +30,7 @@ func (p *ImageCapturePanel) Init(self any, ctx context.Context, parent page.Cont
 				SaveState: true,
 				ControlOptions: page.ControlOptions{
 					On: page.EventList{
-						{ImageCaptureEvent(), action.Do(p.ID(), 0)}, // Just get the data.
+						ImageCaptureEvent(), // Just get the data.
 					},
 				},
 			},
@@ -38,12 +38,12 @@ func (p *ImageCapturePanel) Init(self any, ctx context.Context, parent page.Cont
 		ButtonCreator{
 			ID:       "ajaxButton",
 			Text:     "Submit Ajax",
-			OnSubmit: action.Do("checkboxPanel", ButtonSubmit),
+			OnSubmit: action.Do().ControlID("checkboxPanel").ID(ButtonSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Post",
-			OnSubmit: action.Do("checkboxPanel", ButtonSubmit).Post(),
+			OnSubmit: action.Do().ControlID("checkboxPanel").ID(ButtonSubmit).Post(),
 		},
 	)
 }

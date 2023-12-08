@@ -17,9 +17,10 @@ const initCmd = "go mod init goradd-project" // Create go.mod file
 
 var commands = []string{
 	"go mod tidy", // Setup go.mod file
-	"go install github.com/goradd/got/...@latest",                // Template processor
+	"go install github.com/goradd/got@latest",                    // Template processor
+	"go install github.com/goradd/moddoc@latest",                 // Documentation generator
 	"go install golang.org/x/tools/cmd/goimports@latest",         // For auto-fixing of import declarations
-	"go install github.com/goradd/gofile/...@latest",             // For deployment
+	"go install github.com/goradd/gofile@latest",                 // For deployment
 	"go install github.com/tdewolff/minify/v2/cmd/minify@latest", // for deployment
 }
 

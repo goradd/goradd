@@ -16,7 +16,9 @@ import (
 // Use the accessor functions like [Params.ActionValueInt] or [Params.ControlValueString] to extract an appropriately
 // typed value from the action.
 type Params struct {
-	// Id is the id assigned when the action is created
+	// Event is the javascript name of the event that was triggered.
+	Event string
+	// ID is the action id assigned when the action was created
 	ID int
 	// Action is an interface to the action itself
 	Action ActionI
@@ -37,8 +39,9 @@ type RawActionValues struct {
 
 // NewActionParams is used internally by the framework to create new action parameters.
 // You should not normally need to call this function.
-func NewActionParams(id int, action ActionI, controlId string, rawValues RawActionValues) Params {
+func NewActionParams(event string, id int, action ActionI, controlId string, rawValues RawActionValues) Params {
 	return Params{
+		Event:     event,
 		ID:        id,
 		Action:    action,
 		ControlId: controlId,

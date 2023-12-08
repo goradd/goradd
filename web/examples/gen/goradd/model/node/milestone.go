@@ -9,36 +9,53 @@ import (
 	"github.com/goradd/goradd/pkg/orm/query"
 )
 
-type milestoneNode struct {
+// MilestoneNode represents the milestone table in a query. It uses a builder pattern to chain
+// together other tables and columns to form a node in a query.
+//
+// To use the MilestoneNode, call [Milestone] to start a reference chain when querying the milestone table.
+type MilestoneNode struct {
+	// ReferenceNodeI is an internal object that represents the capabilities of the node. Since it is embedded, all
+	// of its functions are exported and are callable along with the milestoneNode functions here.
 	query.ReferenceNodeI
 }
 
-func Milestone() *milestoneNode {
-	n := milestoneNode{
+// Milestone returns a table node that starts a node chain that begins with the milestone table.
+func Milestone() *MilestoneNode {
+	n := MilestoneNode{
 		query.NewTableNode("goradd", "milestone", "Milestone"),
 	}
 	query.SetParentNode(&n, nil)
 	return &n
 }
 
-func (n *milestoneNode) SelectNodes_() (nodes []*query.ColumnNode) {
+// SelectNodes_ is used internally by the framework to return the list of all the column nodes.
+// doc: hide
+func (n *MilestoneNode) SelectNodes_() (nodes []*query.ColumnNode) {
 	nodes = append(nodes, n.ID())
 	nodes = append(nodes, n.ProjectID())
 	nodes = append(nodes, n.Name())
 	return nodes
 }
-func (n *milestoneNode) PrimaryKeyNode() *query.ColumnNode {
+
+// PrimaryKeyNode returns a node that points to the primary key column.
+func (n *MilestoneNode) PrimaryKeyNode() *query.ColumnNode {
 	return n.ID()
 }
-func (n *milestoneNode) EmbeddedNode_() query.NodeI {
+
+// EmbeddedNode is used internally by the framework to return the embedded Reference node.
+// doc: hide
+func (n *MilestoneNode) EmbeddedNode_() query.NodeI {
 	return n.ReferenceNodeI
 }
-func (n *milestoneNode) Copy_() query.NodeI {
-	return &milestoneNode{query.CopyNode(n.ReferenceNodeI)}
+
+// Copy_ is used internally by the framework to deep copy the node.
+// doc: hide
+func (n *MilestoneNode) Copy_() query.NodeI {
+	return &MilestoneNode{query.CopyNode(n.ReferenceNodeI)}
 }
 
 // ID represents the id column in the database.
-func (n *milestoneNode) ID() *query.ColumnNode {
+func (n *MilestoneNode) ID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"milestone",
@@ -52,7 +69,7 @@ func (n *milestoneNode) ID() *query.ColumnNode {
 }
 
 // ProjectID represents the project_id column in the database.
-func (n *milestoneNode) ProjectID() *query.ColumnNode {
+func (n *MilestoneNode) ProjectID() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"milestone",
@@ -66,8 +83,8 @@ func (n *milestoneNode) ProjectID() *query.ColumnNode {
 }
 
 // Project represents the link to the Project object.
-func (n *milestoneNode) Project() *projectNode {
-	cn := &projectNode{
+func (n *MilestoneNode) Project() *ProjectNode {
+	cn := &ProjectNode{
 		query.NewReferenceNode(
 			"goradd",
 			"milestone",
@@ -85,7 +102,7 @@ func (n *milestoneNode) Project() *projectNode {
 }
 
 // Name represents the name column in the database.
-func (n *milestoneNode) Name() *query.ColumnNode {
+func (n *MilestoneNode) Name() *query.ColumnNode {
 	cn := query.NewColumnNode(
 		"goradd",
 		"milestone",
@@ -102,7 +119,9 @@ type milestoneNodeEncoded struct {
 	RefNode query.ReferenceNodeI
 }
 
-func (n *milestoneNode) GobEncode() (data []byte, err error) {
+// GobEncode makes the node serializable.
+// doc:hide
+func (n *MilestoneNode) GobEncode() (data []byte, err error) {
 	var buf bytes.Buffer
 	e := gob.NewEncoder(&buf)
 
@@ -117,7 +136,9 @@ func (n *milestoneNode) GobEncode() (data []byte, err error) {
 	return
 }
 
-func (n *milestoneNode) GobDecode(data []byte) (err error) {
+// GobDecode makes the node deserializable.
+// doc: hide
+func (n *MilestoneNode) GobDecode(data []byte) (err error) {
 	buf := bytes.NewBuffer(data)
 	dec := gob.NewDecoder(buf)
 
@@ -131,5 +152,5 @@ func (n *milestoneNode) GobDecode(data []byte) (err error) {
 }
 
 func init() {
-	gob.RegisterName("milestoneNode2", &milestoneNode{})
+	gob.RegisterName("MilestoneNode2", &MilestoneNode{})
 }

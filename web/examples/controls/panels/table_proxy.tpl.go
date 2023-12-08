@@ -10,6 +10,7 @@ import (
 	"github.com/goradd/goradd/pkg/orm/db"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *TableProxyPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<style>

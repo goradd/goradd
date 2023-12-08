@@ -1,7 +1,9 @@
 //const.tmpl
 {{
 
-// Default values for the fields in the database.
+// Default values for the fields in the {{= t.DbName }} table.
+// When a {{= t.GoName}} object is created, the fields in the object will be initialized to these values.
+// doc: type={{= t.GoName }}
 const  (
 }}
 
@@ -11,23 +13,24 @@ for _,col := range t.Columns {
 		continue // no way to represent this as a constant
 	}
 {{
-    {{= col.DefaultConstantName(t.GoName) }} = {{= v }}
+    {{= col.DefaultConstantName(t.GoName) }} = {{= v }} // {{= col.DbName }}
 }}
 
 }
 
 {{ )
 
-// IDs used to access the fields by name using the Get function.
+// IDs used to access the {{t.GoName}} object fields by name using the Get function.
+// doc: type={{= t.GoName }}
 const  (
 }}
 
 for _,col := range t.Columns {
 {{
     {{= t.GoName }}_{{= col.GoName}} = `{{= col.GoName }}`
-    {{if col.IsReference()}}
+{{if col.IsReference()}}
     {{= t.GoName }}_{{= col.ForeignKey.GoName }} = `{{= col.ForeignKey.GoName }}`
-    {{if}}
+{{if}}
 }}
 }
 

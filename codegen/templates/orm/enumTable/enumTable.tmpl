@@ -22,13 +22,14 @@ for _,value := range tt.Values {
 	con := tt.Constants[key]
 {{
 	{{= propName }}{{= con }} {{= propName }} = {{u key }}
-
 }}
 }
 
 {{
 )
 
+// {{= propName }}MaxValue is the maximum enumerated value of {{= propName }}
+// doc: type={{= propName }}
 const {{= propName }}MaxValue = {{i len(tt.Values) }}
 
 type {{= propName }} int
@@ -80,7 +81,7 @@ func {{= propName }}FromName (name string) {{= propName }} {
 }
 
 
-// All{{= propPlural }} returns a slice of all the {{= propName }} items
+// All{{= propPlural }} returns a slice of all the {{= propName }} values.
 func All{{= propPlural }}() (values []{{= propName }}) {
 {{for _,value := range tt.Values }}
     values = append(values, {{= generator.AsConstant(value[keyField], query.ColTypeInteger) }})
@@ -88,8 +89,9 @@ func All{{= propPlural }}() (values []{{= propName }}) {
     return
 }
 
-// All{{= propPlural }}I returns a slice of interfaces that contains all the {{= propName }} items
-func All{{= propPlural }}I() (values []interface{}) {
+// All{{= propPlural }}I returns a slice of all the {{= propName }} values as generic interfaces.
+// doc: type={{= propName }}
+func All{{= propPlural }}I() (values []any) {
     values = make([]interface{}, {{i len(tt.Values) }}, {{i len(tt.Values) }})
 {{for i,value := range tt.Values }}
     values[{{i i }}] = {{= propName }}({{= generator.AsConstant(value[keyField], query.ColTypeInteger) }})
@@ -141,6 +143,8 @@ for i,fieldName := range tt.FieldNames[1:] {
 	title := tt.FieldGoPlural(i+1)
 
 {{
+// {{= propName }}{{= title }} returns a slice of all the {{= title }} associated with {{= propName }} values.
+// doc: type={{= propName }}
 func {{= propName }}{{= title }}() []{{= typeName }} {
 	return []{{= typeName }} {
 	    // 0 item will be a blank

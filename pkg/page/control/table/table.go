@@ -176,7 +176,7 @@ func (t *Table) HideIfEmpty() bool {
 
 // MakeSortable makes a table sortable. It will attach sortable events and show the header if it's not shown.
 func (t *Table) MakeSortable() TableI {
-	t.On(ColumnSortEvent().Private(), action.Do(t.ID(), SortClick))
+	t.On(ColumnSortEvent().Private().Action(action.Do().ID(SortClick)))
 	if t.headerRowCount == 0 {
 		t.headerRowCount = 1
 	}
@@ -553,6 +553,10 @@ func (t *Table) DoPrivateAction(ctx context.Context, p action.Params) {
 	case SortClick:
 		t.sortClick(p.EventValueString())
 		t.Refresh()
+	default:
+		if par := t.Parent(); par != nil {
+			par.DoPrivateAction(ctx, p)
+		}
 	}
 
 }

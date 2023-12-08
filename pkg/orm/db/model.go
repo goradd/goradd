@@ -28,6 +28,8 @@ const (
 type Model struct {
 	// The database key corresponding to its key in the global database cluster
 	DbKey string
+	// The name of the database or schema.
+	DbName string
 	// Tables are the tables in the database, keyed by database table name
 	Tables map[string]*Table
 	// EnumTables contains a description of the enumerated types from the enum tables in the database, keyed by database table name
@@ -58,12 +60,14 @@ type Model struct {
 //
 // desc is the description of the database.
 func NewModel(dbKey string,
+	dbName string,
 	foreignKeySuffix string,
 	enumTableSuffix string,
 	ignoreSchemas bool,
 	desc DatabaseDescription) *Model {
 	d := Model{
 		DbKey:            dbKey,
+		DbName:           dbName,
 		ForeignKeySuffix: foreignKeySuffix,
 		EnumTableSuffix:  enumTableSuffix,
 		ignoreSchemas:    ignoreSchemas,

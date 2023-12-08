@@ -14,10 +14,6 @@ import (
 	"strings"
 )
 
-const (
-	fileSelectChangeAction = 2000 // This action is just here to update form values
-)
-
 const uploadEventName = "upload"
 
 // UploadEvent triggers when an upload has been completed.
@@ -44,12 +40,12 @@ type FileSelectI interface {
 
 // FileSelect is a standard html file select button.
 //
-// By default, it will only accept single file. Call SetMultiple to allow multiple selections, and SetAccept
+// By default, it will only accept a single file. Call SetMultiple to allow multiple selections, and SetAccept
 // to control what types of files can be selected based on the file suffixes.
 //
 // To get the list of files that have been selected, call FileInfo.
 // However, to get to the files that are being uploaded, you must do one of the following:
-//   - create an Do action on the UploadEvent event, and then call the Upload function, or
+//   - create a DoAction action on the UploadEvent event, and then call the Upload function, or
 //   - create a Server action on a submit button.
 //
 // In your DoAction handler, call FileHeaders on the FileSelect to retrieve the file headers.
@@ -85,7 +81,6 @@ func (b *FileSelect) Init(self any, parent page.ControlI, id string) {
 	b.ControlBase.Init(self, parent, id)
 	b.Tag = "input"
 	b.SetAttribute("type", "file")
-	b.On(event.Change().Private(), action.Do(b.ID(), fileSelectChangeAction))
 	b.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "file_select.js"), false, nil)
 }
 

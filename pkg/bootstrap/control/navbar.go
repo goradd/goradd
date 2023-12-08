@@ -135,7 +135,7 @@ func (b *Navbar) SetContainerClass(class ContainerClass) NavbarI {
 
 // OnClick sets the action to take when a link in the Navbar is selected.
 // It will only respond to links whose href is "#", which indicates its an empty link.
-// The ActionValue will be the id of the link clicked.
+// The EventValue will be the id of the link clicked.
 func (b *Navbar) OnClick(a action.ActionI) NavbarI {
 	b.On(NavbarSelectEvent(), a)
 	return b.this()

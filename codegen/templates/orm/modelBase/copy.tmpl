@@ -2,7 +2,7 @@
 
 {{
 
-// Copy copies all valid fields (except for the primary key) to a new {{= t.GoName}} object.
+// Copy copies all valid fields (except for the primary key) to a new [{{= t.GoName}}] object.
 // Forward reference ids will be copied, but reverse and many-many references will not.
 // Call Save() on the new object to save it into the database.
 func (o *{{privateName}}Base) Copy() (newObject *{{= t.GoName}}) {

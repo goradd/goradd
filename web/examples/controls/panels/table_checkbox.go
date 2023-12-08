@@ -45,7 +45,7 @@ func NewTableCheckboxPanel(ctx context.Context, parent page.ControlI) {
 }
 
 func (p *TableCheckboxPanel) Init(self any, ctx context.Context, parent page.ControlI, id string) {
-	p.Panel.Init(self, parent, "checkboxTablePanel")
+	p.Panel.Init(self, parent, id)
 	p.AddControls(ctx,
 		PagedTableCreator{
 			ID:             "table1",
@@ -74,12 +74,12 @@ func (p *TableCheckboxPanel) Init(self any, ctx context.Context, parent page.Con
 		ButtonCreator{
 			ID:       "ajaxButton",
 			Text:     "Submit Ajax",
-			OnSubmit: action.Do("checkboxPanel", ButtonSubmit),
+			OnSubmit: action.Do().ControlID("checkboxPanel").ID(ButtonSubmit),
 		},
 		ButtonCreator{
 			ID:       "serverButton",
 			Text:     "Submit Post",
-			OnSubmit: action.Do("checkboxPanel", ButtonSubmit).Post(),
+			OnSubmit: action.Do().ControlID("checkboxPanel").ID(ButtonSubmit).Post(),
 		},
 	)
 
