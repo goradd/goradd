@@ -239,7 +239,7 @@ func (t *Textbox) SetColumnCount(columns int) TextboxI {
 	return t.this()
 }
 
-// SetRowCount sets the number of rowCount the Textbox will have.
+// SetRowCount sets the number of rows the Textbox will have.
 // A value of 0 produces an input tag, and a value of 1 or greater produces a textarea tag.
 func (t *Textbox) SetRowCount(rows int) TextboxI {
 	if rows < 0 {

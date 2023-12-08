@@ -7,6 +7,7 @@ import (
 	"io"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *IntroPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<h1>Introduction to the ORM</h1>
@@ -61,7 +62,7 @@ separate words with underscores. The reason for this is that some databases are 
 adopted this convention to provide the maximum compatibility between different kinds of databases.
 </p>
 <p>
-The Goradd ORM will convert snake_case names in the database to CamelCase names, meaning each name will capitalize the
+The Goradd ORM will convert snake_case names in the database to CamelCase names in Go code, meaning each name will capitalize the
 start of each word.
 </p>
 <p>
