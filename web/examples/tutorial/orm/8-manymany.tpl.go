@@ -10,6 +10,7 @@ import (
 	"github.com/goradd/goradd/web/examples/gen/goradd/model/node"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *ManyManyPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<h1>Many-to-Many Relationships</h1>

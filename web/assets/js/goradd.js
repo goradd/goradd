@@ -2676,13 +2676,13 @@ var g$ = function(el) {
             };
 
             objRequest.onerror = function (event) {
-                goradd.log("upload error");
-                opts.error("A file upload error occurred");
+                goradd.log("error");
+                opts.error("An error occurred");
             };
 
             objRequest.ontimeout  = function (event) {
                 goradd.log("timeout error");
-                opts.error("The server did not respond in time.");
+                opts.error("The server did not respond in time");
             };
 
             _currentRequests[ajaxID] = objRequest;
