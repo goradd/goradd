@@ -182,21 +182,19 @@ func (d *Dialog) AddButton(
 
 		if options.ConfirmationMessage == "" {
 			if options.OnClick != nil {
-				btn.On(event.Click(), options.OnClick)
+				btn.On(event.Click().Action(options.OnClick))
 			} else {
-				btn.On(event.Click(), action.Trigger(d.ID(), event.DialogButtonEvent, id))
+				btn.On(event.Click().Action(action.Trigger(d.ID(), event.DialogButtonEvent, id)))
 			}
 		} else {
 			if options.OnClick != nil {
-				btn.On(event.Click(),
-					action.Confirm(options.ConfirmationMessage),
-					options.OnClick,
-				)
+				btn.On(event.Click().Action(action.Group(action.Confirm(options.ConfirmationMessage),
+					options.OnClick)))
 			} else {
-				btn.On(event.Click(),
+				btn.On(event.Click().Action(action.Group(
 					action.Confirm(options.ConfirmationMessage),
 					action.Trigger(d.ID(), event.DialogButtonEvent, id),
-				)
+				)))
 			}
 		}
 	} else {
@@ -281,7 +279,7 @@ func (d *Dialog) AddCloseButton(label string, id string) {
 	btn := button.NewButton(d.ButtonBar(), id)
 	btn.SetLabel(label)
 	btn.SetValidationType(event.ValidateNone)
-	btn.On(event.Click(), action.Trigger(d.ID(), event.DialogClosedEvent, nil))
+	btn.On(event.Click().Action(action.Trigger(d.ID(), event.DialogClosedEvent, nil)))
 }
 
 // DoPrivateAction is called by the framework and will respond to the DialogClose action sent by any close buttons on the

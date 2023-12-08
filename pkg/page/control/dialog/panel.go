@@ -83,7 +83,7 @@ func (p *DialogPanel) OnClose(a action.ActionI) {
 // OnButton attaches an action handler that responds to button presses. The id of the pressed button will
 // be in the Event value of the action.
 func (p *DialogPanel) OnButton(a action.ActionI) {
-	p.getDialog().On(event.DialogButton(), a)
+	p.getDialog().On(event.DialogButton().Action(a))
 }
 
 // Show will bring a hidden dialog up on the screen.
