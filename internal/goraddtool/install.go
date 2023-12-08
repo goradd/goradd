@@ -22,6 +22,7 @@ var commands = []string{
 	"go install golang.org/x/tools/cmd/goimports@latest",         // For auto-fixing of import declarations
 	"go install github.com/goradd/gofile@latest",                 // For deployment
 	"go install github.com/tdewolff/minify/v2/cmd/minify@latest", // for deployment
+	"go mod tidy", // cleanup install
 }
 
 // install will copy the project and tmp directories to the cwd
