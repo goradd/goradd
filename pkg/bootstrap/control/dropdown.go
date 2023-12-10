@@ -25,6 +25,8 @@ type DropdownI interface {
 // A Dropdown implements the Bootstrap Dropdown control.
 // The Dropdown is a button combined with a list. The button shows the list, allowing the user
 // to select an item from the list.
+//
+// Call SetAsNavItem to draw the button in a way compatible with being inside a navbar.
 type Dropdown struct {
 	list.UnorderedList
 	asNavItem        bool
@@ -105,8 +107,14 @@ func (l *Dropdown) DrawInnerHtml(_ context.Context, w io.Writer) {
 			btnAttr.AddClass("nav-link"),
 			l.Text())
 	} else {
-		h = html5tag.RenderTag("a",
-			btnAttr.AddClass("btn"),
+		btnAttr.AddClass("btn")
+		btnAttr.Set("type", "button")
+		if !btnAttr.HasClassWithPrefix("btn-") {
+			// Add default button style if not set
+			btnAttr.AddClass(string(ButtonStylePrimary))
+		}
+		h = html5tag.RenderTag("button",
+			btnAttr,
 			l.Text())
 	}
 	hItems := l.this().GetItemsHtml(l.Items())

@@ -7,7 +7,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/goradd/gofile v1.1.1
 	github.com/goradd/got v1.1.1
-	github.com/goradd/html5tag v1.0.1
+	github.com/goradd/html5tag v1.0.3
 	github.com/goradd/maps v0.1.5
 	github.com/goradd/moddoc v0.4.2
 	github.com/gorilla/websocket v1.5.0
