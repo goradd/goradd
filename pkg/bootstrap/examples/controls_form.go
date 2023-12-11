@@ -6,6 +6,7 @@ import (
 	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/page"
 	. "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/goradd/pkg/page/control/list"
 	"github.com/goradd/goradd/pkg/url"
 	"sort"
 )
@@ -95,6 +96,11 @@ func (f *ControlsForm) loadNavbar(ctx context.Context, curKey string) {
 			item.SetIsActive(true)
 		}
 	}
+
+	dropdown := bootstrap.NewDropdown(navGroup, "nav-dropdown")
+	dropdown.AddItems([]*list.Item{list.NewItem("Do Nothing"), list.NewItem("Also Do Nothing")})
+	dropdown.SetAsNavItem(true)
+	dropdown.SetText("Do Nothing")
 }
 
 func init() {
