@@ -40,6 +40,10 @@ func Refresh(id string) ActionI {
 //	action.SetControlValue(myControl.ID(), "myKey", javascript.NewJsCode("event.target.id"))
 //
 // will pass the id of the target of an event to the receiver of the action.
+//
+// Note that if you need to save and restore state by calling MarshalState and UnmarshalState, you will need to
+// have your control listen for the event that sets this value and call action.Do() so that UpdateFormValues will
+// eventually get called.
 func SetControlValue(id string, key string, value interface{}) ActionI {
 	return GoraddFunction("setControlValue", id, key, value)
 }

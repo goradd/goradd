@@ -1,6 +1,6 @@
 {{< package }}panels{{end package}}
 {{< imports }}
-    . "github.com/goradd/goradd/pkg/bootstrap/control"
+    control2 "github.com/goradd/goradd/pkg/bootstrap/control"
 {{end imports}}
 {{define control}}Forms2Panel{{end control}}
 

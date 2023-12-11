@@ -9,6 +9,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/control"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *Forms1Panel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<h2>Standard Form Layout</h2>
