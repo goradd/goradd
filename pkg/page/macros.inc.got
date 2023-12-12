@@ -48,7 +48,7 @@
 {{end drawChildIf}}
 
 {{# setAttributes sets the attributes of the given control using an attribute setting string. }}
-{{# The string is in the form `name="value` }}
+{{# The string is in the form `name="value"` }}
 
 {{define setAttributes 2}}
 {{g
@@ -83,6 +83,15 @@ if ctrl.Page().HasControl(ctrl.ID() + "$1") {
 }
 }}
 {{end setChildLabelAttributes}}
+
+{{# addClass adds to the given control the given space separated classes. }}
+{{define addClass 2}}
+{{g
+if ctrl.Page().HasControl("$1") {
+    ctrl.Page().GetControl("$1").AddClass(`$2`)
+}
+}}
+{{end addClass}}
 
 {{define localPath 1}}
 {{= http.MakeLocalPath("$1") }}
