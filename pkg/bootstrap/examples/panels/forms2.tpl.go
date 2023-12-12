@@ -6,10 +6,11 @@ import (
 	"context"
 	"io"
 
-	. "github.com/goradd/goradd/pkg/bootstrap/control"
+	control2 "github.com/goradd/goradd/pkg/bootstrap/control"
 	"github.com/goradd/goradd/pkg/page/control"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *Forms2Panel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `
@@ -27,7 +28,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("nameText-ff") {
-		ctrl.Page().GetControl("nameText-ff").(FormGroupI).InnerDivAttributes().MergeString(`class="col-10"`)
+		ctrl.Page().GetControl("nameText-ff").(control2.FormGroupI).InnerDivAttributes().MergeString(`class="col-10"`)
 	}
 
 	if `class="row mb-3"` == "" {
@@ -64,7 +65,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("streetText-ff") {
-		ctrl.Page().GetControl("streetText-ff").(FormGroupI).InnerDivAttributes().MergeString(`class="col-10"`)
+		ctrl.Page().GetControl("streetText-ff").(control2.FormGroupI).InnerDivAttributes().MergeString(`class="col-10"`)
 	}
 
 	if `class="row mb-3"` == "" {
@@ -121,7 +122,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("cityText-ff") {
-		ctrl.Page().GetControl("cityText-ff").(FormGroupI).InnerDivAttributes().MergeString(`class="col-8"`)
+		ctrl.Page().GetControl("cityText-ff").(control2.FormGroupI).InnerDivAttributes().MergeString(`class="col-8"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {
@@ -182,7 +183,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("stateText-ff") {
-		ctrl.Page().GetControl("stateText-ff").(FormGroupI).InnerDivAttributes().MergeString(`class="col-6"`)
+		ctrl.Page().GetControl("stateText-ff").(control2.FormGroupI).InnerDivAttributes().MergeString(`class="col-6"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {
@@ -243,7 +244,7 @@ This is an example of a typical form with inline labels.
 	}
 
 	if ctrl.Page().HasControl("zipText-ff") {
-		ctrl.Page().GetControl("zipText-ff").(FormGroupI).InnerDivAttributes().MergeString(`class="col-8"`)
+		ctrl.Page().GetControl("zipText-ff").(control2.FormGroupI).InnerDivAttributes().MergeString(`class="col-8"`)
 	}
 
 	if _, err = io.WriteString(_w, `        `); err != nil {

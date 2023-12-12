@@ -4,7 +4,6 @@ package control
 
 import (
 	"context"
-	"fmt"
 	"io"
 )
 
@@ -15,16 +14,32 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 		(t.selectedID == "" || t.Child(t.selectedID) == nil) {
 		t.selectedID = children[0].ID() // select first item if nothing is selected
 	}
+	bs := t.tabStyle
+	ul := t.tabStyle
+	if t.tabStyle == TabStyleTabs || t.tabStyle == TabStylePills {
+		ul = t.tabStyle + "s"
+	}
+	if t.tabStyle == TabStyleUnderline {
+		bs = "tab"
+	}
 
 	if _, err = io.WriteString(_w, `
-<ul class="nav nav-tabs" id="myTab" role="tablist">
+<ul class="nav nav-`); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, ul); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, `" id="myTab" role="tablist">
 `); err != nil {
 		return
 	}
 
 	for _, child := range children {
 
-		if _, err = io.WriteString(_w, `  <li class="nav-item">
+		if _, err = io.WriteString(_w, `  <li class="nav-item" role="presentation">
     <a class="nav-link `); err != nil {
 			return
 		}
@@ -41,15 +56,23 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 			return
 		}
 
-		if _, err = io.WriteString(_w, fmt.Sprint(child.ID())); err != nil {
+		if _, err = io.WriteString(_w, child.ID()); err != nil {
 			return
 		}
 
-		if _, err = io.WriteString(_w, `_tab" data-toggle="tab" href="#`); err != nil {
+		if _, err = io.WriteString(_w, `_tab" data-bs-toggle="`); err != nil {
 			return
 		}
 
-		if _, err = io.WriteString(_w, fmt.Sprint(child.ID())); err != nil {
+		if _, err = io.WriteString(_w, bs); err != nil {
+			return
+		}
+
+		if _, err = io.WriteString(_w, `" href="#`); err != nil {
+			return
+		}
+
+		if _, err = io.WriteString(_w, child.ID()); err != nil {
 			return
 		}
 
@@ -57,7 +80,7 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 			return
 		}
 
-		if _, err = io.WriteString(_w, fmt.Sprint(child.ID())); err != nil {
+		if _, err = io.WriteString(_w, child.ID()); err != nil {
 			return
 		}
 
@@ -65,7 +88,7 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 			return
 		}
 
-		if _, err = io.WriteString(_w, fmt.Sprint(child.Text())); err != nil {
+		if _, err = io.WriteString(_w, child.Text()); err != nil {
 			return
 		}
 

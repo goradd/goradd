@@ -7,6 +7,7 @@ import (
 	"io"
 )
 
+// DrawTemplate draws the content of the matching control's template file.
 func (ctrl *DefaultPanel) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 
 	if _, err = io.WriteString(_w, `<h1>Bootstrap Control Examples</h1>

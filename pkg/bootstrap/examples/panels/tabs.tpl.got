@@ -1,0 +1,13 @@
+{{< package }}panels{{end package}}
+{{< imports }}
+{{end imports}}
+{{define control}}TabsPanel{{end control}}
+
+{{define template }}
+<h1>Bootstrap Tabs Examples</h1>
+{{draw tabs-panel }}
+{{draw pills-panel }}
+{{draw underline-panel }}
+{{end template}}
+
+{{renderControlTemplate}}

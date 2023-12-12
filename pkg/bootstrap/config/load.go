@@ -3,8 +3,8 @@ package config
 import (
 	_ "github.com/goradd/goradd/pkg/bootstrap/assets"
 	"github.com/goradd/goradd/pkg/config"
-	"github.com/goradd/html5tag"
 	"github.com/goradd/goradd/pkg/page"
+	"github.com/goradd/html5tag"
 	"path"
 )
 
@@ -26,16 +26,16 @@ func LoadBootstrap(form page.FormI) {
 		Loader(form)
 	} else {
 		form.Page().AddHtmlHeaderTag(html5tag.VoidTag{
-			Tag:  "meta",
+			Tag: "meta",
 			Attr: html5tag.NewAttributes().
 				AddValues("name", "viewport").
-				AddValues("content","width=device-width, initial-scale=1, shrink-to-fit=no"),
-			})
+				AddValues("content", "width=device-width, initial-scale=1, shrink-to-fit=no"),
+		})
 		if config.Release {
-			form.AddJavaScriptFile("https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js", false,
-				html5tag.NewAttributes().Set("integrity", "sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p").Set("crossorigin", "anonymous"))
-			form.AddStyleSheetFile("https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css",
-				html5tag.NewAttributes().Set("integrity", "sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3").Set("crossorigin", "anonymous"))
+			form.AddJavaScriptFile("https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js", false,
+				html5tag.NewAttributes().Set("integrity", "sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL").Set("crossorigin", "anonymous"))
+			form.AddStyleSheetFile("https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css",
+				html5tag.NewAttributes().Set("integrity", "sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN").Set("crossorigin", "anonymous"))
 		} else {
 			form.AddJavaScriptFile(path.Join(config.AssetPrefix, "bootstrap", "js", "bootstrap.bundle.js"), false, nil)
 			form.AddStyleSheetFile(path.Join(config.AssetPrefix, "bootstrap", "css", "bootstrap.css"), nil)

@@ -7,13 +7,21 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
         (t.selectedID == "" || t.Child(t.selectedID) == nil) {
         t.selectedID = children[0].ID()     // select first item if nothing is selected
     }
+    bs := t.tabStyle
+    ul := t.tabStyle
+    if t.tabStyle == TabStyleTabs || t.tabStyle == TabStylePills {
+        ul = t.tabStyle + "s"
+    }
+    if t.tabStyle == TabStyleUnderline {
+        bs = "tab"
+    }
 
 {{
 
-<ul class="nav nav-tabs" id="myTab" role="tablist">
+<ul class="nav nav-{{= ul}}" id="myTab" role="tablist">
 {{for _, child := range children }}
-  <li class="nav-item">
-    <a class="nav-link {{if child.ID() == t.selectedID}}active{{if}}" id="{{child.ID()}}_tab" data-toggle="tab" href="#{{child.ID()}}" role="tab" aria-controls="{{child.ID()}}" aria-selected="true">{{child.Text()}}</a>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link {{if child.ID() == t.selectedID}}active{{if}}" id="{{= child.ID()}}_tab" data-bs-toggle="{{= bs}}" href="#{{= child.ID()}}" role="tab" aria-controls="{{= child.ID()}}" aria-selected="true">{{= child.Text()}}</a>
   </li>
 {{for}}
 </ul>
