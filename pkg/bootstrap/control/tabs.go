@@ -42,7 +42,9 @@ type TabsI interface {
 //
 // Call SelectedId to return the id of the currently selected tab.
 //
-// Call AsPills to draw the tabs as pills instead
+// Call SetTabStyle to set the style to be tabs, pills or underline.
+//
+// The tab structure is surrounded by a Card, and the content is drawn in a div with class card-body.
 type Tabs struct {
 	control.Panel
 	selectedID string // selected child id
@@ -94,6 +96,7 @@ func (t *Tabs) SetTabStyle(s string) {
 func (t *Tabs) DrawingAttributes(ctx context.Context) html5tag.Attributes {
 	a := t.Panel.DrawingAttributes(ctx)
 	a.SetData("grctl", "bs-tabs")
+	a.AddClass("card")
 	return a
 }
 

@@ -7,7 +7,8 @@ import (
 	"io"
 )
 
-func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
+func (t *Tabs) DrawInnerHtml(ctx context.Context, _w io.Writer) {
+	var err error
 	var children = t.Children()
 
 	if (children != nil && len(children) > 0) &&
@@ -23,8 +24,16 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 		bs = "tab"
 	}
 
-	if _, err = io.WriteString(_w, `
+	if _, err = io.WriteString(_w, `<div class="card-header">
 <ul class="nav nav-`); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, ul); err != nil {
+		return
+	}
+
+	if _, err = io.WriteString(_w, ` card-header-`); err != nil {
 		return
 	}
 
@@ -101,7 +110,9 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	}
 
 	if _, err = io.WriteString(_w, `</ul>
-<div class="tab-content" id="myTabContent">
+</div>
+<div class="card-body">
+<div class="tab-content">
 `); err != nil {
 		return
 	}
@@ -117,7 +128,7 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
 	}
 
 	if _, err = io.WriteString(_w, `</div>
-
+</div>
 `); err != nil {
 		return
 	}
