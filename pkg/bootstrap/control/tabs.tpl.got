@@ -1,6 +1,7 @@
 package control
 
-func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
+func (t *Tabs) DrawInnerHtml(ctx context.Context, _w io.Writer) {
+    var err error
     var children = t.Children()
 
     if (children != nil && len(children) > 0) &&
@@ -17,15 +18,17 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
     }
 
 {{
-
-<ul class="nav nav-{{= ul}}" id="myTab" role="tablist">
+<div class="card-header">
+<ul class="nav nav-{{= ul}} card-header-{{= ul}}" id="myTab" role="tablist">
 {{for _, child := range children }}
   <li class="nav-item" role="presentation">
     <a class="nav-link {{if child.ID() == t.selectedID}}active{{if}}" id="{{= child.ID()}}_tab" data-bs-toggle="{{= bs}}" href="#{{= child.ID()}}" role="tab" aria-controls="{{= child.ID()}}" aria-selected="true">{{= child.Text()}}</a>
   </li>
 {{for}}
 </ul>
-<div class="tab-content" id="myTabContent">
+</div>
+<div class="card-body">
+<div class="tab-content">
 {{g
     for _, child := range children {
         child.AddClass("tab-pane")
@@ -38,7 +41,7 @@ func (t *Tabs) DrawTemplate(ctx context.Context, _w io.Writer) (err error) {
     }
 }}
 </div>
-
+</div>
 }}
     return
 }
