@@ -40,6 +40,10 @@ func (c *CheckboxBase) this() CheckboxI {
 	return c.Self().(CheckboxI)
 }
 
+func (c *CheckboxBase) IsLabelable() bool {
+	return true
+}
+
 // DrawingAttributes retrieves the tag's attributes at draw time. You should not normally need to call this, and the
 // attributes are disposed of after drawing, so they are essentially read-only.
 func (c *CheckboxBase) DrawingAttributes(ctx context.Context) html5tag.Attributes {

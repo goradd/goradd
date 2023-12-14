@@ -101,6 +101,12 @@ func (t *Textbox) this() TextboxI {
 	return t.Self().(TextboxI)
 }
 
+// IsLabelable is called by the framework to indicate that textboxes and its derivatives are labelable
+// according to the HTML standard.
+func (t *Textbox) IsLabelable() bool {
+	return true
+}
+
 // ValidateWith adds a Validater to the validator list.
 func (t *Textbox) ValidateWith(v Validater) {
 	t.validators = append(t.validators, v)

@@ -52,6 +52,10 @@ func (l *SelectList) this() SelectListI {
 	return l.Self().(SelectListI)
 }
 
+func (l *SelectList) IsLabelable() bool {
+	return true
+}
+
 // Validate is called by the framework to validate the contents of the control. For a SelectList,
 // this is typically just checking to see if something was selected if a selection is required.
 func (l *SelectList) Validate(ctx context.Context) bool {

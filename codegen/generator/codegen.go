@@ -376,9 +376,8 @@ func (c *CodeGenerator) WrapFormField(wrapperType string, label string, forId st
 	return fmt.Sprintf(
 		`%sCreator{
 	ID: p.ID() + "-%s%s",
-	For:  p.ID() + "-%s",
 	Label: "%s",
 	Child: %s,
 }
-`, wrapperType, forId, config.DefaultFormFieldWrapperIdSuffix, forId, label, child)
+`, wrapperType, forId, config.DefaultFormFieldWrapperIdSuffix, label, child)
 }

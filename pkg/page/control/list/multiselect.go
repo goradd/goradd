@@ -46,6 +46,10 @@ func (l *MultiselectList) this() MultiselectListI {
 	return l.Self().(MultiselectListI)
 }
 
+func (l *MultiselectList) IsLabelable() bool {
+	return true
+}
+
 func (l *MultiselectList) SetSize(size int) MultiselectListI {
 	l.SetAttribute("size", strconv.Itoa(size))
 	l.Refresh()

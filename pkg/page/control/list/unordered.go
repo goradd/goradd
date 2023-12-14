@@ -55,7 +55,7 @@ func (l *UnorderedList) Init(self any, parent page.ControlI, id string) {
 	l.itemTag = "li"
 }
 
-// this() supports object oriented features by giving easy access to the virtual function interface.
+// this() supports object-oriented features by giving easy access to the virtual function interface.
 func (l *UnorderedList) this() UnorderedListI {
 	return l.Self().(UnorderedListI)
 }

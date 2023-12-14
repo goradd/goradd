@@ -84,6 +84,10 @@ func (b *FileSelect) Init(self any, parent page.ControlI, id string) {
 	b.ParentForm().AddJavaScriptFile(path.Join(config.AssetPrefix, "goradd", "js", "file_select.js"), false, nil)
 }
 
+func (b *FileSelect) IsLabelable() bool {
+	return true
+}
+
 // SetMultiple controls whether the button allows multiple file selections.
 func (b *FileSelect) SetMultiple(m bool) {
 	b.SetAttribute("multiple", m)

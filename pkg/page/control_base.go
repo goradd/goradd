@@ -141,6 +141,7 @@ type ControlI interface {
 	SetHeightStyle(w interface{}) ControlI
 	Attributes() html5tag.Attributes
 	MergeAttributes(a html5tag.Attributes) ControlI
+	IsLabelable() bool
 
 	SetDisplay(d string) ControlI
 	SetDisabled(d bool)
@@ -400,6 +401,13 @@ func (c *ControlBase) control() *ControlBase {
 func (c *ControlBase) SetTag(tag string) ControlI {
 	c.Tag = tag
 	return c
+}
+
+// IsLabelable returns true if the control is labelable as defined by the HTML standard. Generally, this means
+// that it can be associated with a label tag. The FormFieldWrapper control uses this to determine if it should
+// output a "for" attribute.
+func (c *ControlBase) IsLabelable() bool {
+	return false
 }
 
 // DrawPreRender is called by the framework to notify the control that it is about to be drawn. If you
