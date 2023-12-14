@@ -194,8 +194,11 @@ func (b *Navbar) Deserialize(d page.Decoder) {
 }
 
 type NavbarCreator struct {
-	ID    string
+	ID string
+	// Brand is the string to use for the brand
 	Brand string
+	// BrandIsHtml can be set to true to specify that the Brand string should not be escaped
+	BrandIsHtml bool
 	// BrandAnchor is the url to go to when the main logo in the navbar is clicked
 	BrandAnchor string
 	// Style is either NavbarDark or NavbarLight
@@ -228,6 +231,9 @@ func (c NavbarCreator) Create(ctx context.Context, parent page.ControlI) page.Co
 func (c NavbarCreator) Init(ctx context.Context, ctrl NavbarI) {
 	if c.Brand != "" {
 		ctrl.SetBrand(c.Brand, c.BrandAnchor, c.BrandLocation)
+	}
+	if c.BrandIsHtml {
+		ctrl.SetTextIsHtml(true)
 	}
 	if c.Style != "" {
 		ctrl.SetNavbarStyle(c.Style)
