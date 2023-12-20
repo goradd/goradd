@@ -1754,7 +1754,7 @@ func (c *ControlBase) ModifiesData(data interface{}) bool {
 // It also adds all the parents of those nodes.
 // For example, WatchDbTables(ctx, node.Project().Manager()) will watch the project table and the person table.
 func (c *ControlBase) WatchDbTables(ctx context.Context, nodes ...query.NodeI) {
-	// Remove the dependency on query here. Have this watch a channel instead of query nodes.
+	// TODO: Remove the dependency on query here? Have this watch a channel instead of query nodes.
 	if c.watchedKeys == nil {
 		c.watchedKeys = make(map[string]string)
 	}

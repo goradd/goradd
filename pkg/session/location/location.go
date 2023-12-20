@@ -1,4 +1,4 @@
-// The location package implements a location queue built on top of the session service.
+// Package location implements a location queue built on top of the session service.
 // You can use it to keep track of the path a user took to get to a particular location,
 // and then allow that user to back out of that path. This is helpful in situations where
 // there are multiple paths to get to a page, but the user presses a Save or Cancel button
