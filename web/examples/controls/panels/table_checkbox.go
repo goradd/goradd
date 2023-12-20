@@ -111,7 +111,7 @@ func (p *TableCheckboxPanel) DoAction(ctx context.Context, a action.Params) {
 
 func init() {
 	browsertest.RegisterTestFunction("Table - CheckboxList Nav", testTableCheckboxNav)
-	browsertest.RegisterTestFunction("Table - CheckboxList Do Submit", testTableCheckboxAjaxSubmit)
+	browsertest.RegisterTestFunction("Table - CheckboxList Ajax Submit", testTableCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Table - CheckboxList Server Submit", testTableCheckboxServerSubmit)
 
 	gob.Register(SelectedProvider{}) // We must register this here because we are putting the changes map into the session,
