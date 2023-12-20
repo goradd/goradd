@@ -12,6 +12,9 @@ import (
 // DefaultActionId is the default action id for events that do not want to specify a custom action id
 const DefaultActionId = 0
 
+// RefreshActionId is the action id that causes a control to refresh.
+const RefreshActionId = -1
+
 // DefaultControlId indicates that the control that the action is first sent to is the same as the control that received the event.
 const DefaultControlId = ""
 
@@ -60,7 +63,8 @@ type callbackAction struct {
 	IsPost        bool // if false, this is an Ajax call
 }
 
-// ID sets the action id that was defined when the action was created.
+// ID sets the action id of the action, and that can be retrieved from the action parameters in DoAction.
+// This value should be positive. Negative values and zero are reserved for goradd internals.
 func (a *callbackAction) ID(id int) CallbackActionI {
 	a.ActionID = id
 	return a
@@ -229,6 +233,11 @@ func Server(destControlId string, actionID int) CallbackActionI {
 func Do() CallbackActionI {
 	a := &callbackAction{}
 	return a
+}
+
+// Refresh will cause the given control to redraw
+func Refresh(id string) CallbackActionI {
+	return Do().ControlID(id).ID(RefreshActionId)
 }
 
 func init() {

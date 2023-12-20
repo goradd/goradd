@@ -27,11 +27,6 @@ func Message(m interface{}) ActionI {
 	return GoraddFunction("msg", m)
 }
 
-// Refresh will cause the given control to redraw
-func Refresh(id string) ActionI {
-	return GoraddFunction("refresh", id)
-}
-
 // SetControlValue is primarily used by custom controls to set a value that eventually can get picked
 // up by the control in the UpdateFormValues function. It is an aid to tying javascript powered widgets together
 // with the go version of the control. Value gets converted to a javascript value, so use the javascript.* helpers

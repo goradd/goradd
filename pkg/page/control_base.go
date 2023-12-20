@@ -1050,7 +1050,7 @@ func (c *ControlBase) ShouldAutoRender() bool {
 
 // On adds an event listener to the control that will trigger the given actions.
 //
-// Specifying an action is deprecated. Instead, call [event.Action] on the event.
+// Specifying an action is deprecated. Instead, call Action on the event.
 func (c *ControlBase) On(e *event.Event, a ...action.ActionI) ControlI {
 	c.Refresh() // completely redraw the control. The act of redrawing will turn off old scripts.
 	// TODO: Adding scripts should instead just redraw the associated script block. We will need to
@@ -1149,8 +1149,14 @@ func (c *ControlBase) ActionValue() interface{} {
 // Forms and controls should implement this method to handle an action.
 // Typically, the DoAction function will first look at the ID, or Event to know how to handle it.
 //
-// When an action is not handled, most controls should pass it to its "superclass" object.
+// When an action is not handled, most controls should pass it to its "superclass" object. If none
+// of the superclasses of the object handle it, it will be passed to its parent object in the form
+// object hierarchy.
 func (c *ControlBase) DoAction(ctx context.Context, a action.Params) {
+	if a.ID == action.RefreshActionId {
+		c.Refresh()
+		return
+	}
 	if p := c.Parent(); p != nil { // a form does not have a parent
 		p.DoAction(ctx, a)
 	}
@@ -1748,7 +1754,7 @@ func (c *ControlBase) ModifiesData(data interface{}) bool {
 // It also adds all the parents of those nodes.
 // For example, WatchDbTables(ctx, node.Project().Manager()) will watch the project table and the person table.
 func (c *ControlBase) WatchDbTables(ctx context.Context, nodes ...query.NodeI) {
-	// Remove the dependency on query here. Have this watch a channel instead of query nodes.
+	// TODO: Remove the dependency on query here? Have this watch a channel instead of query nodes.
 	if c.watchedKeys == nil {
 		c.watchedKeys = make(map[string]string)
 	}
