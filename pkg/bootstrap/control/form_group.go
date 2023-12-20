@@ -95,10 +95,13 @@ func (c *FormGroup) DrawTag(ctx context.Context, w io.Writer) {
 	log.FrameworkDebug("Drawing FormFieldWrapper: " + c.ID())
 
 	attributes := c.this().DrawingAttributes(ctx)
-	if c.For() == "" {
-		panic("a FormGroup MUST have a sub control")
+	if len(c.Children()) == 0 {
+		panic("FormGroup " + c.ID() + " is missing a child control")
 	}
-	subControl := c.Page().GetControl(c.For())
+	subControl := c.Children()[0]
+	if c.For() != "" {
+		subControl = c.Page().GetControl(c.For())
+	}
 	errorMessage := subControl.ValidationMessage()
 	if errorMessage != "" {
 		attributes.AddClass("error")
