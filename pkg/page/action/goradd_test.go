@@ -8,7 +8,7 @@ import (
 
 func TestRefresh(t *testing.T) {
 	js := Refresh("a").RenderScript(RenderParams{})
-	assert.Equal(t, `goradd.refresh("a");`, js)
+	assert.Equal(t, `goradd.postAjax({"controlID":"","eventId":0,"actionValues":{"event":eventData}});`, js)
 }
 
 func TestSetControlValue(t *testing.T) {
