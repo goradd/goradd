@@ -120,6 +120,7 @@ func (c *FormGroup) DrawTag(ctx context.Context, w io.Writer) {
 
 	if text != "" {
 		c.LabelAttributes().Set("for", c.For())
+		c.LabelAttributes().AddClass("form-label")
 		buf.WriteString(html5tag.RenderTag("label", c.LabelAttributes(), html.EscapeString(text)))
 	}
 

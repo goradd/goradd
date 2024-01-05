@@ -69,6 +69,9 @@ func (d *DateTextbox) layouts() []string {
 	return d.formats
 }
 
+// parseDate will parse the given string using the layouts in the textbox until it finds one that does not
+// result in an error, or until it exhausts all the layouts. The resulting date will be the first second of that
+// day in the timezone of the browser.
 func (d *DateTextbox) parseDate(ctx context.Context, s string) (result time.Time, layoutUsed string, err error) {
 	var grctx *page.Context
 
@@ -118,7 +121,9 @@ func (d *DateTextbox) Value() interface{} {
 }
 
 // Date returns the value as a time.Time value.
-// If a bad value was entered into the textbox, it will return an empty value.
+// The result is the first second of the entered date in the timezone of the browser.
+//
+// If a bad value was entered into the textbox, it will return a zero time.
 func (d *DateTextbox) Date() time.Time {
 	return d.time
 }
@@ -195,9 +200,8 @@ func (v DateValidator) Validate(c page.ControlI, s string) (msg string) {
 	return
 }
 
-// DateTextboxCreator creates an date textbox.
-// Pass it to AddControls of a control, or as a Child of
-// a FormFieldWrapper.
+// DateTextboxCreator creates a date textbox.
+// Pass it to AddControls of a control, or as a Child of a FormFieldWrapperCreator.
 type DateTextboxCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
 	ID string
