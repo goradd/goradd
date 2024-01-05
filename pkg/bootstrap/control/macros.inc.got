@@ -1,35 +1,57 @@
 {{# Macros to help with setting bootstrap styling in form groups. }}
 
-{{define row}}
-<div class="row">
+{{# Creates a new row.
+    The parameter is additional space-separated classes for the row div, enclosed in quotes if there is more than one.
+    For example 'row "mb-3 ml-1"' will become a div with class "row mb-1 ml-1"
+}}
+{{define row 1}}
+<div class="row $1">
 {{end row}}
 
-{{define +row}}
+{{# Closes a previous row and creates a new row.
+    The parameter is additional space-separated classes for the row div enclosed in quotes if there
+    is more than one.
+}}
+{{define +row 1}}
 </div>
-<div class="row">
+<div class="row $1">
 {{end +row}}
 
+{{# Closes a row}}
 {{define -row}}
 </div>
 {{end -row}}
 
-{{define col 1}}
+{{# Creates a new column.
+    Parameter 1 is a qualifier for the col tag that will come after a dash. For example 'col 8' will result in
+    a col-8 class. 'col md-auto' will become a col-md-auto class.
+    Parameter 2 is space separated additional classes for the column.
+}}
+{{define col 2}}
 {{if "$1" == ""}}
-<div class="col">
+<div class="col $2">
 {{else}}
-<div class="col-$1">
+<div class="col-$1 $2">
 {{if}}
 {{end col}}
 
-{{define +col 1}}
+{{# Closes a previous column and creates a new column.
+    Parameter 1 is a qualifier for the col tag that will come after a dash.
+    Parameter 2 is space separated additional classes for the column.
+    For example col 8 will result in a col-8 class.
+    "col md-auto" will become a col-md-auto class.
+    'col  ,col-md-8' will become a "col col-md-8" class.
+}}
+{{define +col 2}}
 </div>
 {{if "$1" == ""}}
-<div class="col">
+<div class="col $2">
 {{else}}
-<div class="col-$1">
+<div class="col-$1 $2">
 {{if}}
 {{end +col}}
 
+{{# Closes a column}}
 {{define -col}}
 </div>
 {{end -col}}

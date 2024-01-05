@@ -29,9 +29,8 @@ func (t *DateTextbox) DrawingAttributes(ctx context.Context) html5tag.Attributes
 	return a
 }
 
-// DateTextboxCreator creates an email textbox.
-// Pass it to AddControls of a control, or as a Child of
-// a FormFieldWrapper.
+// DateTextboxCreator creates a date textbox.
+// Pass it to AddControls of a control, or as a Child of a FormGroupCreator.
 type DateTextboxCreator struct {
 	// ID is the control id of the html widget and must be unique to the page
 	ID string

@@ -5,6 +5,7 @@ import (
 	"github.com/goradd/goradd/pkg/bootstrap/config"
 	"github.com/goradd/goradd/pkg/page"
 	grctl "github.com/goradd/goradd/pkg/page/control"
+	"github.com/goradd/html5tag"
 )
 
 type InputGroupI interface {
@@ -31,12 +32,16 @@ func (g *InputGroup) this() InputGroupI {
 	return g.Self().(InputGroupI)
 }
 
+func (g *InputGroup) DrawingAttributes(ctx context.Context) html5tag.Attributes {
+	a := g.Panel.DrawingAttributes(ctx)
+	a.AddClass("input-group")
+	return a
+}
+
 type InputGroupCreator struct {
 	// ID is the control id
-	ID      string
-	Prepend []page.Creator
-	Child   page.Creator
-	Append  []page.Creator
+	ID       string
+	Children []page.Creator
 	page.ControlOptions
 }
 
@@ -44,34 +49,14 @@ type InputGroupCreator struct {
 // do not normally need to call this.
 func (c InputGroupCreator) Create(ctx context.Context, parent page.ControlI) page.ControlI {
 	ctrl := NewInputGroup(parent, c.ID)
-	ctrl.AddClass("input-group")
-	var children []page.Creator
-
-	if c.Prepend != nil {
-		children = append(children,
-			grctl.PanelCreator{
-				Children: c.Prepend,
-				ControlOptions: page.ControlOptions{
-					Class: "input-group-prepend",
-				},
-			},
-		)
-	}
-	children = append(children, c.Child)
-	if c.Append != nil {
-		children = append(children,
-			grctl.PanelCreator{
-				Children: c.Append,
-				ControlOptions: page.ControlOptions{
-					Class: "input-group-append",
-				},
-			},
-		)
-	}
-	ctrl.ApplyOptions(ctx, c.ControlOptions)
-	ctrl.AddControls(ctx, children...)
-
+	c.Init(ctx, ctrl)
 	return ctrl
+}
+
+// Init is called by implementations to initialize a control with the creator.
+func (c InputGroupCreator) Init(ctx context.Context, ctrl InputGroupI) {
+	ctrl.ApplyOptions(ctx, c.ControlOptions)
+	ctrl.AddControls(ctx, c.Children...)
 }
 
 func init() {
