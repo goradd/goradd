@@ -92,7 +92,7 @@ func (p *CheckboxPanel) Init(self any, ctx context.Context, parent page.ControlI
 }
 
 func init() {
-	browsertest.RegisterTestFunction("CheckboxList Do Submit", testCheckboxAjaxSubmit)
+	browsertest.RegisterTestFunction("CheckboxList Ajax Submit", testCheckboxAjaxSubmit)
 	browsertest.RegisterTestFunction("CheckboxList Server Submit", testCheckboxServerSubmit)
 	page.RegisterControl(&CheckboxPanel{})
 }
