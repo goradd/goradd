@@ -488,7 +488,16 @@ func (m *Model) importForeignKeys(desc TableDescription) {
 	t := m.Table(desc.Name)
 	if t != nil {
 		if t.PrimaryKeyColumn() == nil {
-			log.Warningf("table %s must have a primary key if it has a foreign key.", desc.Name)
+			hasForeignKey := false
+			for _, col := range desc.Columns {
+				if col.ForeignKey != nil {
+					hasForeignKey = true
+					break
+				}
+			}
+			if hasForeignKey {
+				log.Errorf("table %s must have a primary key since it has a foreign key.", desc.Name)
+			}
 		} else {
 			for _, col := range desc.Columns {
 				m.importForeignKey(t, col)

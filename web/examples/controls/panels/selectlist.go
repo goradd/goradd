@@ -130,7 +130,7 @@ func (p *SelectListPanel) DoAction(ctx context.Context, a action.Params) {
 }
 
 func init() {
-	browsertest.RegisterTestFunction("Select List Do Submit", testSelectListAjaxSubmit)
+	browsertest.RegisterTestFunction("Select List Ajax Submit", testSelectListAjaxSubmit)
 	browsertest.RegisterTestFunction("Select List Server Submit", testSelectListServerSubmit)
 }
 
