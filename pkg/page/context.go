@@ -1,7 +1,9 @@
 package page
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
@@ -285,7 +287,14 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				TimezoneInfo  tzParams                          `json:"tz"`
 			}
 
-			dec := json.NewDecoder(strings.NewReader(v))
+			var dec *json.Decoder
+			if b, err := base64.StdEncoding.DecodeString(v); err != nil {
+				ctx.err = err
+				return
+			} else {
+				dec = json.NewDecoder(bytes.NewReader(b))
+			}
+
 			dec.UseNumber()
 			if err = dec.Decode(&params); err == nil {
 				ctx.customControlValues = params.ControlValues
