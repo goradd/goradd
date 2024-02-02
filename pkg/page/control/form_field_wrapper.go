@@ -75,11 +75,8 @@ func (c *FormFieldWrapper) this() FormFieldWrapperI {
 
 // SetFor associates the form field with a sub control. The relatedId
 // is the ID that the form field is associated with. Most browsers allow you to click on the
-// label in order to give focus to the related control
+// label in order to give focus to the related control.
 func (c *FormFieldWrapper) SetFor(relatedId string) FormFieldWrapperI {
-	if relatedId == "" {
-		panic("A For id is required.")
-	}
 	c.forID = relatedId
 	return c.this()
 }
@@ -116,7 +113,7 @@ func (c *FormFieldWrapper) DrawTag(ctx context.Context, w io.Writer) {
 	var child page.ControlI
 	var errorMessage string
 
-	if c.Page().HasControl(c.forID) {
+	if c.forID != "" && c.Page().HasControl(c.forID) {
 		child = c.Page().GetControl(c.forID)
 		errorMessage = child.ValidationMessage()
 		if errorMessage != "" {
@@ -208,6 +205,9 @@ func (c *FormFieldWrapper) ChildValidationChanged() {
 }
 
 func (c *FormFieldWrapper) checkChildValidation() {
+	if c.forID == "" || !c.Page().HasControl(c.forID) {
+		return
+	}
 	child := c.Page().GetControl(c.forID)
 	m := child.ValidationMessage()
 	if m != c.savedMessage {
@@ -293,7 +293,7 @@ type FormFieldWrapperCreator struct {
 	Instructions string
 	// For specifies the id of the control that the label is for, and that is the control that we are wrapping.
 	// You normally do not need this, as it will simply look at the first child control, but if for some reason
-	// that control is wrapped, you should explicitly specify the For control id here.
+	// the first child is not the control the label is for, then specify it here.
 	For string
 	// LabelAttributes are additional attributes to add to the label tag.
 	LabelAttributes html5tag.Attributes

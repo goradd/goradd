@@ -122,7 +122,7 @@ func (p *TextboxPanel) DoAction(ctx context.Context, a action.Params) {
 }
 
 func init() {
-	browsertest.RegisterTestFunction("Textbox Do Submit", testTextboxAjaxSubmit)
+	browsertest.RegisterTestFunction("Textbox Ajax Submit", testTextboxAjaxSubmit)
 	browsertest.RegisterTestFunction("Textbox Server Submit", testTextboxServerSubmit)
 	page.RegisterControl(&TextboxPanel{})
 }

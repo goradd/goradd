@@ -287,21 +287,21 @@ This is an example of a typical form with inline labels.
 		return
 	}
 
-	if _, err = io.WriteString(_w, `<div class="row">
+	if _, err = io.WriteString(_w, `<div class="row ">
 `); err != nil {
 		return
 	}
 
 	if "2" == "" {
 
-		if _, err = io.WriteString(_w, `<div class="col">
+		if _, err = io.WriteString(_w, `<div class="col ">
 `); err != nil {
 			return
 		}
 
 	} else {
 
-		if _, err = io.WriteString(_w, `<div class="col-2">
+		if _, err = io.WriteString(_w, `<div class="col-2 ">
 `); err != nil {
 			return
 		}
@@ -315,14 +315,14 @@ This is an example of a typical form with inline labels.
 
 	if "10" == "" {
 
-		if _, err = io.WriteString(_w, `<div class="col">
+		if _, err = io.WriteString(_w, `<div class="col ">
 `); err != nil {
 			return
 		}
 
 	} else {
 
-		if _, err = io.WriteString(_w, `<div class="col-10">
+		if _, err = io.WriteString(_w, `<div class="col-10 ">
 `); err != nil {
 			return
 		}

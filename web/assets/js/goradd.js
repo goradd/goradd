@@ -138,12 +138,7 @@ var g$ = function(el) {
 
         // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
         params.callType = "Ajax";
-        params.tz = {"o" : -(new Date()).getTimezoneOffset(), "z" : Intl ? Intl.DateTimeFormat().resolvedOptions().timeZone : null};
-
-        if (!goradd.isEmptyObject(_controlValues)) {
-            params.controlValues = _controlValues;
-        }
-        postData.Goradd__Params = JSON.stringify(params);
+        postData.Goradd__Params = _getParamsValue(params);
 
         _ajaxError = false;
         _formObjsModified = {};
@@ -162,6 +157,27 @@ var g$ = function(el) {
             }
         }
         return fd;
+    }
+
+    /**
+     * Returns the Goradd__Params value in an encoded form that will be decoded by the server.
+     * Encoding is necessary to accommodate Web site monitors that may interpret the clear text as attempts at
+     * subterfuge.
+     *
+     * @param params
+     * @returns {string}
+     * @private
+     */
+    function _getParamsValue(params) {
+        params.tz = {"o" : -(new Date()).getTimezoneOffset(), "z" : Intl ? Intl.DateTimeFormat().resolvedOptions().timeZone : null};
+
+        if (!goradd.isEmptyObject(_controlValues)) {
+            params.controlValues = _controlValues;
+        }
+        var s = JSON.stringify(params);
+        var b = new TextEncoder().encode(s);
+        var bs = String.fromCodePoint(...b);
+        return btoa(bs);
     }
 
     /**
@@ -893,16 +909,11 @@ var g$ = function(el) {
             var gForm = g$(form);
 
             params.callType = "Server";
-            params.tz = {"o" : -(new Date()).getTimezoneOffset(), "z" : Intl ? Intl.DateTimeFormat().resolvedOptions().timeZone : null};
 
             // Notify custom controls that we are about to post
             gForm.trigger("posting", "Server");
 
-            // Post custom javascript control values
-            if (!goradd.isEmptyObject(_controlValues)) {
-                params.controlValues = _controlValues;
-            }
-            goradd.el('Goradd__Params').value = JSON.stringify(params);
+            goradd.el('Goradd__Params').value = _getParamsValue(params);
 
             // trigger our own form submission so we can catch it
             gForm.trigger("submit");
