@@ -11,9 +11,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	reflect2 "github.com/goradd/goradd/pkg/any"
-	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/i18n"
-	"github.com/goradd/goradd/pkg/session"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"github.com/goradd/html5tag"
 	"io"
@@ -112,9 +110,9 @@ func (p *Page) runPage(ctx context.Context, w http2.ResponseWriter, isNew bool) 
 
 	} else {
 		// Test for a CSRF attack
-		csrf := session.Get(ctx, goradd.SessionCsrf)
+		csrf := p.Form().csrfString()
 		csrf2, found := grCtx.FormValue(htmlCsrfToken)
-		if !found || csrf != csrf2 {
+		if !found || csrf == "" || csrf != csrf2 {
 			return fmt.Errorf("CSRF error. PageState: %s, Found: %v, Csrf1: %v, Csrf2: %s", p.stateId, found, csrf, csrf2)
 		}
 
