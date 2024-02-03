@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"github.com/goradd/goradd/pkg/config"
 	"github.com/goradd/goradd/pkg/crypt"
-	"github.com/goradd/goradd/pkg/goradd"
 	"github.com/goradd/goradd/pkg/http"
 	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/messageServer"
-	"github.com/goradd/goradd/pkg/session"
 	"github.com/goradd/goradd/pkg/session/location"
 	"github.com/goradd/html5tag"
 	"github.com/goradd/maps"
@@ -60,6 +58,7 @@ type FormI interface {
 
 	updateValues(ctx context.Context)
 	writeAllStates(ctx context.Context)
+	csrfString() string
 }
 
 type headerItem = maps.SliceMap[string, html5tag.Attributes]
@@ -77,6 +76,7 @@ type FormBase struct {
 	headerJavaScripts   *headerItem
 	bodyJavaScripts     *headerItem
 	importedJavaScripts *headerItem // when refreshing, these get moved to the bodyJavaScripts
+	csrf                string      // csrf attack check string
 }
 
 // Init initializes the form control. Note that ctx might be nil if we are unit testing.
@@ -146,24 +146,17 @@ func (f *FormBase) Draw(ctx context.Context, w io.Writer) {
 
 	// Render hidden controls
 
-	// Place holder for postBack and postAjax functions to place their data
+	// Placeholder for postBack and postAjax functions to place their data
 	if _, err := io.WriteString(w, `<input type="hidden" name="`+htmlVarParams+`" id="`+htmlVarParams+`" value="" />`+"\n"); err != nil {
 		panic(err)
 	}
 
 	// CSRF prevention
-	var csrf string
-
-	csrf = session.GetString(ctx, goradd.SessionCsrf)
-	if csrf == "" {
-		var err error
-		// first time
-		csrf, err = crypt.GenerateRandomBase64String(16)
-		if err != nil {
-			panic(err)
-		}
-		session.Set(ctx, goradd.SessionCsrf, csrf)
+	csrf, err := crypt.GenerateRandomBase64String(16)
+	if err != nil {
+		panic(err)
 	}
+	f.csrf = csrf
 	if _, err := fmt.Fprintf(w, `<input type="hidden" name="`+htmlCsrfToken+`" id="`+htmlCsrfToken+`" value="%s" />`+"\n", csrf); err != nil {
 		panic(err)
 	}
@@ -485,6 +478,10 @@ func (f *FormBase) drawBodyScriptFiles(ctx context.Context, w io.Writer) (err er
 	return
 }
 
+func (f *FormBase) csrfString() string {
+	return f.csrf
+}
+
 // DisplayAlert will display a javascript alert with the given message.
 func (f *FormBase) DisplayAlert(ctx context.Context, msg string) {
 	f.response.displayAlert(msg)
@@ -562,6 +559,7 @@ type formEncoded struct {
 	HeaderJS   *headerItem
 	BodyJS     *headerItem
 	ImportedJS *headerItem
+	Csrf       string
 }
 
 func (f *FormBase) Serialize(e Encoder) {
@@ -579,6 +577,7 @@ func (f *FormBase) Serialize(e Encoder) {
 		HeaderJS:   f.headerJavaScripts,
 		BodyJS:     f.bodyJavaScripts,
 		ImportedJS: f.importedJavaScripts,
+		Csrf:       f.csrf,
 	}
 
 	if err := e.Encode(s); err != nil {
@@ -606,6 +605,7 @@ func (f *FormBase) Deserialize(d Decoder) {
 	f.headerJavaScripts = s.HeaderJS
 	f.bodyJavaScripts = s.BodyJS
 	f.importedJavaScripts = s.ImportedJS
+	f.csrf = s.Csrf
 
 	return
 }

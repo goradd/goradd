@@ -17,7 +17,6 @@ const (
 const (
 	SessionLanguage       = "goradd.lang"
 	SessionSalt           = "goradd.salt"
-	SessionCsrf           = "goradd.csrf"
 	SessionAuthTime       = "goradd.auth.time"
 	SessionAuthSuccess    = "goradd.auth.success"
 	SessionTimezone       = "goradd.timezone"
