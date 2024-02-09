@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // Params are sent to the control.DoAction() function in response to a user action.
@@ -94,6 +95,10 @@ func (a *Params) ControlValue(i interface{}) (ok bool, err error) {
 // EventValueString returns the event value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *Params) EventValueString() string {
+	if !utf8.Valid(a.values.Event) {
+		// OWASP Quick Reference #3-6
+		return ""
+	}
 	v := string(a.values.Event)
 	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
@@ -129,6 +134,10 @@ func (a *Params) EventValueStringMap() (m map[string]string) {
 // ActionValueString returns the action value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *Params) ActionValueString() string {
+	if !utf8.Valid(a.values.Event) {
+		// OWASP Quick Reference #3-6
+		return ""
+	}
 	v := string(a.values.Action)
 	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
@@ -156,6 +165,10 @@ func (a *Params) ActionValueBool() bool {
 // ControlValueString returns the control value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *Params) ControlValueString() string {
+	if !utf8.Valid(a.values.Event) {
+		// OWASP Quick Reference #3-6
+		return ""
+	}
 	v := string(a.values.Control)
 	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes

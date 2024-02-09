@@ -14,6 +14,7 @@ import (
 	"github.com/goradd/goradd/pkg/page/action"
 	"github.com/goradd/goradd/pkg/page/event"
 	"github.com/goradd/goradd/pkg/session"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -296,16 +297,45 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 			}
 
 			dec.UseNumber()
+			dec.DisallowUnknownFields()
+
 			if err = dec.Decode(&params); err == nil {
+				// Treat all parameters as untrusted, and provide some minimal validation checking
 				ctx.customControlValues = params.ControlValues
+				if !strings2.IsASCII(params.ControlID) {
+					ctx.err = fmt.Errorf("invalid control id")
+					return
+				}
 				ctx.actionControlID = params.ControlID
+
+				for _, r := range params.RefreshIDs {
+					if !strings2.IsASCII(r) {
+						ctx.err = fmt.Errorf("invalid control id")
+						return
+					}
+				}
 				ctx.refreshIDs = params.RefreshIDs
+
 				if params.EventID != 0 {
+					// event ids are mapped, so no danger of out of bounds errors
 					ctx.eventID = event.EventID(params.EventID)
 				}
+
+				// Values are validated when read
 				ctx.actionValues = params.Values
+
 				if params.TimezoneInfo.TimezoneOffset != 0 || params.TimezoneInfo.Timezone != "" {
+					if params.TimezoneInfo.TimezoneOffset > 24*60 || params.TimezoneInfo.TimezoneOffset < -24*60 {
+						ctx.err = fmt.Errorf("invalid timezone offset")
+						return
+					}
 					ctx.clientTimezoneOffset = params.TimezoneInfo.TimezoneOffset
+
+					if !strings2.IsASCII(params.TimezoneInfo.Timezone) {
+						ctx.err = fmt.Errorf("invalid timezone name")
+						return
+					}
+
 					ctx.clientTimezone = params.TimezoneInfo.Timezone
 					ctx.hasTimezoneInfo = true
 				} else if session.Has(mainContext, goradd.SessionTimezoneOffset) {
@@ -322,6 +352,9 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 				if ctx.pageStateId, ok = ctx.FormValue(HtmlVarPagestate); !ok {
 					ctx.err = fmt.Errorf("no pagestate found in response")
 					return
+				} else if !strings2.IsASCII(ctx.pageStateId) {
+					ctx.err = fmt.Errorf("invalid page state")
+					return
 				}
 			} else {
 				ctx.err = err
@@ -331,6 +364,10 @@ func (ctx *Context) fillApp(mainContext context.Context, cliArgs []string) {
 		} else if apistate, ok2 := ctx.FormValue(HtmlVarApistate); ok2 {
 			// Allows REST clients to also support the timezone offset in the context
 			if offset, err2 := strconv.Atoi(apistate); err2 == nil {
+				if offset > 24*60 || offset < -24*60 {
+					ctx.err = fmt.Errorf("invalid timezone offset")
+					return
+				}
 				ctx.clientTimezoneOffset = offset
 				ctx.hasTimezoneInfo = true
 			}
