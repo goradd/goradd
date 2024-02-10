@@ -152,8 +152,12 @@ func (bw *defaultBufferedOutputManager) Use(next http.Handler) http.Handler {
 		r = r.WithContext(ctx)
 		defer pool.PutBuffer(outBuf)
 		next.ServeHTTP(bwriter, r)
+
 		if bwriter.code != 0 && bwriter.code != 200 {
 			w.WriteHeader(bwriter.code)
+		} else if !ValidateHeader(bwriter.Header()) {
+			w.WriteHeader(http.StatusInternalServerError)
+			grlog.Error("Application is attempting to send invalid header")
 		}
 		_, e := w.Write(outBuf.Bytes())
 		if e != nil {

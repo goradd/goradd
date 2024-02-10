@@ -43,14 +43,35 @@ This is a description of how GoRADD follows these secure coding practices.
   - Go supports UTF-8 extended
 
 - [x] Validate all client provided data before processing, including all parameters, URLs and HTTP header content (e.g. Cookie names and values). Be sure to include automated post backs from JavaScript, Flash or other embedded code
-	[9] Verify that header values in both requests and responses contain only ASCII characters
-	[10] Validate data from redirects (An attacker may submit malicious content directly to the target of the redirect, thus circumventing application logic and any validation performed before the redirect)  
-	[11] Validate for expected data types
-	[12] Validate data range
-	[13] Validate data length
-	[14] Validate all input against a "white" list of allowed characters, whenever possible
-	[15] If any potentially hazardous characters must be allowed as input, be sure that you implement additional controls like output encoding, secure task specific APIs and accounting for the utilization of that data throughout the application . Examples of common hazardous characters include:
+ - Postback data is checked in Context.fillApp.
+ - All REST API data should be checked by the developer.
+
+- [x] Verify that header values in both requests and responses contain only ASCII characters
+  - Incoming header values are checked in Application.validateHttpHandler().
+  - Outgoing header values are checked when using buffered output. Due to how the Go http handlers work, it's up to the developer to check the outgoing headers of REST API calls.
+
+
+- [x] Validate data from redirects (An attacker may submit malicious content directly to the target of the redirect, thus circumventing application logic and any validation performed before the redirect)  
+  - Goradd does not redirect in a way that would circumvent validation.
+
+- [x] Validate for expected data types
+  - Individual controls provide appropriate validation for each data type
+
+
+- [x] Validate data range
+  - Basic ranges are checked by default controls. Developers can write their own validations to further enhance range checking.
+
+- [x]  Validate data length
+  - Many controls have a data length check for incoming data. The codegen process by default will set this length to the length of the corresponding database field.
+
+- [x] Validate all input against a "white" list of allowed characters, whenever possible
+  - This can be done by the developer for specific situation in the Validate() function.
+
+
+- [x] If any potentially hazardous characters must be allowed as input, be sure that you implement additional controls like output encoding, secure task specific APIs and accounting for the utilization of that data throughout the application . Examples of common hazardous characters include:
 < > " ' % ( ) & + \ \' \"
+  - BlueMonday is used to validate input text by default, and handles special characters.
+
 	[16] If your standard validation routine cannot address the following inputs, then they should be checked discretely
 o	Check for null bytes (%00)
 o	Check for new line characters (%0d, %0a, \r, \n)

@@ -186,7 +186,8 @@ func (a *Application) MakeAppServer() http.Handler {
 	// Must be after the error handler so panics are intercepted by the error reporter
 	// and must be in front of the buffered output handler because of websocket server
 	h = a.this().PutDbContextHandler(h) // This is here so that the PatternMux handlers can use the ORM
-	h = a.httpErrorReporter.Use(h)      // Default http error handler to intercept panics.
+	h = a.validateHttpHandler(h)
+	h = a.httpErrorReporter.Use(h) // Default http error handler to intercept panics.
 	h = a.this().HSTSHandler(h)
 	h = a.this().AccessLogHandler(h)
 
@@ -351,6 +352,18 @@ func (a *Application) AccessLogHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		grlog.FrameworkInfo("Serving: ", r.RequestURI)
 		next.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(fn)
+}
+
+// validateHttpHandler performs OWASP style validation on a request.
+func (a *Application) validateHttpHandler(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		if !http2.ValidateHeader(r.Header) {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			next.ServeHTTP(w, r)
+		}
 	}
 	return http.HandlerFunc(fn)
 }

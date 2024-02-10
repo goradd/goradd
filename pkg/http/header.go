@@ -1,6 +1,8 @@
 package http
 
 import (
+	strings2 "github.com/goradd/goradd/pkg/strings"
+	"net/http"
 	"strings"
 )
 
@@ -35,4 +37,16 @@ func ParseAuthorizationHeader(auth string) (scheme, params string) {
 		params = strings.TrimSpace(after)
 	}
 	return
+}
+
+// ValidateHeader confirms that the given header's values only contains ASCII characters.
+func ValidateHeader(header http.Header) bool {
+	for _, a := range header {
+		for _, h := range a {
+			if !strings2.IsASCII(h) {
+				return false
+			}
+		}
+	}
+	return true
 }
