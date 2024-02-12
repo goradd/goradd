@@ -242,6 +242,7 @@ This error message can be customize in the config.setupErrorMessage() function.
 See GoRADD's log package for details on the application logger. The logger can be customized
 in the config.initLogs() function.
 
+TBD:
 - [ ] Do not disclose sensitive information in error responses, including system details, session identifiers or account information
 - [ ] Use error handlers that do not display debugging or stack trace information
 - [ ] Implement generic error messages and use custom error pages
@@ -267,7 +268,7 @@ in the config.initLogs() function.
 - [ ] Log cryptographic module failures
 - [ ] Use a cryptographic hash function to validate log entry integrity
 
-Data Protection:
+### Data Protection
 - [ ] Implement least privilege, restrict users to only the functionality, data and system information that is required to perform their tasks
   - To be managed by the developer
 
