@@ -13,6 +13,7 @@ import (
 	"github.com/goradd/html5tag"
 	"github.com/goradd/maps"
 	"io"
+	http2 "net/http"
 	"path"
 )
 
@@ -53,8 +54,8 @@ type FormI interface {
 	LoadControls(ctx context.Context)
 
 	// Exit is called after the page is drawn, just before it is saved in the page cache. Its the place to do any last
-	// minute local variable initializations.
-	Exit(ctx context.Context, err error)
+	// minute local variable initializations, or customize the header of the response.
+	Exit(ctx context.Context, w http2.ResponseWriter, err error)
 
 	updateValues(ctx context.Context)
 	writeAllStates(ctx context.Context)
@@ -528,8 +529,11 @@ func (f *FormBase) LoadControls(ctx context.Context) {
 }
 
 // Exit is a lifecycle function that gets called after the form is processed, just before control is returned to the client.
+//
 // err will be set if an error response was detected.
-func (f *FormBase) Exit(ctx context.Context, err error) {
+//
+// w is the cached buffered output and can be used to customize the output header.
+func (f *FormBase) Exit(ctx context.Context, w http2.ResponseWriter, err error) {
 	return
 }
 

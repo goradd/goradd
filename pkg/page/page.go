@@ -107,7 +107,6 @@ func (p *Page) runPage(ctx context.Context, w http2.ResponseWriter, isNew bool) 
 		p.Form().AddHeadTags()
 		p.Form().CreateControls(ctx)
 		p.Form().LoadControls(ctx)
-
 	} else {
 		// Test for a CSRF attack
 		csrf := p.Form().csrfString()
@@ -141,7 +140,7 @@ func (p *Page) runPage(ctx context.Context, w http2.ResponseWriter, isNew bool) 
 	}
 
 	p.Form().writeAllStates(ctx)
-	p.Form().Exit(ctx, err)
+	p.Form().Exit(ctx, w, err)
 
 	pageCache.Set(p.stateId, p)
 

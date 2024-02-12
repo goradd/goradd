@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/goradd/goradd/pkg/strings"
 	"github.com/microcosm-cc/bluemonday"
 	"html"
 )
@@ -21,19 +22,34 @@ var GlobalSanitizer Sanitizer
 // Or, override the Sanitize function in the textbox object.
 //
 // This sanitizer is no longer used by default, because it removes too much valid text. For
-// example, a<b is changed. So, you need to be careful to escape anything you are outputting to the
-// browser instead.
+// example, "a<b" is changed.
 type BlueMondaySanitizer struct {
 	policy *bluemonday.Policy
 }
 
 func (s BlueMondaySanitizer) Sanitize(in string) string {
+	if !strings.IsUTF8(in) {
+		return ""
+	}
 	v := s.policy.Sanitize(in)
 	v = html.UnescapeString(v)
 	return v
 }
 
+type DefaultSanitizer struct {
+}
+
+func (s DefaultSanitizer) Sanitize(in string) string {
+	if !strings.IsUTF8(in) {
+		return ""
+	}
+	if strings.HasNull(in) {
+		return "" // completely reject any attempt to insert a null inside an input
+	}
+	return in
+}
+
 func init() {
-	GlobalSanitizer = nil
+	GlobalSanitizer = DefaultSanitizer{}
 	//GlobalSanitizer = BlueMondaySanitizer{bluemonday.UGCPolicy()}
 }

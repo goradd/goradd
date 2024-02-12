@@ -181,8 +181,12 @@ func (a *Application) SetupSessionManager() {
 	a.Application.SetupSessionManager()
 	sm := session.SessionManager()
 
-	// If you are only serving your application over https, you should do this too for added security.
-	if (config.Release) {
+	// Set your idle and session lifetimes as appropriate
+	sm.(session.ScsManager).SessionManager.IdleTimeout = 6 * time.Hour
+	sm.(session.ScsManager).SessionManager.Lifetime = 24 * time.Hour
+
+	if config.Release {
+		// If you are only serving your application over https, you should do this too for added security.
 		sm.(session.ScsManager).SessionManager.Cookie.Secure = true
 	}
 }

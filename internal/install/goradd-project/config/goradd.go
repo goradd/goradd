@@ -12,6 +12,7 @@ func initGoradd() {
 	setupDateFormats()
 	setupTranslator()
 	//setupBootstrap()
+	setupErrorMessage()
 
 	if config.Release {
 	} else {
@@ -54,3 +55,13 @@ func setupBootstrap() {
 }
 
 */
+
+// setupErrorMessage allows you to customize the error message that will appear to users if the code panics.
+func setupErrorMessage() {
+	/*
+			page.HtmlErrorMessage = `<h1 id="err-title">Error</h1>
+		<p>
+		An unexpected error has occurred and your request could not be processed. The error has been logged and we will
+		attempt to fix the problem as soon as possible.
+		</p>`*/
+}
