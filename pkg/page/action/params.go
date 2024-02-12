@@ -2,6 +2,7 @@ package action
 
 import (
 	"encoding/json"
+	"github.com/goradd/goradd/pkg/log"
 	strings2 "github.com/goradd/goradd/pkg/strings"
 	"strconv"
 	"strings"
@@ -97,6 +98,7 @@ func (a *Params) ControlValue(i interface{}) (ok bool, err error) {
 func (a *Params) EventValueString() string {
 	if !strings2.IsUTF8Bytes(a.values.Event) {
 		// OWASP Quick Reference #3-6
+		log.FrameworkInfo("Event value is not UTF-8")
 		return ""
 	}
 	v := string(a.values.Event)
@@ -136,6 +138,7 @@ func (a *Params) EventValueStringMap() (m map[string]string) {
 func (a *Params) ActionValueString() string {
 	if !strings2.IsUTF8Bytes(a.values.Event) {
 		// OWASP Quick Reference #3-6
+		log.FrameworkInfo("Action value is not UTF-8")
 		return ""
 	}
 	v := string(a.values.Action)
@@ -167,6 +170,7 @@ func (a *Params) ActionValueBool() bool {
 func (a *Params) ControlValueString() string {
 	if !strings2.IsUTF8Bytes(a.values.Event) {
 		// OWASP Quick Reference #3-6
+		log.FrameworkInfo("Control value is not UTF-8")
 		return ""
 	}
 	v := string(a.values.Control)

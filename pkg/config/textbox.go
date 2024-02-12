@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/goradd/goradd/pkg/log"
 	"github.com/goradd/goradd/pkg/strings"
 	"github.com/microcosm-cc/bluemonday"
 	"html"
@@ -29,6 +30,7 @@ type BlueMondaySanitizer struct {
 
 func (s BlueMondaySanitizer) Sanitize(in string) string {
 	if !strings.IsUTF8(in) {
+		log.FrameworkInfo("input string is not UTF-8")
 		return ""
 	}
 	v := s.policy.Sanitize(in)
@@ -41,9 +43,11 @@ type DefaultSanitizer struct {
 
 func (s DefaultSanitizer) Sanitize(in string) string {
 	if !strings.IsUTF8(in) {
+		log.FrameworkInfo("input string is not UTF-8")
 		return ""
 	}
 	if strings.HasNull(in) {
+		log.FrameworkInfo("input string has a null value")
 		return "" // completely reject any attempt to insert a null inside an input
 	}
 	return in

@@ -237,36 +237,96 @@ These messages are viewable on the browser only when a control is wrapped in a F
 or derived control.
 
 Serious application errors are logged and a generic error message is displayed to the user.
-This error message can be customize in the config.setupErrorMessage() function.
+This error message can be customized in the config.setupErrorMessage() function.
 
 See GoRADD's log package for details on the application logger. The logger can be customized
 in the config.initLogs() function.
 
-TBD:
-- [ ] Do not disclose sensitive information in error responses, including system details, session identifiers or account information
-- [ ] Use error handlers that do not display debugging or stack trace information
-- [ ] Implement generic error messages and use custom error pages
-- [ ] The application should handle application errors and not rely on the server configuration
-- [ ] Properly free allocated memory when error conditions occur
+- [x] Do not disclose sensitive information in error responses, including system details, session identifiers or account information
+  - The current error system does not disclose application internals during an error. If the
+    developer replaces this message, the developer must be careful to not disclose application internals.
+
+- [x] Use error handlers that do not display debugging or stack trace information
+  - These details are only displayed if you have a debugger attached to the application.
+
+- [x] Implement generic error messages and use custom error pages
+  - As described above.
+
+- [x] The application should handle application errors and not rely on the server configuration
+  - Application errors are handled and displayed by the application.
+
+- [x] Properly free allocated memory when error conditions occur
+  - Go is a garbage-collected language. All memory is freed automatically.
+
 - [ ] Error handling logic associated with security controls should deny access by default
-- [ ] All logging controls should be implemented on a trusted system (e.g., The server)
-- [ ] Logging controls should support both success and failure of specified security events
-- [ ] Ensure logs contain important log event data
-- [ ] Ensure log entries that include un-trusted data will not execute as code in the intended log viewing interface or software
+  - To be managed by the developer. GoRADD does not implement a login system.
+
+- [x] All logging controls should be implemented on a trusted system (e.g., The server)
+  - Logging is handled by the log package
+  
+- [x] Logging controls should support both success and failure of specified security events
+  - The developer can log any event as an Info event.
+
+- [x] Ensure logs contain important log event data
+  - The GoRADD framework implements a tiered logging system that has framework events
+    at a lower level than application events. 
+  - The logging level can be set by setting the
+    grlog.DebugLog value, which is usually set at the command line. 
+  - It is up to the developer to set the level appropriately for the application.
+  - See goradd-project/config/log.go.
+
+- [x] Ensure log entries that include un-trusted data will not execute as code in the intended log viewing interface or software
+  - The developer has control of the log output, but typically it is sent out to StdErr.
+
 - [ ] Restrict access to logs to only authorized individuals
-- [ ] Utilize a master routine for all logging operations
-- [ ] Do not store sensitive information in logs, including unnecessary system details, session identifiers or passwords
-- [ ] Ensure that a mechanism exists to conduct log analysis
+  - The developer has control of the log output, but typically it is sent out to StdErr.
+  - It is up to the developer to secure the StdErr stream.
+
+- [x] Utilize a master routine for all logging operations
+  - Logs are managed by the log package.
+  - Note that as of this writing, Go has released a new standard logging package which is not yet supported by GoRADD.
+
+- [x] Do not store sensitive information in logs, including unnecessary system details, session identifiers or passwords
+  - This is to be managed by the developer. 
+  - By default, only basic framework information is sent to the logs.
+  - Note that the log level can be set to a debugging level, which will output SQL queries. This should be used for debug only.
+
+- [x] Ensure that a mechanism exists to conduct log analysis
+  - This is developer dependent. GoRADD does not provide any log analysis tools.
+
 - [ ] Log all input validation failures
+  - All clearly malicious inputs are logged. 
+  - Input validation that might indicate the user
+    made a mistake are not logged, but the user is notified of the error and not allowed
+    to proceed.
+  
 - [ ] Log all authentication attempts, especially failures
+  - To be handled by the developer.
+  
 - [ ] Log all access control failures
-- [ ] Log all apparent tampering events, including unexpected changes to state data
-- [ ] Log attempts to connect with invalid or expired session tokens
-- [ ] Log all system exceptions
+  - To be handled by the developer
+
+- [x] Log all apparent tampering events, including unexpected changes to state data
+  - Lost page state is logged.
+  
+- [x] Log attempts to connect with invalid or expired session tokens
+  - Invalid session recovery is logged and reported to user as an error.
+
+- [x] Log all system exceptions
+  - The panic catch system will log all errors and report them to the user.
+
 - [ ] Log all administrative functions, including changes to the security configuration settings
+  - To be handled by the developer.
+
 - [ ] Log all backend TLS connection failures
-- [ ] Log cryptographic module failures
+  - TLS connection failures are reported to the client but not logged. The Go standard library
+    handles the error before it gets to the application.
+
+- [x] Log cryptographic module failures
+  - The crypt package logs all such errors.
+
 - [ ] Use a cryptographic hash function to validate log entry integrity
+  - GoRADD does not do this. The developer is free to do this by implementing a custom logging system if the application warrants this treatment.
 
 ### Data Protection
 - [ ] Implement least privilege, restrict users to only the functionality, data and system information that is required to perform their tasks
@@ -438,6 +498,6 @@ Memory Management:
   - Go's memory model makes these function not vulnerable.
 
 - [x] Properly free allocated memory upon the completion of functions and at all exit points
-  - Go is a garbage collected language and will free allocated memory when it sees fit.
+  - Go is a garbage-collected language and will free allocated memory when it sees fit.
 
 

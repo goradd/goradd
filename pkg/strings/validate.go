@@ -55,6 +55,7 @@ func IsFloat(s string) bool {
 	return err == nil
 }
 
+// StripNewlines removes all newline characters from a string.
 func StripNewlines(s string) string {
 	s = strings.Replace(s, "\n", "", -1)
 	s = strings.Replace(s, "\r", "", -1)
@@ -66,6 +67,9 @@ func StripNulls(s string) string {
 	return s
 }
 
+// HasNull returns true if the given string has a null character in it.
+// Null characters are highly unusual in a string, and can indicate that an attempt is being made
+// to plant hidden data into storage.
 func HasNull(s string) bool {
 	return strings.Contains(s, "\000")
 }

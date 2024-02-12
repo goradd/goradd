@@ -177,7 +177,7 @@ func Remove(ctx context.Context, key string) {
 	getSession(ctx).data.Delete(key)
 }
 
-// Clear removes all of the values from the session store. It does not remove the session token itself (the Cookie for
+// Clear removes all the values from the session store. It does not remove the session token itself (the Cookie for
 // example). To remove the token also, call Reset() in addition to Clear()
 func Clear(ctx context.Context) {
 	getSession(ctx).data.Clear()
