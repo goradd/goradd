@@ -108,6 +108,7 @@ func (m *PageManager) getPage(ctx context.Context) (page *Page, isNew bool) {
 			log.FrameworkDebug("Ajax lost the page state") // generally this should only happen if the page state drops out of the cache, which might happen after a long time
 			return
 		}
+
 		// page was not found, so make a new one
 		var form FormI
 		path := gCtx.URL.Path

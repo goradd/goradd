@@ -137,7 +137,7 @@ var g$ = function(el) {
         });
 
         // Update most of the Goradd__ parameters explicitly here. Others, like the state and form id will have been handled above.
-        params.callType = "Ajax";
+        //params.callType = "Ajax";
         postData.Goradd__Params = _getParamsValue(params);
 
         _ajaxError = false;
@@ -908,7 +908,7 @@ var g$ = function(el) {
             var form = goradd.form();
             var gForm = g$(form);
 
-            params.callType = "Server";
+            //params.callType = "Server";
 
             // Notify custom controls that we are about to post
             gForm.trigger("posting", "Server");
@@ -942,7 +942,7 @@ var g$ = function(el) {
                 return;
             }
 
-            params.formId = form.id;
+            //params.formId = form.id;
             params.refresh = _refresh;
 
             goradd.log("postAjax", params);

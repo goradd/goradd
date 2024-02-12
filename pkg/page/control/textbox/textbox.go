@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"github.com/goradd/goradd/pkg/strings"
 	"html"
 	"io"
 	"strconv"
@@ -274,6 +275,10 @@ func (t *Textbox) SetReadOnly(r bool) TextboxI {
 func (t *Textbox) Sanitize(s string) string {
 	if config.GlobalSanitizer == nil {
 		return s
+	}
+	if t.rowCount == 1 {
+		// Per OWASP recommendations, check for malicious code attempting to insert newlines
+		s = strings.StripNewlines(s)
 	}
 	return config.GlobalSanitizer.Sanitize(s)
 }

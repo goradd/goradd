@@ -2,6 +2,8 @@ package action
 
 import (
 	"encoding/json"
+	"github.com/goradd/goradd/pkg/log"
+	strings2 "github.com/goradd/goradd/pkg/strings"
 	"strconv"
 	"strings"
 )
@@ -94,6 +96,11 @@ func (a *Params) ControlValue(i interface{}) (ok bool, err error) {
 // EventValueString returns the event value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *Params) EventValueString() string {
+	if !strings2.IsUTF8Bytes(a.values.Event) {
+		// OWASP Quick Reference #3-6
+		log.FrameworkInfo("Event value is not UTF-8")
+		return ""
+	}
 	v := string(a.values.Event)
 	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
@@ -129,6 +136,11 @@ func (a *Params) EventValueStringMap() (m map[string]string) {
 // ActionValueString returns the action value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *Params) ActionValueString() string {
+	if !strings2.IsUTF8Bytes(a.values.Event) {
+		// OWASP Quick Reference #3-6
+		log.FrameworkInfo("Action value is not UTF-8")
+		return ""
+	}
 	v := string(a.values.Action)
 	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes
@@ -156,6 +168,11 @@ func (a *Params) ActionValueBool() bool {
 // ControlValueString returns the control value as a string. It will convert to a string, even if the value
 // is not a string.
 func (a *Params) ControlValueString() string {
+	if !strings2.IsUTF8Bytes(a.values.Event) {
+		// OWASP Quick Reference #3-6
+		log.FrameworkInfo("Control value is not UTF-8")
+		return ""
+	}
 	v := string(a.values.Control)
 	if len(v) > 1 && v[0] == '"' && v[len(v)-1] == '"' {
 		// It is surrounded by quotes, so remove the quotes

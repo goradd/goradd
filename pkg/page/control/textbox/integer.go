@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"github.com/goradd/goradd/pkg/strings"
 	"strconv"
 
 	"github.com/goradd/goradd/pkg/page"
@@ -109,7 +110,7 @@ func (v IntValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if _, err := strconv.Atoi(s); err != nil {
+	if !strings.IsInt(s) {
 		if v.Message == "" {
 			return c.T("Please enter an integer.")
 		} else {

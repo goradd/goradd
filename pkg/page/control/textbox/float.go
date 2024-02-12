@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"github.com/goradd/goradd/pkg/strings"
 	"strconv"
 
 	"github.com/goradd/goradd/pkg/page"
@@ -95,7 +96,7 @@ func (v FloatValidator) Validate(c page.ControlI, s string) (msg string) {
 	if s == "" {
 		return "" // empty textbox is checked elsewhere
 	}
-	if _, err := strconv.ParseFloat(s, 64); err != nil {
+	if !strings.IsFloat(s) {
 		if msg == "" {
 			return c.GT("Please enter a number.")
 		} else {

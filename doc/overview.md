@@ -222,6 +222,10 @@ to add a javascript file to a form.
 To add a css file or JavaScript file to all of your forms, add the corresponding call
 to the AddRelatedFiles function in the goradd-project/control/form_base.go file.
 
+## Security
+See the [Security](security.md) document for details on how GoRADD handles various security
+issues, including a review of the OWASP Secure Coding Practices.
+
 ## Wrap Up
 For the most part, developing a GoRADD application is iterating all of the above.
 As your requirements change, you change the database, generate the code,
@@ -229,6 +233,5 @@ then add your business logic and customizations. For basic business
 websites, that will be enough. You can do lots more though, and the
 following topics may help you explore more:
 
-[Creating Custom Controls including Javascript Controls]
-[Using CSS Frameworks including Bootstrap]
-[Deployment]
+
+[Deployment](deployment.md)
