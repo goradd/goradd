@@ -46,7 +46,7 @@ func (p *{{= panelName }}) EditItemWithForm(ctx context.Context, pk string) {
         session.SetString(ctx, {{= t.GoName }}EditSessionID, pk)
     }
     // This points to the default edit form path created by the templates. If you change the URL there, also change this.
-	p.ParentForm().ChangeLocation({{= t.GoName }}EditFormPath)
+	p.ParentForm().ChangeLocation({{= t.GoName }}EditFormRoute)
 }
 
 // EditItemWithDialog will popup a dialog to edit the item
@@ -71,6 +71,6 @@ func (p *{{= panelName }}) ZoomItem(ctx context.Context, id string) {
     if id != "" {
         session.SetString(ctx, {{= t.GoName }}DetailSessionID, id)
     }
-	p.ParentForm().ChangeLocation({{= t.GoName }}DetailFormPath)
+	p.ParentForm().ChangeLocation({{= t.GoName }}DetailFormRoute)
 }
 }}
