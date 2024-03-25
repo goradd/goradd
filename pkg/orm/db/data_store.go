@@ -66,6 +66,12 @@ func AddDatabase(d DatabaseI, key string) {
 	}
 	if datastore.databases == nil {
 		datastore.databases = new(DatabaseMap)
+		datastore.databases.SetSortFunc(func(key1, key2 string, val1, val2 DatabaseI) bool {
+			if key1 < key2 {
+				return true
+			}
+			return false
+		})
 	}
 
 	datastore.databases.Set(key, d)
@@ -79,6 +85,12 @@ func GetDatabase(key string) DatabaseI {
 // GetDatabases returns all databases in the datastore
 func GetDatabases() []DatabaseI {
 	return datastore.databases.Values()
+}
+
+// RangeDatabases will call f for each database and database key.
+// f should return true to continue ranging, or false to stop.
+func RangeDatabases(f func(key string, value DatabaseI) bool) {
+	datastore.databases.Range(f)
 }
 
 // PutContext returns a new context with the database contexts inserted into the given

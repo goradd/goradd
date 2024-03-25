@@ -9,7 +9,7 @@ func init() {
 }
 
 func test{{= formName }}(t *browsertest.TestForm)  {
-	t.LoadUrl({{= title }}EditFormPath)
+	t.LoadUrl({{= title }}EditFormRoute)
 
 	v := t.HtmlElementInfo("#err-title", "innerHTML")
 	t.AssertEqual("", v)

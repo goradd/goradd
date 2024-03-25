@@ -2,10 +2,10 @@
 
 {{
 
-// {{= title }}ListFormPath specifies the URL that will access this form.
-const {{= title }}ListFormPath = "/goradd/forms/{{= dd.DbKey }}/{{= tableKebab }}-list"
+// {{= title }}ListFormRoute specifies the URL that will access this form.
+const {{= title }}ListFormRoute = "/goradd/forms/{{= dd.DbKey }}/{{= t.DefaultHtmlID() }}-list"
 // {{= title }}ListFormID is the html id to use in the html form object.
-const {{= title }}ListFormID = "{{= tableKebab }}-list-form"
+const {{= title }}ListFormID = "{{= t.DefaultHtmlID() }}-list-form"
 
 // Labels used to describe the objects that are being listed and edited.
 // doc:type={{= formName }}

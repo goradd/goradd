@@ -33,10 +33,6 @@ type ManyManyReference struct {
 	primaryKey     string
 	primaryKeyType string
 
-	// SupportsForeignKeys indicates that updates and deletes are automatically handled by the database engine.
-	// If this is false, the code generator will need to manually update these items.
-	SupportsForeignKeys bool
-
 	// IsEnumAssociation is true if this is a many-many relationship with an enum table
 	IsEnumAssociation bool
 

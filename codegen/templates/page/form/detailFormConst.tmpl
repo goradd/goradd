@@ -3,10 +3,10 @@
 {{
 // doc: type={{= formName }}
 const (
-    // {{= title }}DetailFormPath specifies the URL that will access this form.
-    {{= title }}DetailFormPath = "/goradd/forms/{{= dd.DbKey }}/{{= tableKebab }}-detail"
+    // {{= title }}DetailFormRoute specifies the URL that will access this form.
+    {{= title }}DetailFormRoute = "/goradd/forms/{{= dd.DbKey }}/{{= t.DefaultHtmlID() }}-detail"
     // {{= title }}DetailFormID is the id of the html form object.
-    {{= title }}DetailFormID = "{{= tableKebab }}-detail-form"
+    {{= title }}DetailFormID = "{{= t.DefaultHtmlID() }}-detail-form"
     // {{= title }}DetailPanelID is the id of the panel that contains the content of the detail form.
     {{= title }}DetailPanelID = "{{= t.DefaultHtmlID()}}-detail-panel"
     // {{= title }}OkButtonID is the id of the OK button that will navigate back to the list form.

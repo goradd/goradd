@@ -28,7 +28,7 @@ const (
 type Model struct {
 	// The database key corresponding to its key in the global database cluster
 	DbKey string
-	// The name of the database or schema.
+	// The name of the database or schema. Should be lower snake case.
 	DbName string
 	// Tables are the tables in the database, keyed by database table name
 	Tables map[string]*Table
@@ -346,24 +346,24 @@ func (m *Model) importReverseReferences(td *Table) {
 // association columns directly and store an array of records numbers on either end of the association.
 func (m *Model) importAssociation(mm ManyManyDescription) {
 	if m.EnumTable(mm.Table2) == nil {
-		ref1 := m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, false, mm.SupportsForeignKeys)
-		ref2 := m.makeManyManyRef(mm.Table2, mm.Column2, mm.Table1, mm.Column1, mm.GoName1, mm.GoPlural1, mm.AssnTableName, false, mm.SupportsForeignKeys)
+		ref1 := m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, false)
+		ref2 := m.makeManyManyRef(mm.Table2, mm.Column2, mm.Table1, mm.Column1, mm.GoName1, mm.GoPlural1, mm.AssnTableName, false)
 		ref1.MM = ref2
 		ref2.MM = ref1
 	} else {
 		// enum table
-		m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, true, mm.SupportsForeignKeys)
+		m.makeManyManyRef(mm.Table1, mm.Column1, mm.Table2, mm.Column2, mm.GoName2, mm.GoPlural2, mm.AssnTableName, true)
 	}
 }
 
 func (m *Model) makeManyManyRef(
 	sourceTableName, column1, destTableName, column2, goName, goPlural, assnTable string,
-	isEnum, supportsForeignKeys bool,
+	isEnum bool,
 ) *ManyManyReference {
 	sourceTable := m.Table(sourceTableName)
 	destGetterName := strings.TrimSuffix(column2, m.ForeignKeySuffix)
 
-	// if database comment has names to use, then use them. Otherwise generate them.
+	// if database comment has names to use, then use them. Otherwise, generate them.
 	if goName == "" {
 		goName = UpperCaseIdentifier(destGetterName)
 	}
@@ -428,7 +428,6 @@ func (m *Model) makeManyManyRef(
 		primaryKey:           primaryKey,
 		primaryKeyType:       primaryKeyType,
 		IsEnumAssociation:    isEnum,
-		SupportsForeignKeys:  supportsForeignKeys,
 	}
 	sourceTable.ManyManyReferences = append(sourceTable.ManyManyReferences, &ref)
 	return &ref
@@ -555,7 +554,7 @@ func (m *Model) importForeignKey(t *Table, cd ColumnDescription) {
 	}
 }
 
-// cleanTableName converts the database name to a snake case name that is
+// cleanTableName converts the table name to a snake case name that is
 // suitable for converting to equivalent descriptions.
 func (m *Model) cleanTableName(n string) string {
 	if m.ignoreSchemas {

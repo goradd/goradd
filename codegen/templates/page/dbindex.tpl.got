@@ -1,6 +1,6 @@
 package template
 
-// This template generates the index.html file in the forms directory
+// This template generates the index.html file in each of the gen/(database name) directories
 
 import (
 	"github.com/goradd/goradd/codegen/generator"
