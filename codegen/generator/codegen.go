@@ -100,6 +100,7 @@ func Generate() {
 	}
 
 	// map object names to tables, making sure there are no duplicates
+
 	for _, database := range databases {
 		if database.Model() == nil {
 			panic("Missing model. Did you forget to call Analyze on the database?")

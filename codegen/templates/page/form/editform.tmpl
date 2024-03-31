@@ -6,8 +6,6 @@
 
 var title  = t.GoName
 var formName = title + "EditForm"
-var tableKebab = strings2.CamelToKebab(t.GoName)
-var listFormPath = path.Join("/goradd/form/",dd.DbKey,tableKebab + "-list")
 
 {{: editFormImport.tmpl }}
 {{: editFormConst.tmpl }}
